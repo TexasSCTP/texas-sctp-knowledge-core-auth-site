@@ -1,6 +1,6 @@
-# Texas SCTP Knowledge Core Authentication Site
+# Texas SCTP Knowledge Core Production Console
 
-This public repository contains generated deployment artifacts for the Texas SCTP Knowledge Core authentication interface. It does not contain the private Knowledge Core source, knowledge records, role data, credentials, secret keys, or database exports.
+This public repository contains generated deployment artifacts for the Texas SCTP Knowledge Core production console. It does not contain the private Knowledge Core source, server-side knowledge records, role data, credentials, secret keys, or database exports.
 
 - Public address: `https://knowledge.texassctp.com`
 - Hosting: GitHub Pages
