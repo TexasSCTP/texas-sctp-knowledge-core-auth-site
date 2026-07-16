@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Texas SCTP Knowledge Core">
-  <rect width="64" height="64" rx="14" fill="#0f2c4c"/>
-  <path d="M16 17h32v8H36v24h-8V25H16z" fill="#fafaf8"/>
-  <circle cx="47" cy="45" r="8" fill="#d9a441"/>
+  <rect width="64" height="64" rx="6" fill="#0f2c4c"/>
+  <path d="M8 13h25v8h-8v27h-9V21H8z" fill="#fafaf8"/>
+  <path d="M31 13h10l6 9 6-9h9L52 29l10 16H52l-6-9-6 9H30l11-16z" fill="#fafaf8"/>
+  <path d="M0 51h64v7H0z" fill="#c74e2b"/>
+  <path d="M0 58h64v6H0z" fill="#b1261e"/>
 </svg>
