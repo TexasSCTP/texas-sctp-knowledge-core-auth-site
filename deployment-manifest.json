@@ -12,7 +12,7 @@
     },
     "404.html": {
       "bytes": 1246,
-      "sha256": "1946e68a5dc5759c7cad1b3f6a0649fa9f0d57c90cfab700b7dcbb4c99fb6455"
+      "sha256": "1a4135155a03890aaa4014d492009427f90bc751e5504cb60563550ec38a9d6b"
     },
     "CNAME": {
       "bytes": 24,
@@ -22,9 +22,9 @@
       "bytes": 40308,
       "sha256": "f0c8cef4ee3b129aace70c9617dee280a1a2356aa3d578e266dae2ace042c6e2"
     },
-    "assets/index-Ct28v3Ni.js": {
-      "bytes": 456605,
-      "sha256": "ecdc79acfe2741065d522da7ae5b8acff734723e2a2cc43d3914f1663998e0be"
+    "assets/index-DXbKSUm8.js": {
+      "bytes": 456635,
+      "sha256": "9404b49dcab3f125b91eaddb46636ada26f41c2011216105d0ee0ea504032dfa"
     },
     "favicon.svg": {
       "bytes": 397,
@@ -32,7 +32,7 @@
     },
     "index.html": {
       "bytes": 1246,
-      "sha256": "1946e68a5dc5759c7cad1b3f6a0649fa9f0d57c90cfab700b7dcbb4c99fb6455"
+      "sha256": "1a4135155a03890aaa4014d492009427f90bc751e5504cb60563550ec38a9d6b"
     },
     "robots.txt": {
       "bytes": 26,
