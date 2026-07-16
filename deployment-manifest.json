@@ -12,19 +12,19 @@
     },
     "404.html": {
       "bytes": 1246,
-      "sha256": "92dbe336a7bc6aa689a50b0dc84bf0ac00bca932f7fd920924b33e8f44cf3008"
+      "sha256": "ff6ac8417deb616e5eea1595b2e227fce79d347683c28bc17ebb2df3dbfab865"
     },
     "CNAME": {
       "bytes": 24,
       "sha256": "b2107cb6bb6ca8ce3af9638078e8642aa8377a0a2a81dd0688f6dd0f1a92625d"
     },
-    "assets/index-CKRaNYMm.css": {
-      "bytes": 43480,
-      "sha256": "f60f0d2347218a68fdc3078cc1368a4e607547639f1af238537d4981d4399b85"
+    "assets/index-4vj5hxOD.js": {
+      "bytes": 470051,
+      "sha256": "40ab59f7a11047c2443c1b1ef100b5bd00b3c88a091693304f2a24808ec81301"
     },
-    "assets/index-Ce0QK_Jp.js": {
-      "bytes": 462488,
-      "sha256": "192c2178e770b46dbf8e82d8832d548782d917a6f455e4ddd186223a7fae8233"
+    "assets/index-DFW7bv3h.css": {
+      "bytes": 44867,
+      "sha256": "0c9ff587997bf380cd0169b2ce88803b0bef221bdd8a628cbb96c822b9e5328c"
     },
     "favicon.svg": {
       "bytes": 397,
@@ -32,7 +32,7 @@
     },
     "index.html": {
       "bytes": 1246,
-      "sha256": "92dbe336a7bc6aa689a50b0dc84bf0ac00bca932f7fd920924b33e8f44cf3008"
+      "sha256": "ff6ac8417deb616e5eea1595b2e227fce79d347683c28bc17ebb2df3dbfab865"
     },
     "robots.txt": {
       "bytes": 26,
