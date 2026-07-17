@@ -1,6 +1,6 @@
 {
   "application": "Texas SCTP Knowledge Core Production Console",
-  "interfaceVersion": "0.3.0-dev.12",
+  "interfaceVersion": "0.3.0-dev.14",
   "targetHost": "knowledge.texassctp.com",
   "hostingProvider": "GitHub Pages",
   "sourceRepository": "TexasSCTP/texas-sctp-knowledge-core (private)",
@@ -12,15 +12,15 @@
     },
     "404.html": {
       "bytes": 1246,
-      "sha256": "8877fdbdb5e31819ab3891b4b0d899025c7982444a03269fe96365c3dcf25e1d"
+      "sha256": "70b15a68a8bf23d013e9375cc404aa051e87a3a9e4212db301d297d104071e9d"
     },
     "CNAME": {
       "bytes": 24,
       "sha256": "b2107cb6bb6ca8ce3af9638078e8642aa8377a0a2a81dd0688f6dd0f1a92625d"
     },
-    "assets/index-BNSOsFw4.js": {
-      "bytes": 504116,
-      "sha256": "9c3bf75db8eaa2a64906343dd12f0a5a6264c3a5e8867b4bce514d4484ed38cc"
+    "assets/index-BfgA690c.js": {
+      "bytes": 511562,
+      "sha256": "a460217cf026d1584f9a173f90508c9d36e0a97a5a994731a4500d0753a799c6"
     },
     "assets/index-bHgNiGKo.css": {
       "bytes": 50402,
@@ -32,7 +32,7 @@
     },
     "index.html": {
       "bytes": 1246,
-      "sha256": "8877fdbdb5e31819ab3891b4b0d899025c7982444a03269fe96365c3dcf25e1d"
+      "sha256": "70b15a68a8bf23d013e9375cc404aa051e87a3a9e4212db301d297d104071e9d"
     },
     "robots.txt": {
       "bytes": 26,
