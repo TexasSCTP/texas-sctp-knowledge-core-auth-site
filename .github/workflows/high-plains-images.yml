@@ -1,0 +1,34 @@
+name: Convert approved email graphics to PNG
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/high-plains-images.yml'
+      - 'public/panhandle/high-plains-2026/*.webp'
+permissions:
+  contents: write
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pillow
+      - name: Convert original approved artwork
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          folder = Path('public/panhandle/high-plains-2026')
+          for p in folder.glob('*.webp'):
+              with Image.open(p) as im:
+                  im.save(p.with_suffix('.png'), optimize=True)
+          PY
+      - name: Commit PNG versions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/panhandle/high-plains-2026/*.png
+          git diff --cached --quiet || (git commit -m "Add Outlook-compatible PNG artwork" && git push)
