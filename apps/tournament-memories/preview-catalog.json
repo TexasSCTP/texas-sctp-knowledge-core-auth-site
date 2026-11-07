@@ -1,0 +1,1149 @@
+{
+  "teams": [
+    {
+      "id": "demo-team-1",
+      "name": "ALEDO CLAY BUSTERS",
+      "shot_team_id": "2101"
+    },
+    {
+      "id": "demo-team-2",
+      "name": "Ag Leadership 4H Clay Target Team",
+      "shot_team_id": "4069"
+    },
+    {
+      "id": "demo-team-3",
+      "name": "Alamo Clay Crushers",
+      "shot_team_id": "2745"
+    },
+    {
+      "id": "demo-team-4",
+      "name": "Allen Eagles Competitive Shooting Team",
+      "shot_team_id": "562"
+    },
+    {
+      "id": "demo-team-5",
+      "name": "Angelo State University - Shotgun Sports",
+      "shot_team_id": "2585"
+    },
+    {
+      "id": "demo-team-6",
+      "name": "Argyle Eagles Competitive Shooting Team",
+      "shot_team_id": "1809"
+    },
+    {
+      "id": "demo-team-7",
+      "name": "Argyle Sporting Clays Team",
+      "shot_team_id": "3469"
+    },
+    {
+      "id": "demo-team-8",
+      "name": "Arp Clay Target Team",
+      "shot_team_id": "2418"
+    },
+    {
+      "id": "demo-team-9",
+      "name": "BL Clay Shooting",
+      "shot_team_id": "3658"
+    },
+    {
+      "id": "demo-team-10",
+      "name": "BROWN COUNTY CLAY CLUB",
+      "shot_team_id": "3145"
+    },
+    {
+      "id": "demo-team-11",
+      "name": "Baylor Trap and Skeet",
+      "shot_team_id": "3781"
+    },
+    {
+      "id": "demo-team-12",
+      "name": "Bexar Clay Breakers",
+      "shot_team_id": "2935"
+    },
+    {
+      "id": "demo-team-13",
+      "name": "Big Thicket Thumpers",
+      "shot_team_id": "3306"
+    },
+    {
+      "id": "demo-team-14",
+      "name": "Black Mask Shooters",
+      "shot_team_id": "3222"
+    },
+    {
+      "id": "demo-team-15",
+      "name": "Blackwood",
+      "shot_team_id": "2303"
+    },
+    {
+      "id": "demo-team-16",
+      "name": "Brahma Bullseyes",
+      "shot_team_id": "3737"
+    },
+    {
+      "id": "demo-team-17",
+      "name": "Brazos Busters",
+      "shot_team_id": "2636"
+    },
+    {
+      "id": "demo-team-18",
+      "name": "Brewer Target Team",
+      "shot_team_id": "2063"
+    },
+    {
+      "id": "demo-team-19",
+      "name": "Brook Hill",
+      "shot_team_id": "3864"
+    },
+    {
+      "id": "demo-team-20",
+      "name": "Brush Country Shooters",
+      "shot_team_id": "4032"
+    },
+    {
+      "id": "demo-team-21",
+      "name": "Bulverde Clay Crushers",
+      "shot_team_id": "4073"
+    },
+    {
+      "id": "demo-team-22",
+      "name": "Byron Nelson Clay Target Team",
+      "shot_team_id": "2469"
+    },
+    {
+      "id": "demo-team-23",
+      "name": "C.H.I.R.P",
+      "shot_team_id": "3903"
+    },
+    {
+      "id": "demo-team-24",
+      "name": "CROCKETT CLAY DAWGS",
+      "shot_team_id": "3125"
+    },
+    {
+      "id": "demo-team-25",
+      "name": "Canton FFA",
+      "shot_team_id": "4022"
+    },
+    {
+      "id": "demo-team-26",
+      "name": "Cardinal Claybusters",
+      "shot_team_id": "2921"
+    },
+    {
+      "id": "demo-team-27",
+      "name": "Cardinal Shooters",
+      "shot_team_id": "3820"
+    },
+    {
+      "id": "demo-team-28",
+      "name": "Central Texas Shooting Team-SCTP",
+      "shot_team_id": "3550"
+    },
+    {
+      "id": "demo-team-29",
+      "name": "Chapel Hill",
+      "shot_team_id": "3951"
+    },
+    {
+      "id": "demo-team-30",
+      "name": "Clay Bins",
+      "shot_team_id": "2416"
+    },
+    {
+      "id": "demo-team-31",
+      "name": "Clay Eating Lions",
+      "shot_team_id": "2717"
+    },
+    {
+      "id": "demo-team-32",
+      "name": "Comal 4-H Claybusters",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-33",
+      "name": "Comal Youth Shooting Sports",
+      "shot_team_id": "2346"
+    },
+    {
+      "id": "demo-team-34",
+      "name": "Concordia Lutheran FFA",
+      "shot_team_id": "2661"
+    },
+    {
+      "id": "demo-team-35",
+      "name": "Cooke County Clay Target Team",
+      "shot_team_id": "3695"
+    },
+    {
+      "id": "demo-team-36",
+      "name": "Coppell CST",
+      "shot_team_id": "1961"
+    },
+    {
+      "id": "demo-team-37",
+      "name": "Cornerstone Christian Academy",
+      "shot_team_id": "3730"
+    },
+    {
+      "id": "demo-team-38",
+      "name": "Cornerstone Christian Schools Shooting Sports",
+      "shot_team_id": "3546"
+    },
+    {
+      "id": "demo-team-39",
+      "name": "Corrigan - Camden FFA",
+      "shot_team_id": "3253"
+    },
+    {
+      "id": "demo-team-40",
+      "name": "Cowtown Clay Crushers",
+      "shot_team_id": "3289"
+    },
+    {
+      "id": "demo-team-41",
+      "name": "Coyote Clays",
+      "shot_team_id": "2628"
+    },
+    {
+      "id": "demo-team-42",
+      "name": "Crossroads Area Shooting Team",
+      "shot_team_id": "3260"
+    },
+    {
+      "id": "demo-team-43",
+      "name": "DGC Elite Shooting Team",
+      "shot_team_id": "4065"
+    },
+    {
+      "id": "demo-team-44",
+      "name": "Denton Clay Crushers",
+      "shot_team_id": "3834"
+    },
+    {
+      "id": "demo-team-45",
+      "name": "Denton County 4-H Shotgun team",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-46",
+      "name": "Desert Valley Elite",
+      "shot_team_id": "2433"
+    },
+    {
+      "id": "demo-team-47",
+      "name": "Drip",
+      "shot_team_id": "3915"
+    },
+    {
+      "id": "demo-team-48",
+      "name": "Dust Devils",
+      "shot_team_id": "3507"
+    },
+    {
+      "id": "demo-team-49",
+      "name": "Early Longshots",
+      "shot_team_id": "3191"
+    },
+    {
+      "id": "demo-team-50",
+      "name": "East Texas Clay Busters",
+      "shot_team_id": "3187"
+    },
+    {
+      "id": "demo-team-51",
+      "name": "East Texas Clay Crushers",
+      "shot_team_id": "2959"
+    },
+    {
+      "id": "demo-team-52",
+      "name": "East Texas Homeschool Sports Chargers",
+      "shot_team_id": "3326"
+    },
+    {
+      "id": "demo-team-53",
+      "name": "East Texas Sure Shots",
+      "shot_team_id": "2319"
+    },
+    {
+      "id": "demo-team-54",
+      "name": "East Texas Trap Shooters",
+      "shot_team_id": "730"
+    },
+    {
+      "id": "demo-team-55",
+      "name": "Ellis County Shooting Sports 4-H",
+      "shot_team_id": "1766"
+    },
+    {
+      "id": "demo-team-56",
+      "name": "Ellis County Shotgun Team",
+      "shot_team_id": "2676"
+    },
+    {
+      "id": "demo-team-57",
+      "name": "Elm Fork High School Team",
+      "shot_team_id": "3279"
+    },
+    {
+      "id": "demo-team-58",
+      "name": "Erath County Piece-Makers",
+      "shot_team_id": "2513"
+    },
+    {
+      "id": "demo-team-59",
+      "name": "Faith West Academy Shooting Team",
+      "shot_team_id": "3370"
+    },
+    {
+      "id": "demo-team-60",
+      "name": "Faith West Academy",
+      "shot_team_id": "2495"
+    },
+    {
+      "id": "demo-team-61",
+      "name": "Farmersville Adventure Shooting Team",
+      "shot_team_id": "2217"
+    },
+    {
+      "id": "demo-team-62",
+      "name": "Flower Mound Clay Target Team",
+      "shot_team_id": "3587"
+    },
+    {
+      "id": "demo-team-63",
+      "name": "Fort Worth Christian Clay Target Team",
+      "shot_team_id": "2611"
+    },
+    {
+      "id": "demo-team-64",
+      "name": "Fort Worth Claymores",
+      "shot_team_id": "1405"
+    },
+    {
+      "id": "demo-team-65",
+      "name": "Fort Worth Country Day School",
+      "shot_team_id": "2734"
+    },
+    {
+      "id": "demo-team-66",
+      "name": "Fossil Pointe Legends",
+      "shot_team_id": "1510"
+    },
+    {
+      "id": "demo-team-67",
+      "name": "Gillespie County",
+      "shot_team_id": "2878"
+    },
+    {
+      "id": "demo-team-68",
+      "name": "Gonzales Shooting Team",
+      "shot_team_id": "1943"
+    },
+    {
+      "id": "demo-team-69",
+      "name": "Grace Cougars Shotgun Team",
+      "shot_team_id": "801"
+    },
+    {
+      "id": "demo-team-70",
+      "name": "Grapevine Competitive Target Team",
+      "shot_team_id": "2467"
+    },
+    {
+      "id": "demo-team-71",
+      "name": "Grayson County 4-H",
+      "shot_team_id": "3837"
+    },
+    {
+      "id": "demo-team-72",
+      "name": "Gunter sporting clay team",
+      "shot_team_id": "3203"
+    },
+    {
+      "id": "demo-team-73",
+      "name": "Hallettsville",
+      "shot_team_id": "2028"
+    },
+    {
+      "id": "demo-team-74",
+      "name": "Hays 4-H Shooting Sports",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-75",
+      "name": "Hays County Shooting Team",
+      "shot_team_id": "3925"
+    },
+    {
+      "id": "demo-team-76",
+      "name": "Heart Of Texas Hot Shots",
+      "shot_team_id": "2914"
+    },
+    {
+      "id": "demo-team-77",
+      "name": "Helotes Area Clay Breakers",
+      "shot_team_id": "2724"
+    },
+    {
+      "id": "demo-team-78",
+      "name": "Highland Park Clay Target Team",
+      "shot_team_id": "1706"
+    },
+    {
+      "id": "demo-team-79",
+      "name": "Hill Country Clay Shooters",
+      "shot_team_id": "1554"
+    },
+    {
+      "id": "demo-team-80",
+      "name": "Hill County Clay Crushers",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-81",
+      "name": "Hooks FFA Trap Team",
+      "shot_team_id": "3282"
+    },
+    {
+      "id": "demo-team-82",
+      "name": "Huckabay FFA",
+      "shot_team_id": "3181"
+    },
+    {
+      "id": "demo-team-83",
+      "name": "Hyde Park Schools",
+      "shot_team_id": "3949"
+    },
+    {
+      "id": "demo-team-84",
+      "name": "Jasper 4-H Gun & Bow",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-85",
+      "name": "Jesuit Competitive Shooting Team",
+      "shot_team_id": "2222"
+    },
+    {
+      "id": "demo-team-86",
+      "name": "Johnson FFA",
+      "shot_team_id": "3144"
+    },
+    {
+      "id": "demo-team-87",
+      "name": "Joshua Shotgun Sports",
+      "shot_team_id": "3675"
+    },
+    {
+      "id": "demo-team-88",
+      "name": "KATY DUSTERS",
+      "shot_team_id": "1885"
+    },
+    {
+      "id": "demo-team-89",
+      "name": "Katy High School",
+      "shot_team_id": "2172"
+    },
+    {
+      "id": "demo-team-90",
+      "name": "Keller Clay Target Team",
+      "shot_team_id": "2270"
+    },
+    {
+      "id": "demo-team-91",
+      "name": "Knights Sporting Clays Club",
+      "shot_team_id": "3898"
+    },
+    {
+      "id": "demo-team-92",
+      "name": "Lake Travis High School",
+      "shot_team_id": "2487"
+    },
+    {
+      "id": "demo-team-93",
+      "name": "Legacy Christian Academy Sporting Clays Team",
+      "shot_team_id": "2148"
+    },
+    {
+      "id": "demo-team-94",
+      "name": "Lone Star Clay Crushers",
+      "shot_team_id": "4079"
+    },
+    {
+      "id": "demo-team-95",
+      "name": "Lone Star Shooters",
+      "shot_team_id": "2601"
+    },
+    {
+      "id": "demo-team-96",
+      "name": "Lone Wolf Shooting Team",
+      "shot_team_id": "910"
+    },
+    {
+      "id": "demo-team-97",
+      "name": "Magnolia West",
+      "shot_team_id": "2674"
+    },
+    {
+      "id": "demo-team-98",
+      "name": "Mansfield Trap Team",
+      "shot_team_id": "3688"
+    },
+    {
+      "id": "demo-team-99",
+      "name": "Marcus Clay Target Team",
+      "shot_team_id": "2067"
+    },
+    {
+      "id": "demo-team-100",
+      "name": "Melissa Cardinals Competition Clay Team",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-101",
+      "name": "Mercy Preparatory Academy (Mascot: Royals)",
+      "shot_team_id": "4019"
+    },
+    {
+      "id": "demo-team-102",
+      "name": "Montgomery 4H Shotgun Team",
+      "shot_team_id": "1439"
+    },
+    {
+      "id": "demo-team-103",
+      "name": "Muenster Clay target team",
+      "shot_team_id": "3492"
+    },
+    {
+      "id": "demo-team-104",
+      "name": "NTX BreakPoint",
+      "shot_team_id": "3860"
+    },
+    {
+      "id": "demo-team-105",
+      "name": "Needville FFA",
+      "shot_team_id": "3140"
+    },
+    {
+      "id": "demo-team-106",
+      "name": "New Diana FFA Trap Team",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-107",
+      "name": "Nocona Minutemen",
+      "shot_team_id": "1984"
+    },
+    {
+      "id": "demo-team-108",
+      "name": "Normangee FFA",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-109",
+      "name": "North Texas Clay Slayers",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-110",
+      "name": "North Texas Claybusters",
+      "shot_team_id": "3091"
+    },
+    {
+      "id": "demo-team-111",
+      "name": "Northlake Shooting Club",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-112",
+      "name": "Northwest Clay Target Team",
+      "shot_team_id": "1544"
+    },
+    {
+      "id": "demo-team-113",
+      "name": "On Target Shooters",
+      "shot_team_id": "2618"
+    },
+    {
+      "id": "demo-team-114",
+      "name": "Parker County Clay Crushers",
+      "shot_team_id": "4018"
+    },
+    {
+      "id": "demo-team-115",
+      "name": "Pilot Point Bearcats",
+      "shot_team_id": "3322"
+    },
+    {
+      "id": "demo-team-116",
+      "name": "Pleasant Grove Shotgun Club",
+      "shot_team_id": "2191"
+    },
+    {
+      "id": "demo-team-117",
+      "name": "Porter High School Shooting Sports",
+      "shot_team_id": "2632"
+    },
+    {
+      "id": "demo-team-118",
+      "name": "Poth Shooting Sports & Conservation Booster Club",
+      "shot_team_id": "3167"
+    },
+    {
+      "id": "demo-team-119",
+      "name": "Prosper Competitive Shooting Team",
+      "shot_team_id": "2748"
+    },
+    {
+      "id": "demo-team-120",
+      "name": "Radford School Trap/Skeet Team",
+      "shot_team_id": "3168"
+    },
+    {
+      "id": "demo-team-121",
+      "name": "Rains 4-H Shooting Sports",
+      "shot_team_id": "3992"
+    },
+    {
+      "id": "demo-team-122",
+      "name": "Red Oak High School Shotgun Team",
+      "shot_team_id": "1407"
+    },
+    {
+      "id": "demo-team-123",
+      "name": "Redwater ISD",
+      "shot_team_id": "3875"
+    },
+    {
+      "id": "demo-team-124",
+      "name": "Robinson FFA Shooting Team",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-125",
+      "name": "Rockwall Shooting Team",
+      "shot_team_id": "3669"
+    },
+    {
+      "id": "demo-team-126",
+      "name": "Rosehill Christian FFA",
+      "shot_team_id": "4067"
+    },
+    {
+      "id": "demo-team-127",
+      "name": "SBFFA Clay Crushers",
+      "shot_team_id": "2667"
+    },
+    {
+      "id": "demo-team-128",
+      "name": "SHSU Trap & Skeet",
+      "shot_team_id": "3584"
+    },
+    {
+      "id": "demo-team-129",
+      "name": "STX Competitive Shooting Team",
+      "shot_team_id": "3250"
+    },
+    {
+      "id": "demo-team-130",
+      "name": "SWTJC Shooting Sports",
+      "shot_team_id": "3457"
+    },
+    {
+      "id": "demo-team-131",
+      "name": "Schreiner University Shotgun Sports",
+      "shot_team_id": "2855"
+    },
+    {
+      "id": "demo-team-132",
+      "name": "Shelton School Shooting Squad",
+      "shot_team_id": "2536"
+    },
+    {
+      "id": "demo-team-133",
+      "name": "Silverton owls",
+      "shot_team_id": "4051"
+    },
+    {
+      "id": "demo-team-134",
+      "name": "South Texas Clay Busters",
+      "shot_team_id": "2869"
+    },
+    {
+      "id": "demo-team-135",
+      "name": "South Texas Clay Crushers",
+      "shot_team_id": "2637"
+    },
+    {
+      "id": "demo-team-136",
+      "name": "Southlake Carroll Target Team",
+      "shot_team_id": "1469"
+    },
+    {
+      "id": "demo-team-137",
+      "name": "Spartan Clay Target Team",
+      "shot_team_id": "1735"
+    },
+    {
+      "id": "demo-team-138",
+      "name": "Springtown Clay Dusters",
+      "shot_team_id": "3921"
+    },
+    {
+      "id": "demo-team-139",
+      "name": "St John Paul II",
+      "shot_team_id": "2506"
+    },
+    {
+      "id": "demo-team-140",
+      "name": "TAMUK Trap & Skeet Club",
+      "shot_team_id": "3755"
+    },
+    {
+      "id": "demo-team-141",
+      "name": "Tarleton State Shotgun Sports Club",
+      "shot_team_id": "3382"
+    },
+    {
+      "id": "demo-team-142",
+      "name": "Taylor Co. Clay Busters",
+      "shot_team_id": "3121"
+    },
+    {
+      "id": "demo-team-143",
+      "name": "Texas A&M Corpus Christi Trap & Skeet",
+      "shot_team_id": "1779"
+    },
+    {
+      "id": "demo-team-144",
+      "name": "Texas A&M Trap and Skeet",
+      "shot_team_id": "3411"
+    },
+    {
+      "id": "demo-team-145",
+      "name": "Texas A&M Victoria Trap & Skeet Shooting Club",
+      "shot_team_id": "3476"
+    },
+    {
+      "id": "demo-team-146",
+      "name": "Texas City FFA",
+      "shot_team_id": "2795"
+    },
+    {
+      "id": "demo-team-147",
+      "name": "Texas High School (Texarkana)",
+      "shot_team_id": "2510"
+    },
+    {
+      "id": "demo-team-148",
+      "name": "Texas Premier Shooting Team",
+      "shot_team_id": "2520"
+    },
+    {
+      "id": "demo-team-149",
+      "name": "Texas State Trap and Skeet",
+      "shot_team_id": "3642"
+    },
+    {
+      "id": "demo-team-150",
+      "name": "Texas Tech Trap & Skeet",
+      "shot_team_id": "3752"
+    },
+    {
+      "id": "demo-team-151",
+      "name": "Texas Trap and Skeet",
+      "shot_team_id": "2870"
+    },
+    {
+      "id": "demo-team-152",
+      "name": "Texas Wranglers 4-H",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-153",
+      "name": "Tom Green Shooting Team",
+      "shot_team_id": "3697"
+    },
+    {
+      "id": "demo-team-154",
+      "name": "Top of Texas Shooting Sports",
+      "shot_team_id": "4026"
+    },
+    {
+      "id": "demo-team-155",
+      "name": "Trinity Christian Academy",
+      "shot_team_id": "1773"
+    },
+    {
+      "id": "demo-team-156",
+      "name": "Trinity Trap & Skeet",
+      "shot_team_id": "3410"
+    },
+    {
+      "id": "demo-team-157",
+      "name": "Trinity University",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-158",
+      "name": "UT Austin ROTC Clay Stompers",
+      "shot_team_id": "3267"
+    },
+    {
+      "id": "demo-team-159",
+      "name": "UTRGV Club Shotgun Sports",
+      "shot_team_id": "3544"
+    },
+    {
+      "id": "demo-team-160",
+      "name": "University of the Incarnate Word",
+      "shot_team_id": "3464"
+    },
+    {
+      "id": "demo-team-161",
+      "name": "Van Alstyne High School",
+      "shot_team_id": "3481"
+    },
+    {
+      "id": "demo-team-162",
+      "name": "Victoria 4-H Shotgun Club",
+      "shot_team_id": null
+    },
+    {
+      "id": "demo-team-163",
+      "name": "Waxahachie Shotgun Team",
+      "shot_team_id": "2687"
+    },
+    {
+      "id": "demo-team-164",
+      "name": "Webb Shooting Sports Dusters",
+      "shot_team_id": "3653"
+    },
+    {
+      "id": "demo-team-165",
+      "name": "West Texas A&M University Trap and Skeet",
+      "shot_team_id": "3330"
+    },
+    {
+      "id": "demo-team-166",
+      "name": "West Texas A&M University",
+      "shot_team_id": "3931"
+    },
+    {
+      "id": "demo-team-167",
+      "name": "Whitney Wildcats",
+      "shot_team_id": "3674"
+    },
+    {
+      "id": "demo-team-168",
+      "name": "Wilco Clay Sports",
+      "shot_team_id": "3092"
+    },
+    {
+      "id": "demo-team-169",
+      "name": "Wise County Clay Target Team",
+      "shot_team_id": "2440"
+    },
+    {
+      "id": "demo-team-170",
+      "name": "XIT Clay Crushers",
+      "shot_team_id": "4029"
+    },
+    {
+      "id": "demo-team-171",
+      "name": "Young Guns",
+      "shot_team_id": "3529"
+    }
+  ],
+  "tournaments": [
+    {
+      "id": "demo-event-48",
+      "event_date": "2027-07-12",
+      "title": "SCTP NATIONAL CHAMPIONSHIPS",
+      "venue": ""
+    },
+    {
+      "id": "demo-event-47",
+      "event_date": "2027-06-10",
+      "title": "SCTP TEXAS STATE CHAMPIONSHIP",
+      "venue": "San Antonio"
+    },
+    {
+      "id": "demo-event-46",
+      "event_date": "2027-06-05",
+      "title": "SCTP International State Championship",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-45",
+      "event_date": "2027-05-22",
+      "title": "BUCKLE BRAWL 200",
+      "venue": "Defender Outdoors / Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-44",
+      "event_date": "2027-04-30",
+      "title": "SCTP REGIONAL CHAMPIONSHIP",
+      "venue": "Waco"
+    },
+    {
+      "id": "demo-event-43",
+      "event_date": "2027-04-24",
+      "title": "Northwest DFW League April Fool's Challenge",
+      "venue": "Mingus"
+    },
+    {
+      "id": "demo-event-42",
+      "event_date": "2027-04-17",
+      "title": "A/SA Pull & Powder 150",
+      "venue": "Austin"
+    },
+    {
+      "id": "demo-event-41",
+      "event_date": "2027-04-16",
+      "title": "SCTP DFW LEAGUE CHAMPIONSHIP",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-40",
+      "event_date": "2027-04-10",
+      "title": "TEXAS ALL-STARS HIGH SCHOOL SHOWCASE 300 - NSCA REGISTERED",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-38",
+      "event_date": "2027-04-03",
+      "title": "DFW South April Fools' Challenge",
+      "venue": "Defender Outdoors / Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-39",
+      "event_date": "2027-04-03",
+      "title": "Northeast DFW League April Fools' Challenge",
+      "venue": "Texas Gun Ranch"
+    },
+    {
+      "id": "demo-event-37",
+      "event_date": "2027-03-27",
+      "title": "Hare Trigger Easter Shoot",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-36",
+      "event_date": "2027-03-07",
+      "title": "Bluebonnet Blast 150",
+      "venue": "Houston"
+    },
+    {
+      "id": "demo-event-34",
+      "event_date": "2027-03-06",
+      "title": "Austin/San Antonio Spring Stampede Shoot",
+      "venue": "San Antonio"
+    },
+    {
+      "id": "demo-event-35",
+      "event_date": "2027-03-06",
+      "title": "North Texas March Madness 200",
+      "venue": "Fossil Pointe"
+    },
+    {
+      "id": "demo-event-33",
+      "event_date": "2027-02-27",
+      "title": "Panhandle Prairie Showdown 200",
+      "venue": "Amarillo Gun Club"
+    },
+    {
+      "id": "demo-event-29",
+      "event_date": "2027-02-20",
+      "title": "Austin/San Antonio Copperhead Crush 100 Shoot",
+      "venue": "Marble Falls"
+    },
+    {
+      "id": "demo-event-30",
+      "event_date": "2027-02-20",
+      "title": "DFW South League Winter Blast",
+      "venue": "Defender Outdoors / Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-31",
+      "event_date": "2027-02-20",
+      "title": "Northeast DFW League Winter Blast",
+      "venue": "Ellis County Sportsman's Club"
+    },
+    {
+      "id": "demo-event-32",
+      "event_date": "2027-02-20",
+      "title": "Northwest DFW League Winter Blast",
+      "venue": "Defender Outdoors / Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-28",
+      "event_date": "2027-02-15",
+      "title": "PRESIDENT'S DAY CUP 200 OPEN",
+      "venue": "Waco"
+    },
+    {
+      "id": "demo-event-27",
+      "event_date": "2027-02-13",
+      "title": "Ellis County Sport Skeet Classic 150",
+      "venue": "Waxahachie"
+    },
+    {
+      "id": "demo-event-26",
+      "event_date": "2027-02-06",
+      "title": "SCTP INTERNATIONAL SPRING OPEN",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-25",
+      "event_date": "2027-01-30",
+      "title": "ACUI/SCTP SCHOLARSHIP SHOOT",
+      "venue": "San Antonio"
+    },
+    {
+      "id": "demo-event-24",
+      "event_date": "2027-01-23",
+      "title": "SCTP LEAGUE COMPETITION",
+      "venue": "San Antonio"
+    },
+    {
+      "id": "demo-event-23",
+      "event_date": "2027-01-18",
+      "title": "MLK DAY SKEET DOUBLES OPEN",
+      "venue": "Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-22",
+      "event_date": "2027-01-17",
+      "title": "Houston League Frosty Clays",
+      "venue": "Houston"
+    },
+    {
+      "id": "demo-event-19",
+      "event_date": "2027-01-09",
+      "title": "DFW South League Winter Wonderland",
+      "venue": "Waxahachie"
+    },
+    {
+      "id": "demo-event-20",
+      "event_date": "2027-01-09",
+      "title": "Northeast DFW League Winter Wonderland",
+      "venue": "Texas Gun Ranch"
+    },
+    {
+      "id": "demo-event-21",
+      "event_date": "2027-01-09",
+      "title": "Northwest DFW League Winter Wonderland",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-18",
+      "event_date": "2026-12-19",
+      "title": "UGLY CHRISTMAS SWEATER 200 SHOOT - NSCA REGISTERED",
+      "venue": "Decatur"
+    },
+    {
+      "id": "demo-event-17",
+      "event_date": "2026-12-12",
+      "title": "High Plains Holiday Shootout 200",
+      "venue": "Amarillo Gun Club"
+    },
+    {
+      "id": "demo-event-16",
+      "event_date": "2026-12-06",
+      "title": "Houston League Winter Blast",
+      "venue": "Houston"
+    },
+    {
+      "id": "demo-event-13",
+      "event_date": "2026-12-05",
+      "title": "DFW South It's Beginning to Look a Lot Like Christmas!",
+      "venue": "Frankston"
+    },
+    {
+      "id": "demo-event-14",
+      "event_date": "2026-12-05",
+      "title": "Northeast DFW It's Beginning to Look a Lot Like Christmas!",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-15",
+      "event_date": "2026-12-05",
+      "title": "Northwest DFW It's Beginning to Look a Lot Like Christmas!",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-12",
+      "event_date": "2026-11-28",
+      "title": "Stuffed Turkey Shoot 200",
+      "venue": "Texas Gun Ranch"
+    },
+    {
+      "id": "demo-event-11",
+      "event_date": "2026-11-15",
+      "title": "Houston League Fall Kickoff",
+      "venue": "Houston"
+    },
+    {
+      "id": "demo-event-7",
+      "event_date": "2026-11-07",
+      "title": "Austin/San Antonio TRAP OPENER 100 Shoot",
+      "venue": "San Antonio"
+    },
+    {
+      "id": "demo-event-8",
+      "event_date": "2026-11-07",
+      "title": "DFW South Gobble Gobble Shoot",
+      "venue": "Waco"
+    },
+    {
+      "id": "demo-event-9",
+      "event_date": "2026-11-07",
+      "title": "Northeast DFW League Gobble Gobble Shoot",
+      "venue": "Defender Outdoors / Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-10",
+      "event_date": "2026-11-07",
+      "title": "Northwest DFW League Gobble Gobble Shoot",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-6",
+      "event_date": "2026-10-31",
+      "title": "BOO Bowl Shoot",
+      "venue": "Fort Worth Trap & Skeet"
+    },
+    {
+      "id": "demo-event-5",
+      "event_date": "2026-10-18",
+      "title": "Bayou Fall Classic 150",
+      "venue": "Houston"
+    },
+    {
+      "id": "demo-event-4",
+      "event_date": "2026-10-03",
+      "title": "BIG LEAGUE TRAP & SPORTING OPENER 200",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-3",
+      "event_date": "2026-09-26",
+      "title": "SCTP INTERNATIONAL FALL OPEN",
+      "venue": "Northlake"
+    },
+    {
+      "id": "demo-event-2",
+      "event_date": "2026-09-12",
+      "title": "EAST TX CHANGING OF THE LEAVES SHOOT",
+      "venue": "Frankston"
+    },
+    {
+      "id": "demo-event-1",
+      "event_date": "2026-09-07",
+      "title": "SCTP LABOR DAY TRAP OPEN 100",
+      "venue": "Northlake"
+    }
+  ]
+}
