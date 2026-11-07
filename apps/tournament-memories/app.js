@@ -8,6 +8,38 @@
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
   const PAGE_SIZE = 24;
+  // These seven illustrations are staging-only, not submitted tournament photographs.
+  const HERO_SCENES = Object.freeze([{"src":"./public/images/scene-01.webp","desktop":"center 0%","mobile":"41% 10%"},{"src":"./public/images/scene-02.webp","desktop":"center 1%","mobile":"42% 8%"},{"src":"./public/images/scene-03.webp","desktop":"center 0%","mobile":"35% 9%"},{"src":"./public/images/scene-04.webp","desktop":"center 2%","mobile":"44% 6%"},{"src":"./public/images/scene-05.webp","desktop":"center 0%","mobile":"33% 6%"},{"src":"./public/images/scene-06.webp","desktop":"center 2%","mobile":"36% 9%"},{"src":"./public/images/scene-07.webp","desktop":"center 0%","mobile":"28% 9%"}]);
+  function shuffleIndices(count) {
+    const indices = Array.from({length:count}, (_,i)=>i);
+    for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
+    return indices;
+  }
+  let heroSequence = shuffleIndices(HERO_SCENES.length);
+  let heroSequencePosition = 0;
+  let currentHero = heroSequence[0];
+  let heroPaused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let heroTimer = null;
+  function nextHeroScene() {
+    const slides=$$('.hero-slide');
+    if(slides.length!==HERO_SCENES.length)return;
+    const previous=currentHero;
+    heroSequencePosition += 1;
+    if(heroSequencePosition >= heroSequence.length){
+      heroSequence=shuffleIndices(HERO_SCENES.length);
+      if(heroSequence[0]===previous){const swapWith=heroSequence.length>1?1:0;[heroSequence[0],heroSequence[swapWith]]=[heroSequence[swapWith],heroSequence[0]];}
+      heroSequencePosition=0;
+    }
+    currentHero=heroSequence[heroSequencePosition];
+    slides[currentHero].classList.add('is-active');
+    slides[previous].classList.remove('is-active');
+  }
+  function ensureHeroTimer(){
+    if(heroTimer)return;
+    heroTimer=window.setInterval(()=>{
+      if(!heroPaused && !document.hidden)nextHeroScene();
+    },10000);
+  }
   const state = {
     client:null, ready:false, user:null, moderator:false, screen:'gallery',
     teams:[], tournaments:[], posts:[], photos:[], comments:[], reactions:[],
@@ -214,11 +246,11 @@
     if(!state.ready){el.innerHTML='<div class="boot-screen"><span class="boot-mark">TX</span><strong>Texas SCTP Memories</strong><span>Preparing the gallery...</span></div>';return;}
     el.innerHTML=`<div class="site-shell">${topBar()}${!connected()?`<div class="preview-banner">${icon('info')}<span><strong>Design preview.</strong> Explore the layout and upload form. Photos cannot be submitted until the gallery is connected.</span></div>`:''}${state.screen==='admin'&&state.moderator?renderAdmin():`<main>${hero()}${renderGallery()}</main>`}${footer()}</div>`;
     renderModal();
+    ensureHeroTimer();
   }
 
   function topBar(){return `<header class="topbar"><a class="brand" href="${attr(config.organizationUrl||'https://www.texassctp.com/')}" target="_blank" rel="noopener noreferrer" aria-label="Visit Texas SCTP"><span class="brand-seal"><span class="seal-fallback">TX</span>${config.brandLogoUrl?`<img src="${cleanUrl(config.brandLogoUrl)}" alt="Texas SCTP logo">`:''}</span><span class="brand-copy"><strong>TEXAS SCTP</strong><small>TOURNAMENT MEMORIES</small></span></a><div class="head-right"><span class="header-context">Photos & stories from across Texas</span>${state.moderator?`<button data-action="admin" class="staff-head" aria-label="Open moderation">${icon('shield','icon-sm')}</button>`:''}</div></header>`;}
-
-  function hero(){return `<section class="hero hero-photo" aria-label="Texas SCTP Tournament Memories"><div class="hero-inner"><div class="hero-text"><p class="hero-kicker"><span class="kicker-line"></span> TEXAS SCTP TOURNAMENT MEMORIES</p><h1>The moments <em>that stay with us.</em></h1><p class="hero-lede">Big wins. First tournaments. Teammates who become lifelong friends. A place for memories worth sharing.</p><button class="btn btn-primary hero-share" data-action="upload">${icon('camera')} Share Your Photos</button><div class="hero-assurance">${icon('check','icon-sm')} No account needed <span class="dot-sep">&bull;</span> Photos reviewed before posting</div></div></div><span class="hero-art-label">Illustrative image</span></section>`;}
+  function hero(){return `<section class="hero hero-photo" aria-label="Texas SCTP Tournament Memories"><div class="hero-slideshow" aria-hidden="true">${HERO_SCENES.map((scene,i)=>`<div class="hero-slide ${i===currentHero?'is-active':''}" style="background-image:url('${scene.src}');--desktop-focus:${scene.desktop};--mobile-focus:${scene.mobile}"></div>`).join('')}<div class="hero-slideshow-scrim"></div></div><div class="hero-inner"><div class="hero-text"><p class="hero-kicker"><span class="kicker-line"></span> TEXAS SCTP TOURNAMENT MEMORIES</p><h1>The moments <em>that stay with us.</em></h1><p class="hero-lede">Big wins. First tournaments. Teammates who become lifelong friends. A place for memories worth sharing.</p><button class="btn btn-primary hero-share" data-action="upload">${icon('camera')} Share Your Photos</button><div class="hero-assurance">${icon('check','icon-sm')} No account needed <span class="dot-sep">&bull;</span> Photos reviewed before posting</div></div></div><div class="hero-motion-controls"><button type="button" data-action="toggle-slideshow" aria-pressed="${heroPaused}" aria-label="${heroPaused?'Play background slideshow':'Pause background slideshow'}">${heroPaused?'Play motion':'Pause motion'}</button></div></section>`;}
     function renderGallery(){
     const all=shownPosts();const query=state.filter.query.toLowerCase().trim();
     let results=all.filter(p=>!state.filter.team||p.team_id===state.filter.team)
@@ -234,7 +266,18 @@
       ${state.hasMore&&connected()?`<div class="more-wrap"><button class="btn btn-outline" data-action="load-more" ${state.loading?'disabled':''}>${state.loading?'Loading...':'Load more memories'}</button></div>`:''}</div>
       <p class="gallery-trust">${icon('shield','icon-sm')} Shared with care. Photos and comments are reviewed before they appear. <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Tournament%20Memories%20photo%20removal">Request a photo removal</a>.</p></section>`;
   }
-  function previewMemory(){return `<div class="memory-list"><article class="memory-card demo-memory"><div class="demo-notice">${icon('info','icon-sm')} Design preview &mdash; example photo, not a Texas SCTP submission</div><div class="memory-head"><div class="memory-avatar">TX</div><div class="memory-byline"><strong>Your team's moment</strong><span>Choose a team &middot; Choose a tournament &middot; Share a memory</span></div></div><div class="demo-photo"><img alt="Example youth clay target shooting photograph from the US Fish and Wildlife Service" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Youth_trap_shooting_%285041319023%29.jpg/1024px-Youth_trap_shooting_%285041319023%29.jpg" loading="lazy"><div class="demo-photo-fallback"><span class="demo-target">${icon('camera','icon-lg')}</span><span>YOUR NEXT GREAT MEMORY<br>GOES HERE</span></div></div><div class="memory-body"><p class="memory-caption"><strong>This could be your team's story.</strong> A great day on the range, a first-place finish, or a moment with your favorite teammates.</p><div class="memory-gestures"><span>${icon('heart','icon-sm')} Appreciate</span><span>${icon('message','icon-sm')} Comment</span><span>${icon('share','icon-sm')} Share</span></div><div class="demo-credit">Sample photography: U.S. Fish and Wildlife Service (public domain). Example only, not a Texas SCTP tournament.</div></div></article><div class="starting-note"><span class="starting-note-mark">${icon('image')}</span><strong>Be part of the gallery.</strong><p>When the site is connected and photos are approved, real tournament memories will appear here.</p></div></div>`;}
+  function previewMemory(){
+    const sceneTitles=[
+      'Eyes on the target',
+      'Between stations',
+      'A moment of focus',
+      'Teamwork worth celebrating',
+      'On the shooting line',
+      'Learning from a coach',
+      'The memories we share'
+    ];
+    return `<div class="memory-list sample-photo-list">${HERO_SCENES.map((scene,i)=>`<article class="memory-card sample-photo-card"><div class="sample-photo-heading"><span class="sample-photo-mark">TX</span><span><strong>Texas SCTP</strong><small>On the range</small></span></div><div class="sample-photo-image"><img src="${scene.src}" alt="${sceneTitles[i]}" loading="lazy"></div><div class="sample-photo-caption">${sceneTitles[i]}</div></article>`).join('')}</div>`;
+  }
     function postCard(p){
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
     const comments=postComments(p.id),likes=postReactions(p.id),liked=state.guestLiked.has(p.id);
@@ -394,6 +437,13 @@
   }
   async function onAction(e){const target=e.target.closest('[data-action]');if(!target)return;
     const action=target.dataset.action,id=target.dataset.id;
+    if(action==='toggle-slideshow'){
+      heroPaused=!heroPaused;
+      target.setAttribute('aria-pressed',String(heroPaused));
+      target.setAttribute('aria-label',heroPaused?'Play background slideshow':'Pause background slideshow');
+      target.textContent=heroPaused?'Play motion':'Pause motion';
+      return;
+    }
     if(action==='backdrop'){if(e.target===target){if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
     if(action==='close-modal'){if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
     if(action==='scroll-gallery'){$('#memories-gallery')?.scrollIntoView({behavior:'smooth'});return;}
