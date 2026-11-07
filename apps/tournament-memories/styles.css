@@ -197,6 +197,7 @@ body{background:var(--paper);font-size:14px}
 /* Search icon is part of the flex row, not an overlay on the text. */
 .gallery-toolbar .searchbox .icon{position:static;left:auto;top:auto;transform:none;width:16px;height:16px;flex:0 0 16px}
 
+
 /* Photo-first tournament memories hero. The image is decorative and never part of the submitted photo feed. */
 .hero.hero-photo{
   position:relative; isolation:isolate; min-height:428px;
@@ -263,3 +264,35 @@ body{background:var(--paper);font-size:14px}
   .hero-photo .hero-assurance{gap:5px}
 }
 @media(prefers-reduced-motion:reduce){.hero-photo .hero-share{transition:none}}
+
+
+/* Seven-scene image carousel: fixed text, slow crossfade, restrained Ken Burns. */
+.hero-photo .hero-slideshow{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.hero-photo .hero-slide{position:absolute;inset:-1px;background-size:cover;background-repeat:no-repeat;background-position:var(--desktop-focus,center top);opacity:0;transform:scale(1.008);transition:opacity 2.2s ease-in-out;will-change:opacity}
+.hero-photo .hero-slide.is-active{opacity:1;animation:hero-scene-drift 13.8s ease-out both}
+@keyframes hero-scene-drift{from{transform:scale(1.008)}to{transform:scale(1.055)}}
+.hero-photo .hero-slideshow-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(6,24,43,.045) 0%,rgba(7,28,50,.14) 36%,rgba(7,28,50,.66) 53%,rgba(6,24,43,.97) 100%)}
+.hero-photo .hero-inner{position:relative;z-index:2}
+.hero-photo .hero-motion-controls{position:absolute;z-index:4;bottom:9px;left:16px;display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.9);font-size:10px;letter-spacing:.02em;text-shadow:0 1px 8px #00192f;background:rgba(5,24,42,.36);border:1px solid rgba(255,255,255,.12);padding:5px 9px;border-radius:20px;backdrop-filter:blur(4px)}
+.hero-photo .hero-motion-controls button{border:0;background:transparent;color:#ffd88c;cursor:pointer;font:inherit;font-weight:700;padding:2px 3px;white-space:nowrap}
+.hero-photo .hero-motion-controls button:hover,.hero-photo .hero-motion-controls button:focus-visible{text-decoration:underline;outline-offset:3px}
+.hero-photo .hero-art-label{display:none}
+@media(max-width:780px){
+ .hero-photo .hero-slide{background-position:var(--mobile-focus,35% top)}
+ .hero-photo .hero-slideshow-scrim{background:linear-gradient(180deg,rgba(7,25,45,.025) 0%,rgba(7,25,45,.025) 28%,rgba(7,25,45,.45) 49%,rgba(7,25,45,.93) 70%,rgba(7,25,45,.985) 100%)}
+ .hero-photo .hero-motion-controls{bottom:auto;top:10px;left:auto;right:10px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.hero-photo .hero-slide,.hero-photo .hero-slide.is-active{animation:none!important;transition:none!important;transform:none!important}}
+
+/* Minimal photo-first preview feed, with no fabricated event details or illustrative notice bands. */
+.sample-photo-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.sample-photo-card{overflow:hidden;border-radius:12px}
+.sample-photo-heading{display:flex;align-items:center;gap:10px;padding:13px 15px}
+.sample-photo-mark{background:#e9eff3;color:#12334f;border-radius:50%;display:grid;place-items:center;width:34px;height:34px;font-weight:900;font-size:10px}
+.sample-photo-heading strong{display:block;color:#112d47;font-size:12px;font-weight:800}
+.sample-photo-heading small{display:block;color:#788a98;font-size:11px;margin-top:2px}
+.sample-photo-image{width:100%;aspect-ratio:16/11;background:#e9eef0;overflow:hidden}
+.sample-photo-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 13%}
+.sample-photo-caption{font-size:13px;font-weight:700;padding:13px 15px;color:#20394f}
+.hero-photo .hero-motion-controls{gap:0}
+@media(max-width:620px){.sample-photo-list{grid-template-columns:1fr;gap:15px}.sample-photo-image{aspect-ratio:16/11}}
