@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'">
+  <title>Slideshow Studio | Texas SCTP Tournament Memories</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./hero-admin.css">
+  <script src="./hero-admin.js" defer></script>
+</head>
+<body>
+  <header class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <a class="wordmark" href="./index.html" aria-label="View Texas SCTP Tournament Memories"><span class="wordmark-badge">TX</span><span><strong>TEXAS SCTP</strong><small>TOURNAMENT MEMORIES</small></span></a>
+      <span class="topbar-tag"><span class="topbar-dot"></span> SLIDESHOW STUDIO</span>
+      <a class="topbar-link" href="./index.html" target="_blank" rel="noopener">View gallery <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main class="editor-main">
+    <div class="page-heading">
+      <div>
+        <div class="eyebrow"><span></span> MAIN PAGE HERO</div>
+        <h1>Put every photo <em>in its best light.</em></h1>
+        <p>Choose a scene, drag the photograph to frame it, and fine-tune desktop, mobile, and photo-card views separately.</p>
+      </div>
+      <div class="heading-actions">
+        <div class="state-label" id="save-status" role="status" aria-live="polite">Loading settings…</div>
+        <button type="button" class="button button-ghost" id="gallery-preview">Preview in gallery <span aria-hidden="true">↗</span></button>
+        <button type="button" class="button button-gold" id="publish-open">Publish settings</button>
+      </div>
+    </div>
+
+    <div class="editor-layout">
+      <aside class="scene-sidebar" aria-label="Slideshow photos">
+        <div class="section-label"><h2>Photo scenes</h2><span id="scene-count">7 scenes</span></div>
+        <div id="scene-list" class="scene-list"></div>
+        <p class="sidebar-hint">Select a photo to adjust it. Use the arrows to change slideshow order, or hide a photo without deleting it.</p>
+      </aside>
+
+      <section class="studio-center" aria-labelledby="preview-title">
+        <div class="studio-panel">
+          <div class="panel-toolbar">
+            <div><h2 id="preview-title">Live framing preview</h2><span id="selected-caption" class="selected-caption">Select a scene</span></div>
+            <div class="mode-group" role="group" aria-label="Preview size">
+              <button type="button" data-mode="desktop" aria-pressed="true" class="mode-button active">Desktop</button>
+              <button type="button" data-mode="mobile" aria-pressed="false" class="mode-button">Mobile</button>
+              <button type="button" data-mode="card" aria-pressed="false" class="mode-button">Photo card</button>
+            </div>
+          </div>
+          <div id="preview-wrap" class="preview-wrap" aria-label="Drag the photo to adjust its framing">
+            <div id="preview-stage" class="preview-stage desktop">
+              <div id="preview-photo" class="preview-photo"></div>
+              <div id="preview-gradient" class="preview-gradient"></div>
+              <div id="preview-copy" class="preview-copy">
+                <div class="preview-kicker">TEXAS SCTP TOURNAMENT MEMORIES</div>
+                <h3>The moments <em>that stay with us.</em></h3>
+                <p>Big wins. First tournaments. Teammates who become lifelong friends.<br>A place for memories worth sharing.</p>
+                <span class="preview-cta">▢ &nbsp;Share Your Photos</span>
+                <small>✓ &nbsp;No account needed&nbsp; · &nbsp; Photos reviewed before posting</small>
+              </div>
+              <div id="preview-card-caption" class="preview-card-caption" hidden>Texas SCTP · Tournament Memories</div>
+              <div class="drag-hint">Drag photo to reposition</div>
+            </div>
+          </div>
+          <div class="view-hint"><span id="view-label">Desktop hero • exact widescreen ratio</span><span id="frame-percent">Position 50% / 50% · 100%</span></div>
+          <div class="preview-actions">
+            <button type="button" id="play-toggle" class="button button-outline">▶ Preview movement</button>
+            <span class="action-caption">Photos change every 10 seconds. Framing is saved independently for each view.</span>
+          </div>
+        </div>
+
+        <div class="controls-panel">
+          <div class="controls-head"><div><h2>Fine-tune this photo</h2><p>Drag to move it or adjust the controls below.</p></div><button type="button" class="reset-button" id="reset-image">Reset this photo</button></div>
+          <div class="sliders">
+            <label for="pos-x"><span>Horizontal position</span><output id="out-x" for="pos-x">50%</output><input type="range" min="0" max="100" step="1" id="pos-x" value="50"></label>
+            <label for="pos-y"><span>Vertical position</span><output id="out-y" for="pos-y">50%</output><input type="range" min="0" max="100" step="1" id="pos-y" value="50"></label>
+            <label for="zoom"><span>Zoom</span><output id="out-zoom" for="zoom">100%</output><input type="range" min="100" max="145" step="1" id="zoom" value="100"></label>
+          </div>
+          <div class="control-footer"><button type="button" class="button button-small" id="center-image">Center image</button><p>Tip: Reposition for mobile separately. A great desktop crop may cut off faces on a phone.</p></div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="editor-footer"><span>Texas SCTP · Tournament Memories</span><div><button type="button" class="text-button" id="restore-published">Discard local changes</button><button type="button" class="text-button" id="download-json">Download settings backup</button></div></footer>
+  </main>
+
+  <dialog id="publish-dialog" aria-labelledby="publish-title">
+    <button type="button" class="dialog-x" id="publish-close" aria-label="Close">×</button>
+    <div class="eyebrow"><span></span> CONTROLLED PUBLISHING</div>
+    <h2 id="publish-title">Publish your photo placements</h2>
+    <p>To change the shared gallery, authorize a one-time update to the Texas SCTP staging repository. Your token is used for this request only and is never stored.</p>
+    <label class="token-label" for="github-token">GitHub fine-grained access token</label>
+    <input type="password" id="github-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token with repository Contents: Read & write">
+    <p class="dialog-info">Restricted to <strong>TexasSCTP/texas-sctp-knowledge-core-auth-site</strong>, staging branch only. The editor does not require a token for previews or local drafts.</p>
+    <p id="publish-result" role="status" aria-live="polite"></p>
+    <div class="dialog-actions"><button class="button button-outline" type="button" id="publish-cancel">Cancel</button><button class="button button-gold" type="button" id="publish-confirm">Commit placements</button></div>
+    <div class="deploy-notice">Render automatic deployment is currently disabled. After a successful commit, deploy the latest staging commit from <a href="https://dashboard.render.com/static/srv-dbnot895efls73bujcfg" target="_blank" rel="noopener">Render</a> for everyone to see the changes.</div>
+  </dialog>
+</body>
+</html>

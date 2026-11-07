@@ -1,0 +1,161 @@
+/* Texas SCTP Tournament Memories / Slideshow Studio
+   Only photo positioning data is editable. The publish operation requires a
+   repo-restricted GitHub token held in memory for one request. No credentials
+   are stored or embedded in this static site. */
+(() => {
+  'use strict';
+  const DRAFT_KEY='txsctp-slide-editor-v1';
+  const REPO='TexasSCTP/texas-sctp-knowledge-core-auth-site';
+  const BRANCH='staging/tournament-memories-preview';
+  const PATH='apps/tournament-memories/hero-config.json';
+  const GH_URL=`https://api.github.com/repos/${REPO}/contents/${PATH}`;
+  const SOURCE=/^\.\/public\/images\/scene-0[1-7]\.webp$/;
+  const DEFAULTS={};
+  const $=id=>document.getElementById(id);
+  let config=null,published=null,selectedId='scene-07',mode='desktop',playing=false,timer=null,drag=null;
+  const naturalSizes=new Map();
+  const viewSpecs={desktop:{width:1680,height:430,name:'Desktop hero · exact widescreen ratio'},mobile:{width:390,height:548,name:'Phone hero · full mobile view'},card:{width:520,height:390,name:'Photo card · 4:3 crop'}};
+  function clone(v){return JSON.parse(JSON.stringify(v));}
+  function minmax(v,lo,hi){return Math.min(hi,Math.max(lo,Number(v)||0));}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function getSlide(){return config?.slides?.find(s=>s.id===selectedId)||config?.slides?.[0];}
+  function getView(){return getSlide()?.[mode];}
+  function setStatus(message,tone='normal'){$('save-status').textContent=message;$('save-status').style.color=tone==='error'?'#ac4034':tone==='good'?'#527866':'#7b8792';}
+  function normalizePosition(raw,fallback){return {x:minmax(raw?.x??fallback.x,0,100),y:minmax(raw?.y??fallback.y,0,100),zoom:minmax(raw?.zoom??fallback.zoom,1,1.45)};}
+  function normalize(raw,defaults){
+    const allowed=new Map(defaults.slides.map(s=>[s.id,s]));const seen=new Set();const slides=[];
+    for(const value of Array.isArray(raw?.slides)?raw.slides:[]){const orig=allowed.get(value?.id);
+      if(!orig||seen.has(orig.id)||value.src!==orig.src||!SOURCE.test(value.src))continue;
+      seen.add(orig.id);
+      slides.push({id:orig.id,src:orig.src,label:orig.label,enabled:value.enabled!==false,
+        desktop:normalizePosition(value.desktop,orig.desktop),mobile:normalizePosition(value.mobile,orig.mobile),card:normalizePosition(value.card,orig.card)});
+    }
+    for(const v of defaults.slides)if(!seen.has(v.id))slides.push(clone(v));
+    return {version:1,intervalSeconds:10,slides};
+  }
+  function saveDraft(){if(!config)return;try{localStorage.setItem(DRAFT_KEY,JSON.stringify(config));setStatus('Saved on this device · not published');}catch{setStatus('Changes unsaved. Storage blocked.','error');}}
+  function markChanged(){saveDraft();updateCanvas();updateSliders();}
+  function preload(){for(const s of config.slides){const img=new Image();img.onload=()=>naturalSizes.set(s.src,{width:img.naturalWidth,height:img.naturalHeight});img.src=s.src;}}
+  async function init(){
+    try{const r=await fetch('./hero-config.json',{cache:'no-cache'});if(!r.ok)throw Error('Cannot load the published slideshow settings.');
+      const v=await r.json();published=normalize(v,v);const saved=(()=>{try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch{return null;}})();
+      config=saved?normalize(saved,published):clone(published);
+      for(const s of published.slides)DEFAULTS[s.id]=clone(s);
+      preload();renderList();selectSlide(selectedId);sizeStage();
+      setStatus(saved?'Saved on this device · not published':'Showing published settings','good');
+    }catch(e){setStatus(e.message,'error');document.querySelector('.studio-panel').insertAdjacentHTML('afterbegin',`<p style="color:#a73e35">${esc(e.message)}</p>`);}
+  }
+  function selectSlide(id){
+    const found=config?.slides.find(s=>s.id===id);if(!found)return;
+    selectedId=id;renderList();$('selected-caption').textContent=found.label;
+    updateSliders();updateCanvas();
+  }
+  function renderList(){
+    if(!config)return;
+    $('scene-count').textContent=`${config.slides.filter(s=>s.enabled).length} active / ${config.slides.length} total`;
+    const box=$('scene-list');box.replaceChildren();
+    config.slides.forEach((s,i)=>{
+      const row=document.createElement('div');row.className='scene-entry'+(s.id===selectedId?' selected':'')+(!s.enabled?' off':'');
+      const img=document.createElement('img');img.src=s.src;img.alt='';img.loading='lazy';img.style.objectPosition=`${s.card.x}% ${s.card.y}%`;
+      const content=document.createElement('div');
+      const name=document.createElement('button');name.type='button';name.className='scene-name';name.textContent=`${i+1}. ${s.label}`;name.addEventListener('click',()=>{stopPlayback();selectSlide(s.id)});
+      const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.id.replace('scene-','Scene ')+' · '+(s.enabled?'Included':'Hidden');
+      const visible=document.createElement('button');visible.className='scene-visibility';visible.type='button';visible.setAttribute('aria-pressed',String(s.enabled));visible.textContent=s.enabled?'Included in slideshow':'Hidden from slideshow';
+      visible.addEventListener('click',()=>{if(s.enabled&&config.slides.filter(x=>x.enabled).length===1){setStatus('At least one photo must remain in the slideshow.','error');return;}s.enabled=!s.enabled;saveDraft();renderList();});
+      content.append(name,order,visible);
+      const actions=document.createElement('div');actions.className='scene-actions';
+      const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move earlier';up.setAttribute('aria-label',`Move ${s.label} earlier`);up.disabled=i===0;
+      up.addEventListener('click',()=>{const tmp=config.slides[i-1];config.slides[i-1]=config.slides[i];config.slides[i]=tmp;saveDraft();renderList();});
+      const down=document.createElement('button');down.type='button';down.textContent='↓';down.title='Move later';down.setAttribute('aria-label',`Move ${s.label} later`);down.disabled=i===config.slides.length-1;
+      down.addEventListener('click',()=>{const tmp=config.slides[i+1];config.slides[i+1]=config.slides[i];config.slides[i]=tmp;saveDraft();renderList();});
+      actions.append(up,down);row.append(img,content,actions);box.append(row);
+    });
+  }
+  function sizeStage(){
+    const wrap=$('preview-wrap'),stage=$('preview-stage'),spec=viewSpecs[mode];
+    const maxW=Math.min(wrap.parentElement.clientWidth-2,960);const factor=Math.min(1,maxW/spec.width);
+    wrap.style.width=`${spec.width*factor}px`;wrap.style.height=`${spec.height*factor}px`;
+    stage.style.width=spec.width+'px';stage.style.height=spec.height+'px';stage.style.transform=`scale(${factor})`;
+    $('view-label').textContent=spec.name;
+  }
+  function updateCanvas(){
+    if(!config)return;const s=getSlide(),v=s[mode],stage=$('preview-stage'),photo=$('preview-photo');
+    stage.className='preview-stage '+mode+(drag?' dragging':'');
+    photo.style.backgroundImage=`url("${s.src}")`;
+    photo.style.backgroundPosition=`${v.x}% ${v.y}%`;
+    photo.style.transform=`scale(${v.zoom})`;
+    $('preview-gradient').hidden=mode==='card';$('preview-copy').hidden=mode==='card';
+    $('preview-card-caption').hidden=mode!=='card';
+    $('frame-percent').textContent=`Position ${Math.round(v.x)}% / ${Math.round(v.y)}% · ${Math.round(v.zoom*100)}%`;
+    sizeStage();
+  }
+  function updateSliders(){
+    if(!config)return;const v=getView();
+    $('pos-x').value=Math.round(v.x);$('pos-y').value=Math.round(v.y);$('zoom').value=Math.round(v.zoom*100);
+    $('out-x').textContent=Math.round(v.x)+'%';$('out-y').textContent=Math.round(v.y)+'%';$('out-zoom').textContent=Math.round(v.zoom*100)+'%';
+  }
+  function changeMode(next){if(!viewSpecs[next])return;mode=next;document.querySelectorAll('[data-mode]').forEach(b=>{const a=b.dataset.mode===mode;b.classList.toggle('active',a);b.setAttribute('aria-pressed',String(a));});updateSliders();updateCanvas();}
+  function beginDrag(e){if(!config||e.button!==0)return;stopPlayback();e.preventDefault();$('preview-stage').setPointerCapture(e.pointerId);
+    const s=getSlide(),v=s[mode],spec=viewSpecs[mode];
+    const image=naturalSizes.get(s.src)||{width:1648,height:1024};
+    const scale=Math.max(spec.width/image.width,spec.height/image.height);
+    const scaledW=image.width*scale*v.zoom,scaledH=image.height*scale*v.zoom;
+    const rect=$('preview-stage').getBoundingClientRect();
+    drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,baseX:v.x,baseY:v.y,
+      rangeX:Math.max(1,(scaledW-spec.width)*(rect.width/spec.width)),
+      rangeY:Math.max(1,(scaledH-spec.height)*(rect.height/spec.height))};
+    $('preview-stage').classList.add('dragging');
+  }
+  function moveDrag(e){if(!drag||e.pointerId!==drag.id)return;
+    const v=getView();const dx=e.clientX-drag.startX,dy=e.clientY-drag.startY;
+    if(drag.rangeX>4)v.x=Math.round(minmax(drag.baseX-dx/drag.rangeX*100,0,100));
+    if(drag.rangeY>4)v.y=Math.round(minmax(drag.baseY-dy/drag.rangeY*100,0,100));
+    updateCanvas();updateSliders();
+  }
+  function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null;$('preview-stage').classList.remove('dragging');saveDraft();}
+  function stopPlayback(){if(timer)clearInterval(timer);timer=null;playing=false;$('play-toggle').textContent='▶ Preview movement';}
+  function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>s.enabled);if(!list.length)return;playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
+  function resetSelected(){const s=getSlide(),def=DEFAULTS[s.id];if(!def)return;s[mode]=clone(def[mode]);markChanged();}
+  function restorePublished(){if(!published)return;if(!confirm('Discard all local adjustments and restore the published placements?'))return;config=clone(published);localStorage.removeItem(DRAFT_KEY);stopPlayback();renderList();selectSlide(selectedId);setStatus('Showing published settings','good');}
+  function downloadConfig(){if(!config)return;const file=new Blob([JSON.stringify(config,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+  function showPublishModal(){saveDraft();const dlg=$('publish-dialog');$('publish-result').textContent='';$('publish-result').className='';$('github-token').value='';dlg.showModal();}
+  function b64(str){return btoa(unescape(encodeURIComponent(str)));}
+  async function publish(){
+    const token=$('github-token').value.trim(),button=$('publish-confirm'),status=$('publish-result');
+    if(!token){status.textContent='Enter a GitHub token with Contents: Read and write for this repository.';status.className='error';return;}
+    button.disabled=true;button.textContent='Committing…';status.textContent='Authorizing repository access…';status.className='';
+    const headers={Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};
+    try{
+      const get=await fetch(`${GH_URL}?ref=${encodeURIComponent(BRANCH)}`,{headers,cache:'no-store'});
+      if(!get.ok){let detail='';try{detail=(await get.json()).message||''}catch{}throw Error(`GitHub access failed (${get.status}). ${detail}`);}
+      const file=await get.json();if(!file.sha)throw Error('Could not verify the GitHub staging file.');
+      const put=await fetch(GH_URL,{method:'PUT',headers,body:JSON.stringify({message:'Update Texas SCTP slideshow focal points from photo editor',content:b64(JSON.stringify(config,null,2)+'\n'),sha:file.sha,branch:BRANCH})});
+      if(!put.ok){let detail='';try{detail=(await put.json()).message||''}catch{}throw Error(`GitHub rejected the update (${put.status}). ${detail}`);}
+      const result=await put.json();published=clone(config);try{localStorage.removeItem(DRAFT_KEY)}catch{}
+      setStatus('Saved to GitHub · Render deployment needed','good');
+      status.textContent=`Saved to staging commit ${(result.commit?.sha||'').slice(0,8)}. Deploy the latest staging commit from Render to make it visible to all visitors.`;
+      status.className='';
+    }catch(e){status.textContent=e.message||String(e);status.className='error';setStatus('Publish unsuccessful. Local draft preserved.','error');}
+    finally{$('github-token').value='';button.disabled=false;button.textContent='Commit placements';}
+  }
+  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{stopPlayback();changeMode(b.dataset.mode)}));
+  for(const key of ['pos-x','pos-y','zoom'])$(key).addEventListener('input',e=>{
+    if(!config)return;stopPlayback();const v=getView();if(key==='pos-x')v.x=Number(e.target.value);else if(key==='pos-y')v.y=Number(e.target.value);else v.zoom=Number(e.target.value)/100;markChanged();
+  });
+  $('preview-stage').addEventListener('pointerdown',beginDrag);
+  $('preview-stage').addEventListener('pointermove',moveDrag);
+  $('preview-stage').addEventListener('pointerup',endDrag);
+  $('preview-stage').addEventListener('pointercancel',endDrag);
+  $('reset-image').addEventListener('click',resetSelected);
+  $('center-image').addEventListener('click',()=>{const v=getView();v.x=50;v.y=50;markChanged();});
+  $('play-toggle').addEventListener('click',playToggle);
+  $('gallery-preview').addEventListener('click',()=>{saveDraft();window.open('./index.html?heroPreview=1','_blank','noopener,noreferrer')});
+  $('restore-published').addEventListener('click',restorePublished);
+  $('download-json').addEventListener('click',downloadConfig);
+  $('publish-open').addEventListener('click',showPublishModal);
+  $('publish-cancel').addEventListener('click',()=>$('publish-dialog').close());
+  $('publish-close').addEventListener('click',()=>$('publish-dialog').close());
+  $('publish-confirm').addEventListener('click',publish);
+  window.addEventListener('resize',()=>{if(config)sizeStage()});
+  init();
+})();

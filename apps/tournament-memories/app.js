@@ -8,8 +8,54 @@
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
   const PAGE_SIZE = 24;
-  // These seven illustrations are staging-only, not submitted tournament photographs.
-  const HERO_SCENES = Object.freeze([{"src":"./public/images/scene-01.webp","desktop":"center 0%","mobile":"41% 10%"},{"src":"./public/images/scene-02.webp","desktop":"center 1%","mobile":"42% 8%"},{"src":"./public/images/scene-03.webp","desktop":"center 0%","mobile":"35% 9%"},{"src":"./public/images/scene-04.webp","desktop":"center 2%","mobile":"44% 6%"},{"src":"./public/images/scene-05.webp","desktop":"center 0%","mobile":"33% 6%"},{"src":"./public/images/scene-06.webp","desktop":"center 2%","mobile":"36% 9%"},{"src":"./public/images/scene-07.webp","desktop":"center 0%","mobile":"28% 9%"}]);
+  // Slide framing is published through hero-config.json, not hard-coded into the page.
+  const HERO_DRAFT_KEY = 'txsctp-slide-editor-v1';
+  const ALLOWED_SCENES = /^\.\/public\/images\/scene-0[1-7]\.webp$/;
+  const FALLBACK_SCENES = Object.freeze([
+    {id:'scene-01',src:'./public/images/scene-01.webp',label:'Eyes on the target',enabled:true,desktop:{x:36,y:24,zoom:1},mobile:{x:38,y:18,zoom:1},card:{x:38,y:26,zoom:1}},
+    {id:'scene-02',src:'./public/images/scene-02.webp',label:'Between stations',enabled:true,desktop:{x:30,y:18,zoom:1},mobile:{x:34,y:14,zoom:1},card:{x:32,y:18,zoom:1}},
+    {id:'scene-03',src:'./public/images/scene-03.webp',label:'A moment of focus',enabled:true,desktop:{x:32,y:22,zoom:1},mobile:{x:30,y:16,zoom:1},card:{x:33,y:24,zoom:1}},
+    {id:'scene-04',src:'./public/images/scene-04.webp',label:'Teamwork worth celebrating',enabled:true,desktop:{x:41,y:8,zoom:1},mobile:{x:44,y:12,zoom:1},card:{x:42,y:20,zoom:1}},
+    {id:'scene-05',src:'./public/images/scene-05.webp',label:'On the shooting line',enabled:true,desktop:{x:34,y:12,zoom:1},mobile:{x:30,y:18,zoom:1},card:{x:35,y:24,zoom:1}},
+    {id:'scene-06',src:'./public/images/scene-06.webp',label:'Learning from a coach',enabled:true,desktop:{x:43,y:20,zoom:1},mobile:{x:39,y:16,zoom:1},card:{x:44,y:22,zoom:1}},
+    {id:'scene-07',src:'./public/images/scene-07.webp',label:'The memories we share',enabled:true,desktop:{x:31,y:11,zoom:1},mobile:{x:25,y:14,zoom:1},card:{x:30,y:22,zoom:1}}
+  ]);
+  let ALL_SCENES = FALLBACK_SCENES.map(s=>({...s}));
+  let HERO_SCENES = ALL_SCENES;
+  let heroIntervalMs = 10000;
+  function clampCrop(v,fallback=50){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):fallback;}
+  function cropMode(mode,defaultMode){return {
+    x:clampCrop(mode?.x,defaultMode.x), y:clampCrop(mode?.y,defaultMode.y),
+    zoom:Math.max(1,Math.min(1.45,Number(mode?.zoom)||1))
+  };}
+  function applyHeroConfig(data){
+    const allowed=new Map(FALLBACK_SCENES.map(s=>[s.id,s]));
+    const seen=new Set();const mapped=[];
+    for(const raw of Array.isArray(data?.slides)?data.slides:[]){
+      const def=allowed.get(raw?.id);
+      if(!def||seen.has(raw.id)||raw.src!==def.src||!ALLOWED_SCENES.test(raw.src))continue;
+      seen.add(raw.id);
+      mapped.push({...def,enabled:raw.enabled!==false,
+        desktop:cropMode(raw.desktop,def.desktop),mobile:cropMode(raw.mobile,def.mobile),card:cropMode(raw.card,def.card)});
+    }
+    for(const def of FALLBACK_SCENES)if(!seen.has(def.id))mapped.push({...def});
+    ALL_SCENES=mapped;
+    HERO_SCENES=mapped.filter(s=>s.enabled);
+    if(!HERO_SCENES.length)HERO_SCENES=mapped;
+    heroIntervalMs=Math.max(6000,Math.min(30000,Number(data?.intervalSeconds||10)*1000));
+    heroSequence=shuffleIndices(HERO_SCENES.length);heroSequencePosition=0;currentHero=heroSequence[0];
+    if(heroTimer){clearInterval(heroTimer);heroTimer=null;}
+  }
+  async function loadHeroConfig(){
+    try{
+      let cfg=null;
+      if(new URLSearchParams(window.location.search).get('heroPreview')==='1'){
+        try{cfg=JSON.parse(localStorage.getItem(HERO_DRAFT_KEY)||'null');}catch{}
+      }
+      if(!cfg){const resp=await fetch('./hero-config.json',{cache:'no-cache'});if(resp.ok)cfg=await resp.json();}
+      if(cfg)applyHeroConfig(cfg);
+    }catch(err){console.warn('Published slideshow framing unavailable; using default positions.',err);}
+  }
   function shuffleIndices(count) {
     const indices = Array.from({length:count}, (_,i)=>i);
     for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
@@ -38,7 +84,7 @@
     if(heroTimer)return;
     heroTimer=window.setInterval(()=>{
       if(!heroPaused && !document.hidden)nextHeroScene();
-    },10000);
+    },heroIntervalMs);
   }
   const state = {
     client:null, ready:false, user:null, moderator:false, screen:'gallery',
@@ -151,6 +197,7 @@
 
 
   async function connect(){
+    await loadHeroConfig();
     if(!config.supabaseUrl || !config.supabasePublishableKey){await loadPreviewCatalog();state.ready=true;render();return;}
     try{
       // Version pinned deliberately. The browser receives only the publishable key.
@@ -244,13 +291,13 @@
   }
   function render(){
     if(!state.ready){el.innerHTML='<div class="boot-screen"><span class="boot-mark">TX</span><strong>Texas SCTP Memories</strong><span>Preparing the gallery...</span></div>';return;}
-    el.innerHTML=`<div class="site-shell">${topBar()}${!connected()?`<div class="preview-banner">${icon('info')}<span><strong>Design preview.</strong> Explore the layout and upload form. Photos cannot be submitted until the gallery is connected.</span></div>`:''}${state.screen==='admin'&&state.moderator?renderAdmin():`<main>${hero()}${renderGallery()}</main>`}${footer()}</div>`;
+    el.innerHTML=`<div class="site-shell">${topBar()}${state.screen==='admin'&&state.moderator?renderAdmin():`<main>${hero()}${renderGallery()}</main>`}${footer()}</div>`;
     renderModal();
     ensureHeroTimer();
   }
 
   function topBar(){return `<header class="topbar"><a class="brand" href="${attr(config.organizationUrl||'https://www.texassctp.com/')}" target="_blank" rel="noopener noreferrer" aria-label="Visit Texas SCTP"><span class="brand-seal"><span class="seal-fallback">TX</span>${config.brandLogoUrl?`<img src="${cleanUrl(config.brandLogoUrl)}" alt="Texas SCTP logo">`:''}</span><span class="brand-copy"><strong>TEXAS SCTP</strong><small>TOURNAMENT MEMORIES</small></span></a><div class="head-right"><span class="header-context">Photos & stories from across Texas</span>${state.moderator?`<button data-action="admin" class="staff-head" aria-label="Open moderation">${icon('shield','icon-sm')}</button>`:''}</div></header>`;}
-  function hero(){return `<section class="hero hero-photo" aria-label="Texas SCTP Tournament Memories"><div class="hero-slideshow" aria-hidden="true">${HERO_SCENES.map((scene,i)=>`<div class="hero-slide ${i===currentHero?'is-active':''}" style="background-image:url('${scene.src}');--desktop-focus:${scene.desktop};--mobile-focus:${scene.mobile}"></div>`).join('')}<div class="hero-slideshow-scrim"></div></div><div class="hero-inner"><div class="hero-text"><p class="hero-kicker"><span class="kicker-line"></span> TEXAS SCTP TOURNAMENT MEMORIES</p><h1>The moments <em>that stay with us.</em></h1><p class="hero-lede">Big wins. First tournaments. Teammates who become lifelong friends. A place for memories worth sharing.</p><button class="btn btn-primary hero-share" data-action="upload">${icon('camera')} Share Your Photos</button><div class="hero-assurance">${icon('check','icon-sm')} No account needed <span class="dot-sep">&bull;</span> Photos reviewed before posting</div></div></div><div class="hero-motion-controls"><button type="button" data-action="toggle-slideshow" aria-pressed="${heroPaused}" aria-label="${heroPaused?'Play background slideshow':'Pause background slideshow'}">${heroPaused?'Play motion':'Pause motion'}</button></div></section>`;}
+  function hero(){return `<section class="hero hero-photo" aria-label="Texas SCTP Tournament Memories"><div class="hero-slideshow" aria-hidden="true">${HERO_SCENES.map((scene,i)=>`<div class="hero-slide ${i===currentHero?'is-active':''}" style="background-image:url('${scene.src}');--desktop-focus:${scene.desktop.x}% ${scene.desktop.y}%;--mobile-focus:${scene.mobile.x}% ${scene.mobile.y}%;--zoom-desktop:${scene.desktop.zoom};--zoom-mobile:${scene.mobile.zoom}"></div>`).join('')}<div class="hero-slideshow-scrim"></div></div><div class="hero-inner"><div class="hero-text"><p class="hero-kicker"><span class="kicker-line"></span> TEXAS SCTP TOURNAMENT MEMORIES</p><h1>The moments <em>that stay with us.</em></h1><p class="hero-lede">Big wins. First tournaments. Teammates who become lifelong friends. A place for memories worth sharing.</p><button class="btn btn-primary hero-share" data-action="upload">${icon('camera')} Share Your Photos</button><div class="hero-assurance">${icon('check','icon-sm')} No account needed <span class="dot-sep">&bull;</span> Photos reviewed before posting</div></div></div></section>`;}
     function renderGallery(){
     const all=shownPosts();const query=state.filter.query.toLowerCase().trim();
     let results=all.filter(p=>!state.filter.team||p.team_id===state.filter.team)
@@ -276,7 +323,7 @@
       'Learning from a coach',
       'The memories we share'
     ];
-    return `<div class="memory-list sample-photo-list">${HERO_SCENES.map((scene,i)=>`<article class="memory-card sample-photo-card"><div class="sample-photo-heading"><span class="sample-photo-mark">TX</span><span><strong>Texas SCTP</strong><small>On the range</small></span></div><div class="sample-photo-image"><img src="${scene.src}" alt="${sceneTitles[i]}" loading="lazy"></div><div class="sample-photo-caption">${sceneTitles[i]}</div></article>`).join('')}</div>`;
+    return `<div class="memory-list sample-photo-list">${ALL_SCENES.map((scene,i)=>`<article class="memory-card sample-photo-card"><div class="sample-photo-heading"><span class="sample-photo-mark">TX</span><span><strong>Texas SCTP</strong><small>On the range</small></span></div><div class="sample-photo-image"><img src="${scene.src}" alt="${scene.label||sceneTitles[i]||'Texas SCTP on the range'}" loading="lazy" style="object-position:${scene.card.x}% ${scene.card.y}%;transform:scale(${scene.card.zoom})"></div><div class="sample-photo-caption">${scene.label||sceneTitles[i]}</div></article>`).join('')}</div>`;
   }
     function postCard(p){
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
