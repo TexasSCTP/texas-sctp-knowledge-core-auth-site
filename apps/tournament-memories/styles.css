@@ -196,3 +196,70 @@ body{background:var(--paper);font-size:14px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 /* Search icon is part of the flex row, not an overlay on the text. */
 .gallery-toolbar .searchbox .icon{position:static;left:auto;top:auto;transform:none;width:16px;height:16px;flex:0 0 16px}
+
+/* Photo-first tournament memories hero. The image is decorative and never part of the submitted photo feed. */
+.hero.hero-photo{
+  position:relative; isolation:isolate; min-height:428px;
+  background-color:#0f2c4c;
+  background-image:
+    linear-gradient(270deg,rgba(6,24,43,.96) 0%,rgba(7,28,50,.84) 24%,rgba(7,28,50,.58) 42%,rgba(7,28,50,.12) 69%,rgba(7,28,50,.02) 100%),
+    url('./public/images/tournament-memories-hero.webp');
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center 46%;
+  color:#fff;
+}
+.hero.hero-photo::before,.hero.hero-photo::after{display:none}
+.hero-photo .hero-inner{
+  width:min(1190px,calc(100% - 64px)); min-height:428px;
+  display:flex; justify-content:flex-end; align-items:center;
+  padding:48px 0 50px; gap:0;
+}
+.hero-photo .hero-text{flex:0 1 530px; max-width:530px; margin:0; padding:0 8px 0 0; position:relative;z-index:2}
+.hero-photo .hero-kicker{margin-bottom:18px!important;font-size:10px!important;letter-spacing:.18em;color:#f3d598!important;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+.hero-photo h1{color:#fff;max-width:520px;font-size:clamp(43px,4.3vw,60px);line-height:1.08;letter-spacing:-.05em;margin:0 0 18px;text-shadow:0 3px 18px rgba(0,0,0,.26)}
+.hero-photo h1 em{color:#f6c979}
+.hero-photo .hero-lede{color:#eef3f6;max-width:470px;font-size:15.2px;line-height:1.62;margin-bottom:23px;text-shadow:0 2px 12px rgba(0,0,0,.32)}
+.hero-photo .hero-share{border:0;background:#e1ae51;color:#10293e;box-shadow:0 6px 20px rgba(1,13,27,.24);font-weight:850;letter-spacing:.02em;font-size:14px;padding:14px 22px;min-height:49px}
+.hero-photo .hero-share:hover{background:#f2c56e;box-shadow:0 9px 24px rgba(1,13,27,.3)}
+.hero-photo .hero-assurance{margin-top:17px;color:#e2eaf0;font-size:11px;gap:8px;line-height:1.5;text-shadow:0 1px 9px rgba(0,0,0,.4)}
+.hero-photo .hero-assurance .icon{color:#f2c56e}
+.hero-art-label{position:absolute;bottom:12px;left:18px;z-index:2;color:rgba(255,255,255,.8);font-size:9px;letter-spacing:.04em;background:rgba(7,25,45,.32);border-radius:3px;padding:3px 7px}
+@media(max-width:1020px){
+  .hero-photo .hero-inner{width:calc(100% - 52px)}
+  .hero-photo .hero-text{flex-basis:46%;max-width:480px}
+  .hero-photo h1{font-size:clamp(38px,4.6vw,50px)}
+  .hero-photo .hero-lede{font-size:13.5px}
+}
+@media(max-width:780px){
+  .hero.hero-photo{
+    min-height:535px;
+    background-image:
+      linear-gradient(180deg,rgba(7,25,45,.06) 0%,rgba(7,25,45,.06) 26%,rgba(7,25,45,.48) 48%,rgba(7,25,45,.9) 67%,rgba(7,25,45,.98) 100%),
+      url('./public/images/tournament-memories-hero.webp');
+    background-size:cover;background-position:36% 23%;
+  }
+  .hero-photo .hero-inner{width:calc(100% - 40px);min-height:535px;padding:235px 0 42px;justify-content:flex-start;align-items:flex-end}
+  .hero-photo .hero-text{flex:1;max-width:560px;padding:0}
+  .hero-photo h1{font-size:clamp(38px,7.2vw,50px);margin:0 0 11px;max-width:520px}
+  .hero-photo .hero-kicker{margin-bottom:11px!important}
+  .hero-photo .hero-lede{max-width:520px;font-size:13.5px;margin-bottom:18px;line-height:1.53}
+  .hero-photo .hero-assurance{margin-top:13px}
+  .hero-art-label{top:10px;bottom:auto;right:10px;left:auto;font-size:9px}
+}
+@media(max-width:560px){
+  .hero.hero-photo{min-height:548px;background-position:35% top}
+  .hero-photo .hero-inner{min-height:548px;width:calc(100% - 32px);padding:225px 0 35px}
+  .hero-photo h1{font-size:39px;line-height:1.06;margin-bottom:11px;max-width:370px}
+  .hero-photo .hero-lede{font-size:12.5px;line-height:1.56;max-width:340px;margin-bottom:16px}
+  .hero-photo .hero-share{min-height:48px;padding:13px 18px;font-size:13px}
+  .hero-photo .hero-assurance{font-size:10px;margin-top:12px;max-width:340px;line-height:1.5}
+  .hero-photo .hero-kicker{font-size:9px!important;letter-spacing:.12em}
+}
+@media(max-width:370px){
+  .hero.hero-photo,.hero-photo .hero-inner{min-height:575px}
+  .hero-photo .hero-inner{padding-top:230px}
+  .hero-photo h1{font-size:36px}
+  .hero-photo .hero-assurance{gap:5px}
+}
+@media(prefers-reduced-motion:reduce){.hero-photo .hero-share{transition:none}}
