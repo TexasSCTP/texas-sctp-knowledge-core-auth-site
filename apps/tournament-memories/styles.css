@@ -206,7 +206,7 @@ body{background:var(--paper);font-size:14px}
     url('./public/images/tournament-memories-hero.webp');
   background-repeat:no-repeat;
   background-size:cover;
-  background-position:center 46%;
+  background-position:center 8%;
   color:#fff;
 }
 .hero.hero-photo::before,.hero.hero-photo::after{display:none}
