@@ -141,7 +141,7 @@
   const postReactions=(id)=>state.reactions.filter(x=>x.post_id===id);
   const shownPosts=()=>state.posts.filter(x=>x.status==='approved');
   const connected=()=>Boolean(state.client);
-  const guestReady=()=>connected() && Boolean(config.turnstileSiteKey);
+  const guestReady=()=>connected() && Boolean(config.turnstileSiteKey) && config.guestUploadsEnabled === true;
   function newUuid(){
     if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
     const a=new Uint8Array(16);crypto.getRandomValues(a);a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;
