@@ -234,7 +234,7 @@
   async function refreshAccount(){
     if(!state.client)return;
     if(state.user){
-      const {data,error}=await state.client.from('memory_moderators').select('user_id').eq('user_id',state.user.id).maybeSingle();
+      const {data,error}=await state.client.from('memory_moderators').select('user_id').eq('user_id',state.user.id).limit(1).maybeSingle();
       state.moderator=!error&&Boolean(data);
     }else state.moderator=false;
     await loadGallery(true);
