@@ -4,7 +4,9 @@
 window.TEXAS_SCTP_CONFIG = {
   supabaseUrl: 'https://mlajcbnuponqyoehxydp.supabase.co',
   supabasePublishableKey: 'sb_publishable_wrWV6Cj5M48nxFECBrAcKg_h04TWlqX',
-  turnstileSiteKey: '',
+  turnstileSiteKey: '0x4AAAAAAF4-N-X0sM7gHnL9',
+  // Enable only after Turnstile server secrets are configured and the upload test passes.
+  guestUploadsEnabled: false,
   storageBucket: 'memories-private',
   brandLogoUrl: 'https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png',
   organizationUrl: 'https://www.texassctp.com/',
