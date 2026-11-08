@@ -682,6 +682,62 @@
     ${state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button>${p.social_consent?`<button class='btn btn-outline btn-sm' data-action='approve-social-post' data-id='${attr(p.id)}' ${a.length?'':'disabled'}>${icon('camera')} Approve + Spotlight</button>`:''}<button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social promotion permission given. Approve the exact photo and caption before selecting the spotlight option.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:state.adminTab==='logos'?renderTeamLogoAdmin():
     `<div class="review-grid">${state.adminComments.map(c=>{const p=state.adminPosts.find(x=>x.id===c.post_id)||state.posts.find(x=>x.id===c.post_id);return `<div class="review-card"><div class="review-body review-comment"><strong>${esc(c.display_name)}</strong><div class="meta">${dateFmt(c.created_at)} · ${esc(team(p?.team_id)?.name||'Tournament photo')}</div><p>${esc(c.body)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-comment" data-id="${attr(c.id)}">${icon('check')} Approve</button><button class="btn btn-danger btn-sm" data-action="reject-comment" data-id="${attr(c.id)}">Decline</button></div></div></div>`;}).join('')||'<p class="full-width-notice">No pending comments. You are caught up.</p>'}</div>`}</div>`;
   }
+
+  async function reviewTeamLogo(id,approve){
+    if(!state.moderator||!state.adminLogoRequests.some(row=>row.id===id))return;
+    if(approve&&!confirm('Approve this logo for public display on every gallery photo from this team?'))return;
+    const {error}=await state.client.rpc('memory_review_team_logo_request',{
+      p_request_id:id,p_approve:approve
+    });
+    if(error){toast('Could not review the team logo: '+error.message,true);return;}
+    state.pendingLogoUrls.clear();
+    await loadTeamLogos();
+    await loadAdmin();
+    toast(approve?'Team logo approved for this team.':'Proposed team logo declined.');
+  }
+  async function saveStaffLogo(file){
+    if(!state.moderator||!state.user||state.logoBusy)return;
+    const teamId=$('#team-logo-team')?.value||state.logoManageTeam;
+    const selected=team(teamId);
+    if(!selected){toast('Select the correct team before uploading a logo.',true);return;}
+    if(!confirm('Confirm that '+selected.name+' owns this logo or has authorized Texas SCTP to display it publicly across its team gallery.'))return;
+    state.logoBusy=true;
+    let path='';
+    try{
+      const blob=await compressLogo(file);
+      path='team/'+teamId+'/'+crypto.randomUUID()+'.webp';
+      const uploaded=await state.client.storage.from(LOGO_BUCKET).upload(path,blob,{
+        contentType:'image/webp',cacheControl:'3600',upsert:false
+      });
+      if(uploaded.error)throw uploaded.error;
+      const {error}=await state.client.from('memory_team_logos').upsert({
+        team_id:teamId,storage_path:path,source:state.logoSource,
+        updated_by:state.user.id,updated_at:new Date().toISOString()
+      },{onConflict:'team_id'});
+      if(error){
+        await state.client.storage.from(LOGO_BUCKET).remove([path]);
+        throw error;
+      }
+      state.logoManageTeam=teamId;
+      await loadTeamLogos();
+      await loadAdmin();
+      toast('Team logo saved. It now applies to all approved gallery photos from '+selected.name+'.');
+    }catch(error){
+      console.error('Team logo could not be saved',error);
+      toast('Could not save team logo: '+(error?.message||'Please try again.'),true);
+    }finally{state.logoBusy=false;}
+  }
+  async function removeTeamLogo(teamId){
+    if(!state.moderator||!teamId||!state.teamLogos.has(teamId))return;
+    const selected=team(teamId);
+    if(!confirm('Remove the gallery logo for '+(selected?.name||'this team')+'? Existing photos will show team initials instead.'))return;
+    const {data,error}=await state.client.from('memory_team_logos')
+      .delete().eq('team_id',teamId).select('team_id');
+    if(error||!data?.length){toast('Could not remove the team logo. Check moderator permissions.',true);return;}
+    state.logoManageTeam=teamId;
+    await loadTeamLogos();await loadAdmin();
+    toast('Team logo removed from the gallery. Existing photos were preserved.');
+  }
   async function moderate(type,id,decision){
     if(!state.moderator)return;
     const tbl=type==='post'?'memory_posts':'memory_comments';
@@ -710,7 +766,9 @@
     if(action==='scroll-gallery'){$('#memories-gallery')?.scrollIntoView({behavior:'smooth'});return;}
     if(action==='gallery'){state.screen='gallery';render();return;}
     if(action==='admin'){if(!state.moderator){state.modal='login';renderModal();return;}state.modal=null;state.screen='admin';render();await loadAdmin();return;}
-    if(action==='admin-photos'||action==='admin-comments'){state.adminTab=action==='admin-photos'?'photos':'comments';render();return;}
+    if(action==='admin-photos'||action==='admin-comments'||action==='admin-logos'){state.adminTab=action==='admin-photos'?'photos':action==='admin-logos'?'logos':'comments';render();return;}
+    if(action==='approve-team-logo'||action==='reject-team-logo'){await reviewTeamLogo(id,action==='approve-team-logo');return;}
+    if(action==='remove-current-team-logo'){await removeTeamLogo(id);return;}
     if(action==='refresh-admin'){await loadAdmin();return;}
     if(action==='login'||action==='account'||action==='privacy'){state.modal=action;renderModal();return;}
     if(action==='upload'){state.modal='upload';renderModal();return;}
@@ -750,6 +808,17 @@
   }
   async function onChange(e){
     const element=e.target;
+    if(element.id==='team-logo-team'){
+      state.logoManageTeam=element.value;render();return;
+    }
+    if(element.id==='team-logo-source'){
+      state.logoSource=element.value;render();return;
+    }
+    if(element.id==='staff-logo-picker'){
+      const file=element.files?.[0];element.value='';
+      if(file)await saveStaffLogo(file);
+      return;
+    }
     if(element.id==='photo-picker'){
       addChosenPhotos([...element.files]);element.value='';return;
     }
