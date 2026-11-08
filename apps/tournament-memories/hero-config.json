@@ -2,12 +2,152 @@
   "version": 1,
   "intervalSeconds": 10,
   "slides": [
-    {"id":"scene-01","src":"./public/images/scene-01.webp","label":"Eyes on the target","enabled":true,"desktop":{"x":36,"y":24,"zoom":1},"mobile":{"x":38,"y":18,"zoom":1},"card":{"x":38,"y":26,"zoom":1}},
-    {"id":"scene-02","src":"./public/images/scene-02.webp","label":"Between stations","enabled":true,"desktop":{"x":30,"y":18,"zoom":1},"mobile":{"x":34,"y":14,"zoom":1},"card":{"x":32,"y":18,"zoom":1}},
-    {"id":"scene-03","src":"./public/images/scene-03.webp","label":"A moment of focus","enabled":true,"desktop":{"x":32,"y":22,"zoom":1},"mobile":{"x":30,"y":16,"zoom":1},"card":{"x":33,"y":24,"zoom":1}},
-    {"id":"scene-04","src":"./public/images/scene-04.webp","label":"Teamwork worth celebrating","enabled":true,"desktop":{"x":41,"y":8,"zoom":1},"mobile":{"x":44,"y":12,"zoom":1},"card":{"x":42,"y":20,"zoom":1}},
-    {"id":"scene-05","src":"./public/images/scene-05.webp","label":"On the shooting line","enabled":true,"desktop":{"x":34,"y":12,"zoom":1},"mobile":{"x":30,"y":18,"zoom":1},"card":{"x":35,"y":24,"zoom":1}},
-    {"id":"scene-06","src":"./public/images/scene-06.webp","label":"Learning from a coach","enabled":true,"desktop":{"x":43,"y":20,"zoom":1},"mobile":{"x":39,"y":16,"zoom":1},"card":{"x":44,"y":22,"zoom":1}},
-    {"id":"scene-07","src":"./public/images/scene-07.webp","label":"The memories we share","enabled":true,"desktop":{"x":31,"y":11,"zoom":1},"mobile":{"x":25,"y":14,"zoom":1},"card":{"x":30,"y":22,"zoom":1}}
+    {
+      "id": "scene-02",
+      "src": "./public/images/scene-02.webp",
+      "label": "Between stations",
+      "enabled": true,
+      "desktop": {
+        "x": 30,
+        "y": 9,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 34,
+        "y": 14,
+        "zoom": 1
+      },
+      "card": {
+        "x": 32,
+        "y": 18,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-01",
+      "src": "./public/images/scene-01.webp",
+      "label": "Eyes on the target",
+      "enabled": true,
+      "desktop": {
+        "x": 36,
+        "y": 44,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 38,
+        "y": 18,
+        "zoom": 1
+      },
+      "card": {
+        "x": 38,
+        "y": 26,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-03",
+      "src": "./public/images/scene-03.webp",
+      "label": "A moment of focus",
+      "enabled": true,
+      "desktop": {
+        "x": 32,
+        "y": 45,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 30,
+        "y": 16,
+        "zoom": 1
+      },
+      "card": {
+        "x": 33,
+        "y": 24,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-04",
+      "src": "./public/images/scene-04.webp",
+      "label": "Teamwork worth celebrating",
+      "enabled": true,
+      "desktop": {
+        "x": 41,
+        "y": 19,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 44,
+        "y": 12,
+        "zoom": 1
+      },
+      "card": {
+        "x": 42,
+        "y": 20,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-05",
+      "src": "./public/images/scene-05.webp",
+      "label": "On the shooting line",
+      "enabled": true,
+      "desktop": {
+        "x": 34,
+        "y": 5,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 30,
+        "y": 18,
+        "zoom": 1
+      },
+      "card": {
+        "x": 35,
+        "y": 24,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-06",
+      "src": "./public/images/scene-06.webp",
+      "label": "Learning from a coach",
+      "enabled": true,
+      "desktop": {
+        "x": 43,
+        "y": 26,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 39,
+        "y": 16,
+        "zoom": 1
+      },
+      "card": {
+        "x": 44,
+        "y": 22,
+        "zoom": 1
+      }
+    },
+    {
+      "id": "scene-07",
+      "src": "./public/images/scene-07.webp",
+      "label": "The memories we share",
+      "enabled": true,
+      "desktop": {
+        "x": 31,
+        "y": 12,
+        "zoom": 1
+      },
+      "mobile": {
+        "x": 25,
+        "y": 14,
+        "zoom": 1
+      },
+      "card": {
+        "x": 30,
+        "y": 22,
+        "zoom": 1
+      }
+    }
   ]
 }
