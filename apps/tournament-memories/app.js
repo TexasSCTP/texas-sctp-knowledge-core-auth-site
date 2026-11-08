@@ -201,7 +201,7 @@
     if(!config.supabaseUrl || !config.supabasePublishableKey){await loadPreviewCatalog();state.ready=true;render();return;}
     try{
       // Version pinned deliberately. The browser receives only the publishable key.
-      const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/+esm');
+      const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm');
       state.client=sdk.createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
       const [{data:sessionResult},catalog] = await Promise.all([
         state.client.auth.getUser(),loadCatalog()
