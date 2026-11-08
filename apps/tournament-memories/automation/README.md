@@ -1,6 +1,6 @@
 # Texas SCTP | On the Range: Facebook sharing bridge
 
-**Integration target:** <https://www.facebook.com/TexasSCTP>
+**Update November 8:** This earlier Facebook-only adapter is superseded for deployment by the two-platform server-side `supabase/functions/social-publisher/index.ts`, `supabase/migrations/20261108180000_on_the_range_backend.sql`, and [`ZAPIER_SETUP.md`](ZAPIER_SETUP.md). The Facebook adapter remains tested reference code; do not deploy it as a separate writer or enable automatic posting until backend and Meta connections pass testing.\n\n**Integration target:** <https://www.facebook.com/TexasSCTP>
 
 **Current status:** Prepared and tested only. **Not connected, scheduled or posting.** This directory is server-only staging integration code. The existing gallery is still a design preview. This repository must not automatically share generated sample images or treat gallery consent as permission for Facebook distribution.
 
