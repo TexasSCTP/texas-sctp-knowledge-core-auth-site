@@ -659,6 +659,14 @@
     if(action==='share'){sharePost(id);return;}
     if(action==='remove-published'&&state.moderator){if(!confirm('Remove this photo post from the public gallery and cancel queued social sharing?'))return;const {error}=await state.client.from('memory_posts').update({status:'removed',privacy_hold:true,moderated_at:new Date().toISOString(),moderated_by:state.user.id}).eq('id',id);if(error)toast('Removal failed: '+error.message,true);else{state.modal=null;state.selectedPost=null;await loadGallery(true);toast('Removed. Any photo already posted on Facebook or Instagram also needs removal from Meta.');}return;}
     if(action==='report'){const url=`mailto:${config.contactEmail||'info@texassctp.com'}?subject=${encodeURIComponent('Texas SCTP photo concern')}&body=${encodeURIComponent('Please review the photo post: '+id+'\n\nReason for request: ')}`;window.location.href=url;return;}
+    if(action==='remove-logo-upload'){
+      if(state.guestPending){toast('A secure upload is already in progress.',true);return;}
+      if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
+      state.logoUploadFile=null;
+      const wrap=$('#logo-preview');if(wrap)wrap.innerHTML='';
+      const consent=$('#team-logo-permission');if(consent)consent.checked=false;
+      return;
+    }
     if(action==='remove-upload'){state.guestPending=null;let n=Number(target.dataset.index);if(state.uploadFiles[n])URL.revokeObjectURL(state.uploadFiles[n].preview);state.uploadFiles.splice(n,1);const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');return;}
     if(action==='open-full'){window.open(window.location.href,'_blank','noopener,noreferrer');return;}
     if(action.startsWith('approve-')||action.startsWith('reject-')){await moderate(action.endsWith('post')?'post':'comment',id,action==='approve-social-post'?'approveSocial':action.startsWith('approve')?'approve':'reject');return;}
@@ -678,6 +686,27 @@
     const element=e.target;
     if(element.id==='photo-picker'){
       addChosenPhotos([...element.files]);element.value='';return;
+    }
+    if(element.id==='upload-team'){
+      const wrap=$('#team-existing-logo'),src=state.logoUrls.get(element.value);
+      if(wrap){
+        wrap.hidden=!src;
+        wrap.innerHTML=src?`${logoForTeam(element.value,team(element.value)?.name||'Team')} <span>Approved team logo already on file. No reupload needed.</span>`:'';
+      }
+      return;
+    }
+    if(element.id==='logo-picker'){
+      const file=element.files?.[0];element.value='';
+      if(!file)return;
+      if(state.guestPending){toast('Finish or cancel the current upload before changing its logo.',true);return;}
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type)||!file.size||file.size>8*1024*1024){
+        toast('Choose a JPG, PNG, or WebP team logo under 8 MB.',true);return;
+      }
+      if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
+      state.logoUploadFile={file,preview:URL.createObjectURL(file)};
+      const wrap=$('#logo-preview');
+      if(wrap)wrap.innerHTML=`<img src="${attr(state.logoUploadFile.preview)}" alt="Proposed team logo"><span>${esc(file.name)}</span><button type="button" class="btn btn-outline btn-sm" data-action="remove-logo-upload">Remove</button>`;
+      return;
     }
     if(element.id==='upload-event'){
       const extra=$('#other-event-wrap'),date=$('#upload-date'),info=$('#event-date-info'),label=$('#event-date-text');
