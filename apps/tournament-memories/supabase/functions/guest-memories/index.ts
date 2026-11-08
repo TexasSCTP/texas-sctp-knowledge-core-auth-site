@@ -13,6 +13,8 @@ const ALLOWED_ORIGINS = (Deno.env.get('MEMORIES_ALLOWED_ORIGINS') || 'https://te
 const ALLOWED_HOSTS = (Deno.env.get('TURNSTILE_ALLOWED_HOSTNAMES') || 'texas-sctp-tournament-memories-preview.onrender.com')
   .split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
 const BUCKET = 'memories-private';
+const LOGO_BUCKET = 'memories-team-logos';
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 const encoder = new TextEncoder();
 const MAX_UPLOADS = 6;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -83,6 +85,8 @@ async function begin(req: Request, x: Record<string, unknown>) {
   const teamId = str(x.teamId), tournamentId = str(x.tournamentId) || null;
   const other = str(x.otherTournament), date = str(x.photoDate), credit = str(x.credit), caption = str(x.caption);
   const count = Number(x.fileCount);
+  const logoRequested=x.logoRequested===true;
+  if(logoRequested && x.logoPermission!==true) throw Error('Confirm you have permission to propose this team logo.');
   if (!teamId || !isDate(date) || !Number.isInteger(count) || count < 1 || count > MAX_UPLOADS
       || credit.length > 80 || caption.length > 900 || other.length > 120
       || (tournamentId === null && other.length < 3)) throw Error('Review your team, event, date and photos.');
@@ -116,7 +120,20 @@ async function begin(req: Request, x: Record<string, unknown>) {
     if (signed.error || !signed.data?.token) throw Error('Could not reserve secure photo upload. Please try again.');
     slots.push({ path: item.storage_path, token: signed.data.token });
   }
-  return { submissionId, submissionKey, slots };
+  // Logo proposal is independent of photo approval, and never changes the live
+  // team identity until an authorized moderator reviews and approves it.
+  let logoSlot: { path: string, token: string } | null = null;
+  if(logoRequested){
+    const logoPath='submissions/'+submissionId+'/'+crypto.randomUUID()+'.webp';
+    const proposal=await admin!.from('memory_team_logo_requests').insert({
+      post_id:submissionId,team_id:teamId,storage_path:logoPath,status:'draft'
+    });
+    if(proposal.error) throw Error('Could not prepare the team logo proposal.');
+    const reserved=await admin!.storage.from(LOGO_BUCKET).createSignedUploadUrl(logoPath);
+    if(reserved.error || !reserved.data?.token) throw Error('Could not prepare the team logo upload.');
+    logoSlot={path:logoPath,token:reserved.data.token};
+  }
+  return { submissionId, submissionKey, slots, logoSlot };
 }
 async function finish(x: Record<string, unknown>) {
   const id = str(x.submissionId), key = str(x.submissionKey);
@@ -136,6 +153,22 @@ async function finish(x: Record<string, unknown>) {
     if (res.error || !res.data || Number(res.data.size) < 100 || Number(res.data.size) > MAX_IMAGE_BYTES
         || !String(res.data.contentType || res.data.mimetype || 'image/webp').startsWith('image/webp'))
       throw Error('One or more photos have not finished uploading.');
+  }
+  const {data:logoRequest,error:logoLookupError}=await admin!.from('memory_team_logo_requests')
+    .select('id,storage_path,status').eq('post_id',id).maybeSingle();
+  if(logoLookupError) throw Error('Could not verify the optional team logo.');
+  if(logoRequest){
+    const uploaded=await admin!.storage.from(LOGO_BUCKET).info(logoRequest.storage_path);
+    if(uploaded.error || !uploaded.data ||
+       Number(uploaded.data.size)<100 || Number(uploaded.data.size)>MAX_LOGO_BYTES ||
+       !String(uploaded.data.contentType||uploaded.data.mimetype||'').startsWith('image/webp'))
+      throw Error('The optional team logo has not finished uploading.');
+    if(logoRequest.status==='draft'){
+      const verified=await admin!.from('memory_team_logo_requests').update({
+        status:'pending',upload_verified_at:new Date().toISOString()
+      }).eq('id',logoRequest.id).eq('status','draft');
+      if(verified.error) throw Error('Could not submit the team logo for review.');
+    }
   }
   const done = await admin!.from('memory_posts').update({ status: 'pending', upload_verified_at: new Date().toISOString() }).eq('id',id).eq('status','draft');
   if (done.error) throw done.error;
@@ -195,7 +228,7 @@ Deno.serve(async req => {
     console.error('guest-memories:',error instanceof Error ? error.message : 'unknown');
     // Do not return database stack traces or table names to anonymous callers.
     const message = error instanceof Error ? error.message : 'Could not complete request.';
-    const safe = /^(Complete|Security|Review|Choose|Tournament|Upload|One or more|Photo count|Invalid|Too many|Enter|This post|Comment rejected|Submission rejected|Gallery submission security)/.test(message)
+    const safe = /^(Complete|Confirm|Security|Review|Choose|Tournament|Upload|One or more|Photo count|The optional team logo|Invalid|Too many|Enter|This post|Comment rejected|Submission rejected|Gallery submission security)/.test(message)
       ? message : 'Could not complete the request. Please try again.';
     return fail(safe,400,origin);
   }
