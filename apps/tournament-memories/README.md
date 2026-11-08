@@ -1,5 +1,9 @@
 # Texas SCTP | On the Range
 
+### Approved team logos (November 8)
+
+Each team can have one approved gallery logo associated with its team ID, not individual photos. A public submission may optionally propose a logo with separate permission to display it. Pending logo proposals remain private and are approved or declined under **Moderation > Team logos**. Moderators may also directly add, replace, or remove a team logo for authorized teams. All existing and future photo cards and detail views for a team show the current approved logo, with initials as fallback. **Team Accounts** logos are stored in another protected project and are not fetched directly by this public site. An authorized moderator may import an approved copy from the portal and mark its origin; automatic cross-project import is not activated. See [TEAM_LOGO_WORKFLOW.md](supabase/TEAM_LOGO_WORKFLOW.md). The official Texas SCTP organization logo is unchanged.
+
 ### Gallery seasons and live-photo framing (November 8)
 
 - Texas SCTP season is computed from each approved post's tournament/photo date, September 1 through August 31. Examples: August 2026 = **2025–2026**; October 2026 = **2026–2027**. Approved post cards, photo detail views and moderator reviews show this tag. The Season dropdown queries only seasons containing approved, publicly viewable posts and filters older pages at the database level.
