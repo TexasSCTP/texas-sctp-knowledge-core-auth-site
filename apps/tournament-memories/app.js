@@ -471,11 +471,11 @@
   async function moderate(type,id,decision){
     if(!state.moderator)return;
     const tbl=type==='post'?'memory_posts':'memory_comments';
-    const update={status:decision==='approve'?'approved':'rejected',moderated_at:new Date().toISOString(),moderated_by:state.user.id};
-    if(type==='post'&&decision==='approve'&&!assets(id).length){toast('Cannot approve a submission without a photo.',true);return;}
+    const approved=decision==='approve'||decision==='approveSocial';const update={status:approved?'approved':'rejected',moderated_at:new Date().toISOString(),moderated_by:state.user.id};if(type==='post'&&decision==='approveSocial'){if(!state.adminPosts.some(p=>p.id===id&&p.social_consent)){toast('Social promotion was not authorized.',true);return;}Object.assign(update,{social_reviewed:true,caption_social_approved:true,social_reviewed_at:new Date().toISOString(),social_reviewed_by:state.user.id});}
+    if(type==='post'&&approved&&!assets(id).length){toast('Cannot approve a submission without a photo.',true);return;}
     const {error}=await state.client.from(tbl).update(update).eq('id',id);
     if(error){toast('Moderation failed: '+error.message,true);return;}
-    toast(decision==='approve'?'Approved.':'Submission declined.');await loadGallery(true);await loadAdmin();
+    toast(approved?(decision==='approveSocial'?'Approved for gallery and social spotlight.':'Approved for gallery only.'):'Submission declined.');await loadGallery(true);await loadAdmin();
   }
   function sharePost(id){const url=new URL(window.location.href);url.hash=`memory-${id}`;
     if(navigator.share){navigator.share({title:'Texas SCTP | On the Range',url:url.toString()}).catch(()=>{});}
@@ -509,10 +509,11 @@
     if(action==='previous-photo'||action==='next-photo'){let a=assets(state.selectedPost.id);state.selectedImage=(state.selectedImage+(action==='next-photo'?1:-1)+a.length)%a.length;renderModal();return;}
     if(action==='like'){await toggleLike(id);return;}
     if(action==='share'){sharePost(id);return;}
+    if(action==='remove-published'&&state.moderator){if(!confirm('Remove this photo post from the public gallery and cancel queued social sharing?'))return;const {error}=await state.client.from('memory_posts').update({status:'removed',privacy_hold:true,moderated_at:new Date().toISOString(),moderated_by:state.user.id}).eq('id',id);if(error)toast('Removal failed: '+error.message,true);else{state.modal=null;state.selectedPost=null;await loadGallery(true);toast('Removed. Any photo already posted on Facebook or Instagram also needs removal from Meta.');}return;}
     if(action==='report'){const url=`mailto:${config.contactEmail||'info@texassctp.com'}?subject=${encodeURIComponent('Texas SCTP photo concern')}&body=${encodeURIComponent('Please review the photo post: '+id+'\n\nReason for request: ')}`;window.location.href=url;return;}
     if(action==='remove-upload'){state.guestPending=null;let n=Number(target.dataset.index);if(state.uploadFiles[n])URL.revokeObjectURL(state.uploadFiles[n].preview);state.uploadFiles.splice(n,1);const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');return;}
     if(action==='open-full'){window.open(window.location.href,'_blank','noopener,noreferrer');return;}
-    if(action.startsWith('approve-')||action.startsWith('reject-')){await moderate(action.endsWith('post')?'post':'comment',id,action.startsWith('approve')?'approve':'reject');return;}
+    if(action.startsWith('approve-')||action.startsWith('reject-')){await moderate(action.endsWith('post')?'post':'comment',id,action==='approve-social-post'?'approveSocial':action.startsWith('approve')?'approve':'reject');return;}
   }
   async function onSubmit(e){
     if(e.target.id==='login-form'){
