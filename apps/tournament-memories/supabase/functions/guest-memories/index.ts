@@ -157,6 +157,7 @@ async function finish(x: Record<string, unknown>) {
   const {data:logoRequest,error:logoLookupError}=await admin!.from('memory_team_logo_requests')
     .select('id,storage_path,status').eq('post_id',id).maybeSingle();
   if(logoLookupError) throw Error('Could not verify the optional team logo.');
+  let teamLogoResult:'none'|'public'|'replacement'='none';
   if(logoRequest){
     const uploaded=await admin!.storage.from(LOGO_BUCKET).info(logoRequest.storage_path);
     if(uploaded.error || !uploaded.data ||
@@ -179,19 +180,22 @@ async function finish(x: Record<string, unknown>) {
         .select('storage_path').eq('team_id',postTeam.data.team_id).single();
       if(current.error||!current.data)throw Error('Could not verify the team logo association.');
       const nowInUse=current.data.storage_path===logoRequest.storage_path;
+      teamLogoResult=nowInUse?'public':'replacement';
       // A new team logo is immediately available publicly. Only competing
       // replacements require a moderator to select which logo represents
       // the team, not a second public-use consent or approval.
       const finalized=await admin!.from('memory_team_logo_requests').update({
         status:nowInUse?'approved':'pending',upload_verified_at:verifiedAt,
-        moderated_at:nowInUse?verifiedAt:null
+        moderated_at:null
       }).eq('id',logoRequest.id).eq('status','draft');
       if(finalized.error)throw Error('Could not finalize the team logo.');
+    }else{
+      teamLogoResult=logoRequest.status==='approved'?'public':'replacement';
     }
   }
   const done = await admin!.from('memory_posts').update({ status: 'pending', upload_verified_at: new Date().toISOString() }).eq('id',id).eq('status','draft');
   if (done.error) throw done.error;
-  return { accepted: true };
+  return { accepted: true, teamLogoResult };
 }
 async function comment(req: Request, x: Record<string, unknown>) {
   if (str(x.website)) throw Error('Comment rejected.');
