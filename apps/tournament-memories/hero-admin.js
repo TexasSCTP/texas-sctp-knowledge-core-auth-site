@@ -61,6 +61,100 @@
       await loadApprovedPhotos();
     }catch(e){setStatus(e.message,'error');document.querySelector('.studio-panel').insertAdjacentHTML('afterbegin',`<p style="color:#a73e35">${esc(e.message)}</p>`);}
   }
+
+  async function loadApprovedPhotos(){
+    try{
+      const settings=window.TEXAS_SCTP_CONFIG||{};
+      if(!settings.supabaseUrl||!settings.supabasePublishableKey)throw Error('Gallery backend is not connected.');
+      const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm');
+      client=sdk.createClient(settings.supabaseUrl,settings.supabasePublishableKey,{auth:{
+        persistSession:true,autoRefreshToken:true,detectSessionInUrl:true
+      }});
+      const {data:auth,error:authError}=await client.auth.getUser();
+      if(authError||!auth?.user){
+        $('live-status').innerHTML='To adjust real tournament photos, sign in using <a href="./index.html">Staff access</a> at the bottom of the gallery.';
+        return;
+      }
+      const {data:staff,error:staffError}=await client.from('memory_moderators')
+        .select('user_id').eq('user_id',auth.user.id).limit(1).maybeSingle();
+      if(staffError||!staff){
+        $('live-status').textContent='This account is not assigned as a Texas SCTP photo moderator.';
+        return;
+      }
+      staffUser=auth.user;
+      const {data:rows,error}=await client.rpc('memory_hero_editor_items',{p_limit:400});
+      if(error)throw error;
+      const photos=rows||[];
+      const signed=new Map();
+      const paths=[...new Set(photos.map(r=>r.storage_path))];
+      for(let start=0;start<paths.length;start+=40){
+        const {data:urls,error:signError}=await client.storage.from(settings.storageBucket||'memories-private')
+          .createSignedUrls(paths.slice(start,start+40),3600);
+        if(signError)throw signError;
+        for(const u of urls||[])if(u.path&&u.signedUrl)signed.set(u.path,u.signedUrl);
+      }
+      const defaults={x:50,y:50,zoom:1};
+      const drafts=getLiveDrafts(),live=[];
+      for(const row of photos){
+        if(!signed.has(row.storage_path))continue;
+        const value={
+          id:'approved-'+row.photo_id,photoId:row.photo_id,live:true,
+          src:signed.get(row.storage_path),
+          label:(row.team_name||'Texas SCTP')+' · '+(row.event_name||'Tournament'),
+          enabled:row.enabled!==false,
+          desktop:normalizePosition(row.desktop,defaults),
+          mobile:normalizePosition(row.mobile,defaults),
+          card:normalizePosition(row.card,defaults)
+        };
+        livePublished.set(value.id,clone(value));
+        DEFAULTS[value.id]=clone(value);
+        const draft=drafts[value.id];
+        if(draft){
+          value.enabled=draft.enabled!==false;
+          for(const type of ['desktop','mobile','card'])value[type]=normalizePosition(draft[type],value[type]);
+        }
+        live.push(value);
+      }
+      config.slides.push(...live);
+      preload();
+      renderList();
+      if(live.length)selectSlide(live[0].id);
+      $('live-status').textContent=live.length
+        ?live.length+' approved tournament photo'+(live.length===1?'':'s')+' available for manual positioning. Save changes directly to the gallery.'
+        :'No approved photos are available for editing yet.';
+      if(live.length)setStatus('Approved photographs loaded · select one to adjust','good');
+    }catch(error){
+      console.error('Could not load approved photos for editing',error);
+      $('live-status').textContent='Approved tournament photographs could not be loaded. Please refresh or sign in again.';
+    }
+  }
+  async function saveLiveSlide(slide){
+    if(!slide?.live||!client||!staffUser){
+      setStatus('Sign in as a Texas SCTP moderator before saving approved photos.','error');return;
+    }
+    const clean={};
+    for(const type of ['desktop','mobile','card'])
+      clean[type]=normalizePosition(slide[type],{x:50,y:50,zoom:1});
+    const payload={
+      photo_id:slide.photoId,enabled:slide.enabled!==false,
+      ...clean,updated_by:staffUser.id,updated_at:new Date().toISOString()
+    };
+    const {error}=await client.from('memory_hero_placements')
+      .upsert(payload,{onConflict:'photo_id'});
+    if(error){
+      setStatus('Could not save photo: '+error.message,'error');
+      return;
+    }
+    livePublished.set(slide.id,clone(slide));
+    DEFAULTS[slide.id]=clone(slide);
+    try{
+      const drafts=getLiveDrafts();delete drafts[slide.id];
+      localStorage.setItem(LIVE_DRAFT_KEY,JSON.stringify(drafts));
+    }catch{}
+    setStatus('Photo placement saved to the live gallery','good');
+    renderList();
+  }
+
   function selectSlide(id){
     const found=config?.slides.find(s=>s.id===id);if(!found)return;
     selectedId=id;renderList();$('selected-caption').textContent=found.label;
