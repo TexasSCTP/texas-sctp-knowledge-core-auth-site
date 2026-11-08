@@ -83,3 +83,7 @@ test('expired unpublished uploads can be cleaned without deleting approved galle
   assert.match(social,/\.eq\('status','rejected'\)/);
   assert.doesNotMatch(social,/\.eq\('status','approved'\)\.lt\('created_at'/);
 });
+
+test('WebCrypto HMAC key explicitly specifies SHA-256 so guest rate limits work',()=>{
+  assert.match(guest,/crypto\.subtle\.importKey\('raw',\s*encoder\.encode\(RATE_SECRET\),\s*\{\s*name:\s*'HMAC',\s*hash:\s*'SHA-256'\s*\}/);
+});
