@@ -448,8 +448,8 @@
   async function loadAdmin(){
     if(!state.client||!state.moderator)return;
     const [p,c]=await Promise.all([
-      state.client.from('memory_posts').select('*').eq('status','pending').order('created_at',{ascending:true}).limit(100),
-      state.client.from('memory_comments').select('*').eq('status','pending').order('created_at',{ascending:true}).limit(100)
+      state.client.from('memory_posts').select('id,team_id,tournament_id,other_tournament,photo_date,photo_credit,caption,status,created_at,social_consent,social_reviewed,caption_social_approved,privacy_hold,expected_photo_count,upload_verified_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
+      state.client.from('memory_comments').select('id,post_id,display_name,body,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100)
     ]);
     if(p.error||c.error){toast('Could not load moderation queue.',true);return;}
     state.adminPosts=p.data||[];state.adminComments=c.data||[];
