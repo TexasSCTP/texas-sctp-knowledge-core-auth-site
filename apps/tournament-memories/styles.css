@@ -383,3 +383,40 @@ body{background:var(--paper)}
 .season-tag,.memory-byline .season-tag,.post-view-top .season-tag{display:inline-flex;align-items:center;align-self:flex-start;width:max-content;max-width:100%;padding:4px 9px;border:1px solid #ccdbe5;border-radius:4px;background:#f1f5f7;color:#244760;font-size:10px;font-weight:800;letter-spacing:.02em;line-height:1.35}
 .admin-heading-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .review-card .season-tag{margin:7px 0}
+
+/* Team-wide approved identities. Private logos are always served through
+   short-lived Supabase signed URLs, never through portal account assets. */
+.memory-avatar{overflow:hidden;align-items:center;justify-content:center}
+.memory-avatar .team-logo-img{width:100%;height:100%;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
+.team-logo-initials{display:inline-grid;place-items:center;color:#123858;font-weight:850;font-size:12px;letter-spacing:.04em}
+.post-team-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.post-team-logo{flex:0 0 47px;width:47px;height:47px;border:1px solid #dfe7e8;border-radius:7px;display:grid;place-items:center;overflow:hidden;background:#fff}
+.post-team-logo img{display:block;width:100%;height:100%;object-fit:contain;padding:4px}
+.review-team-logo{display:flex;align-items:center;gap:10px;min-width:0}
+.review-card .review-team-logo img{width:38px;height:38px;border-radius:5px;object-fit:contain;flex:0 0 38px;background:white;padding:2px;border:1px solid #e3e9ea}
+.review-team-logo .team-logo-initials{width:38px;height:38px;background:#edf2f5;border-radius:5px}
+.logo-submission-section{margin-top:17px;border-top:1px solid #e6ebed;padding-top:17px}
+.logo-submission-section input[type="file"]{display:block;width:100%;border:1px solid #dbe3e6;border-radius:8px;padding:10px;font-size:12px;background:#f9fbfc;margin:8px 0}
+.logo-upload-preview,.team-existing-logo{display:flex;align-items:center;gap:11px;margin:12px 0;flex-wrap:wrap;color:#596f7d;font-size:12px}
+.team-existing-logo{padding:9px;background:#f1f6f8;border:1px solid #dbe7eb;border-radius:7px}
+.team-existing-logo[hidden]{display:none}
+.team-existing-logo img,.logo-upload-preview img{width:62px;height:62px;object-fit:contain;background:#fff;border:1px solid #e2e7e8;border-radius:7px;padding:3px}
+.team-existing-logo .team-logo-initials{width:62px;height:62px}
+.logo-upload-preview:empty{display:none}
+.team-logo-admin{display:grid;gap:26px}
+.logo-admin-panel{background:#fff;border:1px solid #e5e9eb;border-radius:10px;padding:23px}
+.logo-admin-panel h3{font-family:var(--serif);font-size:26px;font-weight:500;color:var(--navy);margin:0 0 8px}
+.logo-admin-panel>p{font-size:12px;line-height:1.6;color:#647a89}
+.logo-admin-panel .review-grid{margin-top:16px}
+.logo-review-image{width:100%;height:170px;display:flex;justify-content:center;align-items:center;background:#f2f6f7;color:#83929d;font-size:12px}
+.review-card .logo-review-image img{display:block;max-width:100%;width:auto;height:100%;object-fit:contain;padding:12px;background:transparent}
+.logo-current-record{display:flex;gap:18px;align-items:center;background:#f7f9fa;border:1px solid #e2e8eb;border-radius:9px;padding:15px;margin:14px 0 22px}
+.logo-current-preview{width:115px;height:115px;border-radius:8px;border:1px solid #d9e4e7;background:#fff;flex:0 0 115px;display:grid;place-items:center;overflow:hidden;color:#87959e;text-align:center;font-size:11px;padding:8px}
+.logo-current-preview img{width:100%;height:100%;object-fit:contain}
+.logo-current-preview .team-logo-initials{font-size:25px}
+.logo-current-record strong{font-size:14px;color:var(--navy)}
+.logo-staff-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:15px 0}
+#staff-logo-picker{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.logo-admin-panel .form-field{max-width:520px}
+.logo-admin-panel .field-note{max-width:900px;line-height:1.55}
+@media(max-width:650px){.logo-admin-panel{padding:16px}.logo-current-record{align-items:flex-start;flex-wrap:wrap}}
