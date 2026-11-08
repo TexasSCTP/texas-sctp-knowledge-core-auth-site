@@ -283,8 +283,10 @@
       for(let i=0;i<paths.length;i+=40){
         const {data:items,error:signError}=await state.client.storage.from(BUCKET).createSignedUrls(paths.slice(i,i+40),3600);
         if(signError)throw signError;
-        for(const item of items||[])if(item.path&&item.signedUrl)
+        for(const item of items||[])if(item.path&&item.signedUrl){
           signed.set(item.path,item.signedUrl);
+          state.imageUrls.set(item.path,item.signedUrl);
+        }
       }
       const centered={x:50,y:50,zoom:1};
       APPROVED_HERO_SCENES=rows.filter(r=>signed.has(r.storage_path)).map(r=>({
@@ -304,7 +306,7 @@
 
   async function loadGallery(reset=false){
     if(!state.client || state.fetching)return;
-    if(reset){state.posts=[];state.photos=[];state.comments=[];state.reactions=[];state.totalFetched=0;state.hasMore=true;state.imageUrls.clear();}
+    if(reset){state.posts=[];state.photos=[];state.comments=[];state.reactions=[];state.totalFetched=0;state.hasMore=true;state.imageUrls.clear();state.cardCrops.clear();}
     if(!state.hasMore)return;
     state.fetching=true;state.loading=true;render();
     try{
@@ -382,7 +384,7 @@
     const hasFilters=Boolean(state.filter.team||state.filter.tournament||state.filter.season||state.filter.query);
     return `<section class="content-wrap gallery-section" id="memories-gallery" aria-label="Tournament photo gallery"><div class="section-intro"><div><div class="section-kicker">TEXAS SCTP PHOTO FEED</div><h2>Latest from the Range</h2><p>See who's competing, catch the action, and share photos from your tournament.</p></div></div>
       <div class="gallery-main"><div class="gallery-toolbar"><div class="searchbox">${icon('search','icon-sm')}<label class="sr-only" for="memory-search">Search photos and teams</label><input type="search" id="memory-search" data-filter="query" maxlength="100" placeholder="Search photos, teams, tournaments..." value="${attr(state.filter.query)}"></div><button data-action="toggle-filters" aria-expanded="${state.filtersExpanded}" aria-controls="filter-strip" class="filter-trigger ${state.filtersExpanded||hasFilters?'is-active':''}">${icon('filter','icon-sm')} Filters ${hasFilters?`<span class="filter-dot"></span>`:''}${icon('chevrondown','icon-xs')}</button></div>
-      <div id="filter-strip" class="filter-strip ${state.filtersExpanded?'filter-open':''}" ${!state.filtersExpanded?'hidden':''}><label>Team<select data-filter="team" aria-label="Filter photos by team"><option value="">All teams</option>${state.teams.map(t=>`<option value="${attr(t.id)}" ${state.filter.team===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label><label>Tournament<select data-filter="tournament" aria-label="Filter photos by tournament"><option value="">All tournaments</option>${state.tournaments.map(t=>`<option value="${attr(t.id)}" ${state.filter.tournament===t.id?'selected':''}>${esc(t.title)}</option>`).join('')}</select></label><label>Texas SCTP Season<select data-filter="season" aria-label="Filter by Texas SCTP Season"><option value="">All seasons</option>${state.availableSeasons.map(v=>`<option value="${attr(v)}" ${state.filter.season===v?'selected':''}>Season ${esc(v)}</option>`).join('')}</select></label><button class="clear-filters" data-action="clear-filters">Clear filters</button></div>
+      <div id="filter-strip" class="filter-strip ${state.filtersExpanded?'filter-open':''}" ${!state.filtersExpanded?'hidden':''}><label>Team<select data-filter="team" aria-label="Filter photos by team"><option value="">All teams</option>${state.teams.map(t=>`<option value="${attr(t.id)}" ${state.filter.team===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label><label>Tournament<select data-filter="tournament" aria-label="Filter photos by tournament"><option value="">All tournaments</option>${state.tournaments.map(t=>`<option value="${attr(t.id)}" ${state.filter.tournament===t.id?'selected':''}>${esc(t.title)}</option>`).join('')}</select></label><label>Texas SCTP Season<select data-filter="season" aria-label="Filter by Texas SCTP Season"><option value="">All seasons</option>${state.availableSeasons.map(v=>`<option value="${attr(v)}" ${state.filter.season===v?'selected':''}>Season ${esc(v.replace('-', '–'))}</option>`).join('')}</select></label><button class="clear-filters" data-action="clear-filters">Clear filters</button></div>
       ${state.galleryError?`<p class="form-message form-error" role="alert">${esc(state.galleryError)}</p>`:''}
       ${connected()?(results.length?`<div class="memory-list">${results.map(postCard).join('')}</div>`:state.loading?`<div class="memory-list"><div class="loading-card"><div class="loading-line"></div><div class="loading-media"></div><div class="loading-line"></div></div></div>`:hasFilters?emptyState():previewMemory()):previewMemory()}
       ${state.hasMore&&connected()?`<div class="more-wrap"><button class="btn btn-outline" data-action="load-more" ${state.loading?'disabled':''}>${state.loading?'Loading...':'Load more photos'}</button></div>`:''}</div>
@@ -612,9 +614,9 @@
       const extra=$('#other-event-wrap'),date=$('#upload-date'),info=$('#event-date-info'),label=$('#event-date-text');
       const event=tournament(element.value);if(extra)extra.hidden=element.value!=='other';
       if(date)date.value=event?.event_date||'';if(info)info.hidden=!event;
-      if(label)label.textContent=event?'Tournament date: '+dateFmt(event.event_date):'';return;
+      if(label)label.textContent=event?'Tournament date: '+dateFmt(event.event_date)+' · Texas SCTP Season '+seasonLabel(event.event_date):'';return;
     }
-    if(element.id==='upload-manual-date'){const date=$('#upload-date');if(date)date.value=element.value;return;}
+    if(element.id==='upload-manual-date'){const date=$('#upload-date');if(date)date.value=element.value;const label=$('#event-date-text'),info=$('#event-date-info');if(label)label.textContent=element.value?'Texas SCTP Season '+seasonLabel(element.value):'';if(info)info.hidden=!element.value;return;}
     if(element.dataset.filter){state.filter[element.dataset.filter]=element.value;if(element.dataset.filter==='season'){await loadGallery(true);}else render();return;}
   }
   function isSupportedImage(file){return ['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(file.type)||/\.(heic|heif)$/i.test(file.name||'');}
