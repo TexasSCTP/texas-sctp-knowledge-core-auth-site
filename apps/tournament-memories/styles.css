@@ -299,3 +299,78 @@ body{background:var(--paper);font-size:14px}
 
 
 .preview-banner{display:none!important}
+
+
+/* Texas SCTP ON THE RANGE | 2026 action-first visual refresh */
+/* Athletic editorial typography and faster visual rhythm, without changing saved image crops. */
+:root{--gold:#e0a441;--orange:#c84230;--paper:#f4f6f7;--navy:#0b2b4a;--navy-deep:#081f37}
+body{background:var(--paper)}
+.topbar{border-bottom:2px solid #e8ecee;box-shadow:0 2px 10px rgba(6,30,50,.025)}
+.brand-copy strong{font-weight:900;letter-spacing:.035em}
+.brand-copy small{font-weight:900;letter-spacing:.20em;color:#bb4d37}
+.header-context{text-transform:uppercase;letter-spacing:.13em;font-size:10px;font-weight:850;color:#667b8a}
+.hero.hero-photo{border-bottom:5px solid #dca447}
+.hero-photo .hero-text{flex:0 1 545px;max-width:545px}
+.hero-photo .hero-text:before{content:'';display:block;width:66px;height:5px;background:#e9b64f;transform:skew(-22deg);margin:0 0 18px 3px;box-shadow:12px 0 0 rgba(233,182,79,.3)}
+.hero-photo .hero-kicker{font-family:var(--sans);font-size:10.3px!important;letter-spacing:.21em!important;font-weight:900!important;color:#f6d68f!important;margin:0 0 13px!important;text-transform:uppercase}
+.kicker-slash{font-weight:900;color:#ffb84b;margin:0 3px}
+.hero-photo h1{font-family:var(--sans);font-weight:950;font-style:normal;font-size:clamp(47px,4.8vw,72px);line-height:.98;letter-spacing:-.067em;text-transform:uppercase;margin:0 0 19px;text-shadow:0 4px 22px rgba(0,0,0,.24)}
+.hero-photo h1 em{font-style:normal;display:block;font-weight:950;color:#fac55e;letter-spacing:-.065em}
+.hero-photo .hero-lede{font-family:var(--sans);font-weight:520;font-size:15px;line-height:1.53;max-width:470px;color:#f4f7f8;margin:0 0 20px;text-wrap:pretty}
+.hero-cta-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero-photo .hero-share{border-radius:5px;min-height:49px;padding:14px 22px;font-weight:900;font-size:13px;letter-spacing:.035em;background:#e5b14f;box-shadow:0 9px 22px rgba(0,0,0,.17);text-transform:uppercase}
+.hero-photo .hero-share:hover{background:#ffd16b}
+.hero-see{display:inline-flex;align-items:center;gap:9px;padding:13px 0;border:0;border-bottom:2px solid #f4c464;color:#fff;background:transparent;font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;transition:color .16s}
+.hero-see:hover{color:#ffcf6c}
+.hero-see .icon{width:17px;height:17px;color:#f4c464}
+.hero-photo .hero-assurance{margin-top:19px;color:#f0f3f6;font-size:10.5px;font-weight:600}
+.hero-photo .hero-slideshow-scrim{background:linear-gradient(90deg,rgba(5,21,37,.035) 0%,rgba(6,25,44,.17) 35%,rgba(6,25,44,.68) 54%,rgba(6,25,44,.96) 100%)}
+.section-intro{padding-top:46px;padding-bottom:24px}
+.section-kicker{color:#bc4937!important;font-size:10px;font-weight:900;letter-spacing:.22em}
+.section-intro h2{font-family:var(--sans);font-weight:900;letter-spacing:-.05em;text-transform:uppercase;color:var(--navy);font-size:clamp(30px,3vw,39px);line-height:1.06;margin-bottom:10px}
+.section-intro p{font-weight:520;font-size:13px;color:#5e7181;max-width:610px}
+.gallery-toolbar .searchbox{background:#fff;border-left:3px solid #d9a344}
+.gallery-toolbar .searchbox:focus-within{border-left-color:#bd4231}
+.filter-trigger{font-weight:800;letter-spacing:.015em}
+.sample-photo-card,.memory-card{border-radius:10px;border-color:#dfe5e8;box-shadow:0 12px 24px rgba(11,43,74,.045);transition:transform .20s ease,box-shadow .20s ease}
+.sample-photo-card:hover,.memory-card:hover{transform:translateY(-3px);box-shadow:0 18px 32px rgba(11,43,74,.105)}
+.sample-photo-mark{background:#0b2b4a;color:white;font-weight:950}
+.sample-photo-heading{padding:14px 15px 12px}
+.sample-photo-heading strong{font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.035em}
+.sample-photo-heading small{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:#a06c24}
+.sample-photo-caption{font-size:13px;letter-spacing:.005em;font-weight:850;border-top:3px solid #e3b454;background:#fff}
+.memory-byline strong{font-weight:900}
+.memory-caption{font-size:14px;color:#273f54}
+.gallery-trust{font-size:11px;color:#627685}
+.site-footer{border-top:3px solid #e0ac4c}
+.footer-left strong{font-weight:900;color:#0b2b4a;letter-spacing:.055em}
+.footer-sep{color:#ba4634;margin:0 4px}
+@media(max-width:1020px){
+ .hero-photo .hero-text{flex-basis:48%;max-width:500px}
+ .hero-photo h1{font-size:clamp(42px,4.8vw,60px)}
+ .hero-photo .hero-lede{font-size:13.7px}
+ .hero-cta-row{gap:13px}
+}
+@media(max-width:780px){
+ .hero-photo .hero-text{flex:1;max-width:560px}
+ .hero-photo .hero-text:before{margin-bottom:12px;height:4px;width:49px}
+ .hero-photo h1{font-size:clamp(39px,7vw,50px);margin-bottom:12px}
+ .hero-photo .hero-lede{font-size:13px;line-height:1.48;margin-bottom:16px;max-width:480px}
+ .hero-photo .hero-kicker{font-size:9px!important;margin-bottom:10px!important;letter-spacing:.13em!important}
+ .hero-photo .hero-slideshow-scrim{background:linear-gradient(180deg,rgba(6,25,45,.02) 0%,rgba(6,25,45,.03) 28%,rgba(6,25,45,.45) 48%,rgba(6,25,45,.94) 71%,rgba(6,25,45,.99) 100%)}
+ .section-intro{padding-top:32px}
+}
+@media(max-width:560px){
+ .topbar{height:67px;min-height:67px}
+ .hero-photo .hero-text{max-width:100%}
+ .hero-photo h1{font-size:clamp(36px,10.1vw,43px);line-height:.99;max-width:380px}
+ .hero-photo .hero-lede{font-size:12.5px;max-width:360px;line-height:1.48}
+ .hero-photo .hero-share{min-height:45px;padding:12px 14px;font-size:11.5px}
+ .hero-cta-row{gap:14px}
+ .hero-see{font-size:10.5px;padding:10px 0}
+ .hero-see .icon{width:14px;height:14px}
+ .hero-photo .hero-assurance{font-size:10px;margin-top:11px}
+ .section-intro h2{font-size:31px}
+ .sample-photo-list{gap:15px}
+}
+@media(prefers-reduced-motion:reduce){.sample-photo-card,.memory-card,.hero-see{transition:none;transform:none}}
