@@ -13,6 +13,7 @@ for(const [source,release] of [
   ['app.js','app-range-season-20261108.js'],
   ['app.js','app-range-logos-20261108.js'],
   ['app.js','app-range-logos-public-20261108.js'],
+  ['app.js','app-range-logos-public-v2-20261108.js'],
   ['styles.css','styles-range-season-20261108.css'],
   ['styles.css','styles-range-logos-20261108.css'],
   ['hero-admin.js','hero-admin-range-20261108.js'],
