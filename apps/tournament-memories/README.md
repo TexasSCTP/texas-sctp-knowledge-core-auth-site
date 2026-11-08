@@ -1,6 +1,6 @@
-# Texas SCTP | Tournament Memories
+# Texas SCTP | On the Range
 
-A simplified, photo-first, mobile-responsive gallery for Texas SCTP's public Tournament Photos page. Built without Base44, without visitor accounts, and without an extra Render server. The interface can be embedded in Google Sites or opened directly.
+**Current implementation status (November 8, 2026):** The refreshed Render staging website is deployed. Complete backend SQL, Cloudflare Turnstile protected upload Edge Function, private-photo policies, moderator workflow, Facebook/Instagram social worker, scheduler template, reference seed and automated source-contract tests are committed under `supabase/`, `automation/` and `tests/`. **Backend deployment has not occurred**, because a dedicated Supabase project must be authorized and configured separately; existing financial and scholarship systems are explicitly excluded. Social channels default OFF until the official Meta/Zapier accounts are authorized and end-to-end tests pass. See [`supabase/README_BACKEND.md`](supabase/README_BACKEND.md) and [`automation/ZAPIER_SETUP.md`](automation/ZAPIER_SETUP.md).\n\nA simplified, photo-first, mobile-responsive gallery for Texas SCTP's public Tournament Photos page. Built without Base44, without visitor accounts, and without an extra Render server. The interface can be embedded in Google Sites or opened directly.
 
 ## What visitors can do
 
@@ -14,7 +14,7 @@ A simplified, photo-first, mobile-responsive gallery for Texas SCTP's public Tou
 
 Authorized Texas SCTP moderators use a separate email-link sign-in to review photos and comments. Everything submitted by guests remains private or hidden until a moderator approves it. Unapproved files are in a private Supabase Storage bucket, not a publicly accessible folder.
 
-## Current status, November 6, 2026
+## Historical project notes (November 6, 2026; superseded by the status above)
 
 **Implemented in the included source package:** HTML/CSS/JavaScript interface, no-login guest workflows, Supabase schema and access rules, protected guest-submission Edge Function, upload token flow, image compression, CAPTCHA wiring, moderation interface, and initial reference catalog from Texas SCTP's approved public Airtable data.
 
