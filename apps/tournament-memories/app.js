@@ -491,17 +491,20 @@
     if(!state.teams.some(t=>t.id===teamId)||!eventId||(eventId==='other'&&eventName.length<3)||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day)||!fields.get('consent')){
       toast('Complete the team, tournament, date, and permission fields.',true);return;
     }
+    if(state.logoUploadFile&&!fields.get('logoPermission')){toast('Confirm permission to display the proposed team logo publicly.',true);return;}
     if(!state.guestPending&&!state.turnstileTokens.upload){toast('Complete the quick security check.',true);return;}
     if(day>todayCentral()){toast('Please use the actual tournament date.',true);return;}
     state.uploadBusy=true;const button=$('#upload-form button[type=submit]');if(button){button.disabled=true;button.textContent='Preparing and uploading photos...';}
     try{
       if(!state.guestPending){
         const blobs=await Promise.all(state.uploadFiles.map(f=>compress(f.file)));
+        const logoBlob=state.logoUploadFile?await compressLogo(state.logoUploadFile.file):null;
         const started=await guestCall({action:'begin',teamId,tournamentId:event?.id||null,otherTournament:eventId==='other'?eventName:null,
           photoDate:day,credit:String(fields.get('credit')||'').trim(),caption:String(fields.get('caption')||'').trim(),
-          fileCount:blobs.length,consent:true,socialConsent:Boolean(fields.get('socialConsent')),website:String(fields.get('website')||''),turnstileToken:state.turnstileTokens.upload});
-        if(!started?.slots||started.slots.length!==blobs.length)throw Error('Unexpected upload response.');
-        state.guestPending={...started,blobs,next:0};
+          fileCount:blobs.length,consent:true,socialConsent:Boolean(fields.get('socialConsent')),
+          logoRequested:Boolean(logoBlob),logoPermission:Boolean(fields.get('logoPermission')),website:String(fields.get('website')||''),turnstileToken:state.turnstileTokens.upload});
+        if(!started?.slots||started.slots.length!==blobs.length||(logoBlob&&!started.logoSlot))throw Error('Unexpected upload response.');
+        state.guestPending={...started,blobs,next:0,logoBlob,logoUploaded:false};
       }
       const pending=state.guestPending;
       while(pending.next<pending.blobs.length){
@@ -510,6 +513,13 @@
         const {error}=await state.client.storage.from(BUCKET).uploadToSignedUrl(slot.path,slot.token,pending.blobs[index],{contentType:'image/webp'});
         if(error)throw error;
         pending.next++;
+      }
+      if(pending.logoSlot&&pending.logoBlob&&!pending.logoUploaded){
+        if(button)button.textContent='Uploading proposed team logo...';
+        const {error}=await state.client.storage.from(LOGO_BUCKET)
+          .uploadToSignedUrl(pending.logoSlot.path,pending.logoSlot.token,pending.logoBlob,{contentType:'image/webp'});
+        if(error)throw error;
+        pending.logoUploaded=true;
       }
       if(button)button.textContent='Sending for approval...';
       const done=await guestCall({action:'finish',submissionId:pending.submissionId,submissionKey:pending.submissionKey});
@@ -532,7 +542,31 @@
       if(blob.size>5*1024*1024)throw new Error('Photo is too large after processing. Try a smaller image.');return blob;
     }finally{URL.revokeObjectURL(url);}
   }
-  function releaseUploads(){state.uploadFiles.forEach(f=>URL.revokeObjectURL(f.preview));state.uploadFiles=[];}
+  async function compressLogo(file){
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>8*1024*1024)
+      throw Error('Choose a JPG, PNG, or WebP team logo under 8 MB.');
+    const image=await createImageBitmap(file);
+    try{
+      if(image.width<64||image.height<64)throw Error('Your team logo must be at least 64 pixels wide and tall.');
+      const ratio=Math.min(1,768/Math.max(image.width,image.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(image.width*ratio));
+      canvas.height=Math.max(1,Math.round(image.height*ratio));
+      const ctx=canvas.getContext('2d');
+      if(!ctx)throw Error('Cannot process this team logo on your device.');
+      ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      const blob=await new Promise((resolve,reject)=>canvas.toBlob(x=>x?resolve(x):reject(Error('Cannot convert team logo.')),'image/webp',0.88));
+      if(blob.type!=='image/webp'||blob.size>2*1024*1024||blob.size<100)
+        throw Error('Team logo could not be converted to an image under 2 MB.');
+      return blob;
+    }finally{image.close();}
+  }
+  function releaseUploads(){
+    state.uploadFiles.forEach(f=>URL.revokeObjectURL(f.preview));
+    state.uploadFiles=[];
+    if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
+    state.logoUploadFile=null;
+  }
 
   async function submitComment(form){
     if(!guestReady())return toast('Comments will be available once the gallery is connected.',true);
