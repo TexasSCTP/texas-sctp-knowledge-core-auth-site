@@ -5,6 +5,7 @@
 (() => {
   'use strict';
   const DRAFT_KEY='txsctp-slide-editor-v1';
+  const LIVE_DRAFT_KEY='txsctp-live-slide-crops-v1';
   const REPO='TexasSCTP/texas-sctp-knowledge-core-auth-site';
   const BRANCH='staging/tournament-memories-preview';
   const PATH='apps/tournament-memories/hero-config.json';
@@ -13,6 +14,7 @@
   const DEFAULTS={};
   const $=id=>document.getElementById(id);
   let config=null,published=null,selectedId='scene-07',mode='desktop',playing=false,timer=null,drag=null;
+  let client=null,staffUser=null;const livePublished=new Map();
   const naturalSizes=new Map();
   const viewSpecs={desktop:{width:1680,height:430,name:'Desktop hero · exact widescreen ratio'},mobile:{width:390,height:548,name:'Phone hero · full mobile view'},card:{width:520,height:390,name:'Photo card · 4:3 crop'}};
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -33,7 +35,20 @@
     for(const v of defaults.slides)if(!seen.has(v.id))slides.push(clone(v));
     return {version:1,intervalSeconds:10,slides};
   }
-  function saveDraft(){if(!config)return;try{localStorage.setItem(DRAFT_KEY,JSON.stringify(config));setStatus('Saved on this device · not published');}catch{setStatus('Changes unsaved. Storage blocked.','error');}}
+  function sampleSettings(){return {version:1,intervalSeconds:config.intervalSeconds||10,slides:config.slides.filter(s=>!s.live).map(s=>({
+    id:s.id,src:s.src,label:s.label,enabled:s.enabled,desktop:s.desktop,mobile:s.mobile,card:s.card
+  }))};}
+  function getLiveDrafts(){try{return JSON.parse(localStorage.getItem(LIVE_DRAFT_KEY)||'{}')||{};}catch{return {};}}
+  function saveDraft(){if(!config)return;try{
+      localStorage.setItem(DRAFT_KEY,JSON.stringify(sampleSettings()));
+      const slide=getSlide();
+      if(slide?.live){
+        const drafts=getLiveDrafts();
+        drafts[slide.id]={enabled:slide.enabled,desktop:slide.desktop,mobile:slide.mobile,card:slide.card};
+        localStorage.setItem(LIVE_DRAFT_KEY,JSON.stringify(drafts));
+        setStatus('Saved on this device · click Save photo placement');
+      }else setStatus('Saved on this device · sample changes not published');
+    }catch{setStatus('Changes unsaved. Storage blocked.','error');}}
   function markChanged(){saveDraft();updateCanvas();updateSliders();}
   function preload(){for(const s of config.slides){const img=new Image();img.onload=()=>naturalSizes.set(s.src,{width:img.naturalWidth,height:img.naturalHeight});img.src=s.src;}}
   async function init(){
@@ -43,11 +58,14 @@
       for(const s of published.slides)DEFAULTS[s.id]=clone(s);
       preload();renderList();selectSlide(selectedId);sizeStage();
       setStatus(saved?'Saved on this device · not published':'Showing published settings','good');
+      await loadApprovedPhotos();
     }catch(e){setStatus(e.message,'error');document.querySelector('.studio-panel').insertAdjacentHTML('afterbegin',`<p style="color:#a73e35">${esc(e.message)}</p>`);}
   }
   function selectSlide(id){
     const found=config?.slides.find(s=>s.id===id);if(!found)return;
     selectedId=id;renderList();$('selected-caption').textContent=found.label;
+    $('save-live').hidden=!found.live;
+    $('publish-open').textContent=found.live?'Save photo placement':'Publish settings';
     updateSliders();updateCanvas();
   }
   function renderList(){
@@ -61,7 +79,7 @@
       const name=document.createElement('button');name.type='button';name.className='scene-name';name.textContent=`${i+1}. ${s.label}`;name.addEventListener('click',()=>{stopPlayback();selectSlide(s.id)});
       const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.id.replace('scene-','Scene ')+' · '+(s.enabled?'Included':'Hidden');
       const visible=document.createElement('button');visible.className='scene-visibility';visible.type='button';visible.setAttribute('aria-pressed',String(s.enabled));visible.textContent=s.enabled?'Included in slideshow':'Hidden from slideshow';
-      visible.addEventListener('click',()=>{if(s.enabled&&config.slides.filter(x=>x.enabled).length===1){setStatus('At least one photo must remain in the slideshow.','error');return;}s.enabled=!s.enabled;saveDraft();renderList();});
+      visible.addEventListener('click',async()=>{if(s.enabled&&config.slides.filter(x=>x.enabled).length===1){setStatus('At least one photo must remain in the slideshow.','error');return;}s.enabled=!s.enabled;if(s.live)await saveLiveSlide(s);else saveDraft();renderList();});
       content.append(name,order,visible);
       const actions=document.createElement('div');actions.className='scene-actions';
       const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move earlier';up.setAttribute('aria-label',`Move ${s.label} earlier`);up.disabled=i===0;
@@ -116,9 +134,9 @@
   function stopPlayback(){if(timer)clearInterval(timer);timer=null;playing=false;$('play-toggle').textContent='▶ Preview movement';}
   function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>s.enabled);if(!list.length)return;playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
   function resetSelected(){const s=getSlide(),def=DEFAULTS[s.id];if(!def)return;s[mode]=clone(def[mode]);markChanged();}
-  function restorePublished(){if(!published)return;if(!confirm('Discard all local adjustments and restore the published placements?'))return;config=clone(published);localStorage.removeItem(DRAFT_KEY);stopPlayback();renderList();selectSlide(selectedId);setStatus('Showing published settings','good');}
-  function downloadConfig(){if(!config)return;const file=new Blob([JSON.stringify(config,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-  function showPublishModal(){saveDraft();const dlg=$('publish-dialog');$('publish-result').textContent='';$('publish-result').className='';$('github-token').value='';dlg.showModal();}
+  function restorePublished(){if(!published)return;if(!confirm('Discard unsaved adjustments and restore last saved placements?'))return;config=clone(published);config.slides.push(...[...livePublished.values()].map(clone));localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LIVE_DRAFT_KEY);stopPlayback();renderList();selectSlide(config.slides.some(s=>s.id===selectedId)?selectedId:config.slides[0].id);setStatus('Showing saved placements','good');}
+  function downloadConfig(){if(!config)return;const backup={...sampleSettings(),approvedPhotoPlacements:config.slides.filter(s=>s.live).map(s=>({photoId:s.photoId,enabled:s.enabled,desktop:s.desktop,mobile:s.mobile,card:s.card}))};const file=new Blob([JSON.stringify(backup,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+  function showPublishModal(){if(getSlide()?.live){saveLiveSlide(getSlide());return;}saveDraft();const dlg=$('publish-dialog');$('publish-result').textContent='';$('publish-result').className='';$('github-token').value='';dlg.showModal();}
   function b64(str){return btoa(unescape(encodeURIComponent(str)));}
   async function publish(){
     const token=$('github-token').value.trim(),button=$('publish-confirm'),status=$('publish-result');
@@ -129,9 +147,9 @@
       const get=await fetch(`${GH_URL}?ref=${encodeURIComponent(BRANCH)}`,{headers,cache:'no-store'});
       if(!get.ok){let detail='';try{detail=(await get.json()).message||''}catch{}throw Error(`GitHub access failed (${get.status}). ${detail}`);}
       const file=await get.json();if(!file.sha)throw Error('Could not verify the GitHub staging file.');
-      const put=await fetch(GH_URL,{method:'PUT',headers,body:JSON.stringify({message:'Update Texas SCTP slideshow focal points from photo editor',content:b64(JSON.stringify(config,null,2)+'\n'),sha:file.sha,branch:BRANCH})});
+      const put=await fetch(GH_URL,{method:'PUT',headers,body:JSON.stringify({message:'Update Texas SCTP sample slideshow focal points from photo editor',content:b64(JSON.stringify(sampleSettings(),null,2)+'\n'),sha:file.sha,branch:BRANCH})});
       if(!put.ok){let detail='';try{detail=(await put.json()).message||''}catch{}throw Error(`GitHub rejected the update (${put.status}). ${detail}`);}
-      const result=await put.json();published=clone(config);try{localStorage.removeItem(DRAFT_KEY)}catch{}
+      const result=await put.json();published=clone(sampleSettings());try{localStorage.removeItem(DRAFT_KEY)}catch{}
       setStatus('Saved to GitHub · Render deployment needed','good');
       status.textContent=`Saved to staging commit ${(result.commit?.sha||'').slice(0,8)}. Deploy the latest staging commit from Render to make it visible to all visitors.`;
       status.className='';
@@ -153,6 +171,7 @@
   $('restore-published').addEventListener('click',restorePublished);
   $('download-json').addEventListener('click',downloadConfig);
   $('publish-open').addEventListener('click',showPublishModal);
+  $('save-live').addEventListener('click',()=>saveLiveSlide(getSlide()));
   $('publish-cancel').addEventListener('click',()=>$('publish-dialog').close());
   $('publish-close').addEventListener('click',()=>$('publish-dialog').close());
   $('publish-confirm').addEventListener('click',publish);
