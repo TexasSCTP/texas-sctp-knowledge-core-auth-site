@@ -25,6 +25,7 @@
   let HERO_SCENES = ALL_SCENES;
   let APPROVED_HERO_SCENES = [];
   let heroLastLoadedAt = 0;
+  let logosLastLoadedAt = 0;
   let heroReloading = false;
   let heroIntervalMs = 10000;
   function rebuildHeroScenes(){
@@ -279,6 +280,7 @@
     state.teamLogos=new Map(rows.map(row=>[row.team_id,row]));
     state.logoUrls=new Map(rows.filter(row=>signed.has(row.storage_path))
       .map(row=>[row.team_id,signed.get(row.storage_path)]));
+    logosLastLoadedAt=Date.now();
   }
   function logoForTeam(id,name='Texas SCTP team',extra=''){
     const src=state.logoUrls.get(id);
@@ -325,6 +327,9 @@
       }));
       heroLastLoadedAt=Date.now();
       rebuildHeroScenes();
+      if(Date.now()-logosLastLoadedAt>30*60*1000){
+        try{await loadTeamLogos();}catch(error){console.warn('Could not refresh team logo URLs',error);}
+      }
     }catch(error){
       console.warn('Approved slideshow photos could not be loaded; retaining available slides.',error);
       heroLastLoadedAt=Date.now();
