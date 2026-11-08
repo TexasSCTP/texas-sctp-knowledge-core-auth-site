@@ -2,8 +2,8 @@
    publishable key plus the public Cloudflare Turnstile site key. Never add
    SUPABASE_SERVICE_ROLE_KEY, TURNSTILE_SECRET_KEY or rate-limit secrets. */
 window.TEXAS_SCTP_CONFIG = {
-  supabaseUrl: '',
-  supabasePublishableKey: '',
+  supabaseUrl: 'https://mlajcbnuponqyoehxydp.supabase.co',
+  supabasePublishableKey: 'sb_publishable_wrWV6Cj5M48nxFECBrAcKg_h04TWlqX',
   turnstileSiteKey: '',
   storageBucket: 'memories-private',
   brandLogoUrl: 'https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png',
