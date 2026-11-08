@@ -622,11 +622,64 @@
     }
     render();
   }
-  function renderAdmin(){const pendingP=state.adminPosts.length,pendingC=state.adminComments.length;
+
+  function renderTeamLogoAdmin(){
+    const pending=state.adminLogoRequests;
+    const allowed=state.teams.filter(t=>state.logoScopes.includes(null)||state.logoScopes.includes(t.id));
+    const chosen=allowed.find(t=>t.id===state.logoManageTeam)||allowed[0]||null;
+    const selected=chosen?.id||'',src=state.logoUrls.get(selected);
+    return `<div class="team-logo-admin">
+      <section class="logo-admin-panel">
+        <h3>Proposed team logos (${pending.length})</h3>
+        <p class="field-note">A submitted logo does not change the team's gallery branding until you approve it.</p>
+        <div class="review-grid">${pending.map(r=>{
+          const t=team(r.team_id),url=state.pendingLogoUrls.get(r.storage_path);
+          return `<div class="review-card team-logo-request">
+            ${url?`<div class="logo-review-image"><img src="${cleanUrl(url)}" alt="Proposed logo for ${attr(t?.name||'team')}"></div>`:'<div class="logo-review-image">Preview unavailable</div>'}
+            <div class="review-body">
+              <strong>${esc(t?.name||'Unlisted team')}</strong>
+              <div class="meta">Proposed ${dateFmt(r.created_at)} · Awaiting public-display approval</div>
+              <p class="field-note">Approval applies this logo to every approved photo from the same team.</p>
+              <div class="review-actions">
+                <button class="btn btn-primary btn-sm" data-action="approve-team-logo" data-id="${attr(r.id)}" ${url?'':'disabled'}>Approve team logo</button>
+                <button class="btn btn-danger btn-sm" data-action="reject-team-logo" data-id="${attr(r.id)}">Decline</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')||'<p class="full-width-notice">No team logos awaiting approval.</p>'}</div>
+      </section>
+      <section class="logo-admin-panel">
+        <h3>Team logo library</h3>
+        <p>Manage the single approved logo shown on every gallery photo tagged with a team.</p>
+        <div class="form-field"><label for="team-logo-team">Select team</label>
+          <select id="team-logo-team">${allowed.map(t=>`<option value="${attr(t.id)}" ${t.id===selected?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+        </div>
+        ${chosen?`<div class="logo-current-record">
+          <div class="logo-current-preview">${src?logoForTeam(selected,chosen.name):'<span>No logo currently approved</span>'}</div>
+          <div><strong>${esc(chosen.name)}</strong><p class="field-note">${src?'Approved logo is shown on every matching gallery photo.':'A team logo is optional. Posts use team initials until one is approved.'}</p></div>
+        </div>
+        <div class="form-field"><label for="team-logo-source">Source of replacement logo</label>
+          <select id="team-logo-source">
+            <option value="moderator" ${state.logoSource==='moderator'?'selected':''}>Provided by team or coach</option>
+            <option value="team_accounts" ${state.logoSource==='team_accounts'?'selected':''}>Existing Team Accounts logo (authorized copy)</option>
+            <option value="external" ${state.logoSource==='external'?'selected':''}>Other authorized source</option>
+          </select>
+        </div>
+        <div class="logo-staff-actions">
+          <label for="staff-logo-picker" class="btn btn-primary btn-sm">${src?'Replace team logo':'Add team logo'}</label>
+          <input id="staff-logo-picker" type="file" accept="image/png,image/jpeg,image/webp" ${state.logoBusy?'disabled':''}>
+          <button type="button" class="btn btn-danger btn-sm" data-action="remove-current-team-logo" data-id="${attr(selected)}" ${src?'':'disabled'}>Remove team logo</button>
+        </div>
+        <p class="field-note">PNG, JPG or WebP. Images are reduced to a secure WebP copy under 2 MB. Confirm permission for public display when prompted. Changes apply to every photo for this team.</p>`:'<p class="field-note">No teams are assigned to this moderator.</p>'}
+        <p class="field-note">Team Accounts logos are stored privately. Authorized staff may copy an existing approved logo from <a href="https://teamaccounts.texassctp.com/" target="_blank" rel="noopener noreferrer">Team Accounts</a> and upload that copy here. This does not share private portal access or account data.</p>
+      </section>
+    </div>`;
+  }
+  function renderAdmin(){const pendingP=state.adminPosts.length,pendingC=state.adminComments.length,pendingL=state.adminLogoRequests.length;
     return `<div class="content-wrap admin-shell"><div class="admin-heading"><div><div class="eyebrow" style="color:#b78031">ADMINISTRATION</div><h2>Community moderation</h2><p>Review athlete photos and comments before they appear to the public.</p></div><div class="admin-heading-actions"><a class="btn btn-outline" href="./hero-studio.html">Adjust slideshow photos</a><button class="btn btn-outline" data-action="refresh-admin">Refresh queue</button></div></div>
     <div class="admin-stats"><div class="admin-stat"><strong>${pendingP}</strong><small>Photo submissions waiting</small></div><div class="admin-stat"><strong>${pendingC}</strong><small>Comments waiting</small></div><div class="admin-stat"><strong>${shownPosts().length}</strong><small>Published photo posts loaded</small></div></div>
-    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button></div>
-    ${state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button>${p.social_consent?`<button class='btn btn-outline btn-sm' data-action='approve-social-post' data-id='${attr(p.id)}' ${a.length?'':'disabled'}>${icon('camera')} Approve + Spotlight</button>`:''}<button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social promotion permission given. Approve the exact photo and caption before selecting the spotlight option.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:
+    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos (${pendingL})</button></div>
+    ${state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button>${p.social_consent?`<button class='btn btn-outline btn-sm' data-action='approve-social-post' data-id='${attr(p.id)}' ${a.length?'':'disabled'}>${icon('camera')} Approve + Spotlight</button>`:''}<button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social promotion permission given. Approve the exact photo and caption before selecting the spotlight option.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:state.adminTab==='logos'?renderTeamLogoAdmin():
     `<div class="review-grid">${state.adminComments.map(c=>{const p=state.adminPosts.find(x=>x.id===c.post_id)||state.posts.find(x=>x.id===c.post_id);return `<div class="review-card"><div class="review-body review-comment"><strong>${esc(c.display_name)}</strong><div class="meta">${dateFmt(c.created_at)} · ${esc(team(p?.team_id)?.name||'Tournament photo')}</div><p>${esc(c.body)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-comment" data-id="${attr(c.id)}">${icon('check')} Approve</button><button class="btn btn-danger btn-sm" data-action="reject-comment" data-id="${attr(c.id)}">Decline</button></div></div></div>`;}).join('')||'<p class="full-width-notice">No pending comments. You are caught up.</p>'}</div>`}</div>`;
   }
   async function moderate(type,id,decision){
