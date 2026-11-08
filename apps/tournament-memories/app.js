@@ -472,7 +472,7 @@
       <p class="field-note">Team logos are public by default. A first-time logo appears across this team's gallery photos after upload. Existing logos can only be replaced by authorized staff.</p>
       <div id="team-existing-logo" class="team-existing-logo" hidden></div>
       <input type="file" id="logo-picker" accept="image/jpeg,image/png,image/webp" aria-label="Optional team logo image">
-      <div id="logo-preview" class="logo-upload-preview">${state.logoUploadFile?`<img src="${attr(state.logoUploadFile.preview)}" alt="Proposed team logo preview"><span>${esc(state.logoUploadFile.file.name)}</span><button type="button" data-action="remove-logo-upload" class="btn btn-outline btn-sm">Remove</button>`:''}</div>
+      <div id="logo-preview" class="logo-upload-preview">${state.logoUploadFile?`<img src="${attr(state.logoUploadFile.preview)}" alt="Team logo preview"><span>${esc(state.logoUploadFile.file.name)}</span><button type="button" data-action="remove-logo-upload" class="btn btn-outline btn-sm">Remove</button>`:''}</div>
       <p class="field-note">Only provide the official logo for the team selected above. Team logos are intended for public display.</p>
     </div></section>
     <section class="upload-step upload-final"><div class="step-title"><span>3</span><div><h3>Submit for review</h3><p>Texas SCTP checks each submission before it's published.</p></div></div><label class="checkbox-wrap"><input id="photo-consent" name="consent" type="checkbox" required><span>I have permission to share these photos, including any required parent or guardian consent for minors shown.</span></label><label class="checkbox-wrap"><input id="social-consent" name="socialConsent" type="checkbox"><span><strong>Optional social spotlight:</strong> I also permit Texas SCTP to feature an approved photo and reviewed caption on our official Facebook and Instagram pages. Public posts may be reshared. Gallery submission does not require this permission.</span></label><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">${guestReady()?`<div class="captcha-wrap"><div class="captcha-note">${icon('shield','icon-sm')} Quick security check</div><div data-turnstile-slot="upload"></div></div>`:'<p class="form-message form-warn">Photo uploads will open once the final security verification is enabled.</p>'}<div class="form-actions"><button class="btn btn-outline" type="button" data-action="close-modal">Cancel</button><button class="btn btn-navy" type="submit" ${!guestReady()||state.uploadBusy?'disabled':''}>${icon('arrow','icon-sm')} ${state.uploadBusy?'Uploading...':state.guestPending?'Continue upload':'Submit photos'}</button></div><p class="field-note">Need a team or tournament added? <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20On%20the%20Range%20team%20request">Contact Texas SCTP</a>.</p></section>
@@ -529,7 +529,11 @@
       const done=await guestCall({action:'finish',submissionId:pending.submissionId,submissionKey:pending.submissionKey});
       if(!done?.accepted)throw Error('Could not finalize your submission.');
       state.guestPending=null;releaseUploads();state.modal=null;render();
-      toast('Your tournament photos are submitted for review. Thanks for sharing the action!');
+      toast(done.teamLogoResult==='public'
+        ? 'Photos submitted for review. This team\'s first logo is now publicly displayed across its gallery.'
+        : done.teamLogoResult==='replacement'
+          ? 'Photos submitted for review. Team logo received; staff can choose whether to replace the existing logo.'
+          : 'Your tournament photos are submitted for review. Thanks for sharing the action!');
     }catch(e){console.error('Upload failed:',e);toast('Could not complete your photos. '+(e?.message||'Please try again.'),true);}
     finally{state.uploadBusy=false;if(button?.isConnected){button.disabled=false;button.textContent=state.guestPending?'Continue photo upload':'Submit for approval';}if(!state.guestPending)resetChallenge('upload');}
   }
@@ -842,7 +846,7 @@
       if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
       state.logoUploadFile={file,preview:URL.createObjectURL(file)};
       const wrap=$('#logo-preview');
-      if(wrap)wrap.innerHTML=`<img src="${attr(state.logoUploadFile.preview)}" alt="Proposed team logo"><span>${esc(file.name)}</span><button type="button" class="btn btn-outline btn-sm" data-action="remove-logo-upload">Remove</button>`;
+      if(wrap)wrap.innerHTML=`<img src="${attr(state.logoUploadFile.preview)}" alt="Team logo"><span>${esc(file.name)}</span><button type="button" class="btn btn-outline btn-sm" data-action="remove-logo-upload">Remove</button>`;
       return;
     }
     if(element.id==='upload-event'){
