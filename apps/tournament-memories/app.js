@@ -110,7 +110,7 @@
     feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],
     modal:null, selectedPost:null, selectedImage:0, uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
-    turnstileTokens:{upload:'',comment:''}, turnstileWidget:null, guestPending:null, visitorId:null, guestLiked:new Set(),
+    guestPending:null, visitorId:null, guestLiked:new Set(),
     filtersExpanded:false, cardCrops:new Map()
   };
   const el = document.getElementById('app');
@@ -171,7 +171,7 @@
   const postReactions=(id)=>state.reactions.filter(x=>x.post_id===id);
   const shownPosts=()=>state.posts.filter(x=>x.status==='approved');
   const connected=()=>Boolean(state.client);
-  const guestReady=()=>connected() && Boolean(config.turnstileSiteKey) && config.guestUploadsEnabled === true;
+  const guestReady=()=>connected() && config.guestUploadsEnabled === true;
   function newUuid(){
     if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
     const a=new Uint8Array(16);crypto.getRandomValues(a);a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;
@@ -200,32 +200,6 @@
     if(data?.error)throw new Error(data.error);
     return data;
   }
-  function resetChallenge(which){
-    state.turnstileTokens[which]='';
-    if(window.turnstile && state.turnstileWidget!==null){
-      try{window.turnstile.reset(state.turnstileWidget);}catch{}
-    }
-  }
-  function mountChallenge(){
-    const slot=document.querySelector('[data-turnstile-slot]');
-    if(!slot||!config.turnstileSiteKey)return;
-    const which=slot.dataset.turnstileSlot;
-    state.turnstileTokens[which]='';
-    let retries=0;
-    const attempt=()=>{
-      if(!slot.isConnected)return;
-      if(!window.turnstile){if(retries++<30)setTimeout(attempt,150);else slot.textContent='Security check is unavailable. Open the gallery in a new tab and try again.';return;}
-      try{state.turnstileWidget=window.turnstile.render(slot,{
-        sitekey:config.turnstileSiteKey,
-        callback:(token)=>{state.turnstileTokens[which]=token;},
-        'expired-callback':()=>{state.turnstileTokens[which]='';},
-        'error-callback':()=>{state.turnstileTokens[which]='';}
-      });}catch(e){slot.textContent='Could not load the security check. Try the full-page gallery.';console.error(e);}
-    };
-    attempt();
-  }
-
-
   async function connect(){
     await loadHeroConfig();
     if(!config.supabaseUrl || !config.supabasePublishableKey){await loadPreviewCatalog();state.ready=true;render();return;}
@@ -448,7 +422,6 @@
     return `<div class="empty-state"><span class="empty-icon">${icon('camera','icon-lg')}</span><h3>${filtered?'No photos match these filters.':'The next shoot starts here.'}</h3><p>${filtered?'Try another team or tournament, or clear your filters.':'Tournament photos will appear here once submissions are enabled. Get ready to share your team in action.'}</p><button class="btn btn-outline" data-action="${filtered?'clear-filters':'upload'}">${filtered?'Show all photos':'Share Photos'}</button></div>`;}
     function footer(){return `<footer class="site-footer"><div class="footer-inner"><div class="footer-left"><strong>TEXAS SCTP <span class="footer-sep">/</span> ON THE RANGE</strong><span>Every target. Every team. Every tournament. Share the action across Texas.</span></div><div class="footer-links"><a href="${attr(config.organizationUrl||'https://www.texassctp.com/')}" target="_blank" rel="noopener noreferrer">Texas SCTP</a><button data-action="privacy">Photo guidelines</button><a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20removal">Photo removal</a><button data-action="open-full">Open full page</button><button data-action="${state.moderator?'admin':'login'}">${state.moderator?'Moderation':'Staff access'}</button></div></div></footer>`;}
     function renderModal(){
-    if(window.turnstile&&state.turnstileWidget!==null){try{window.turnstile.remove(state.turnstileWidget);}catch{}state.turnstileWidget=null;}
     root.innerHTML='';if(!state.modal)return;
     let html='';let cls='';
     if(state.modal==='upload'){html=uploadModal();cls='modal-wide';}
@@ -458,7 +431,6 @@
     else if(state.modal==='privacy'){html=privacyModal();}
     root.innerHTML=`<div class="modal-backdrop" data-action="backdrop"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${attr(state.modal==='upload'?'Share tournament photos':state.modal==='view'?'Tournament photo':'Texas SCTP')}">${html}</div></div>`;
     const close=$('.close-modal',root);if(close)close.focus();
-    if(state.modal==='upload'||state.modal==='view')mountChallenge();
   }
   function modalHead(title,desc=''){return `<div class="modal-top"><div><h2>${title}</h2>${desc?`<p>${desc}</p>`:''}</div><button class="close-modal" data-action="close-modal" aria-label="Close dialog">${icon('close')}</button></div>`;}
   function selectTeams(){return `<option value="">Choose your team</option>${state.teams.map(t=>`<option value="${attr(t.id)}">${esc(t.name)}</option>`).join('')}`;}
@@ -475,14 +447,14 @@
       <div id="logo-preview" class="logo-upload-preview">${state.logoUploadFile?`<img src="${attr(state.logoUploadFile.preview)}" alt="Team logo preview"><span>${esc(state.logoUploadFile.file.name)}</span><button type="button" data-action="remove-logo-upload" class="btn btn-outline btn-sm">Remove</button>`:''}</div>
       <p class="field-note">Only provide the official logo for the team selected above. Team logos are intended for public display.</p>
     </div></section>
-    <section class="upload-step upload-final"><div class="step-title"><span>3</span><div><h3>Submit for review</h3><p>Texas SCTP checks each submission before it's published.</p></div></div><label class="checkbox-wrap"><input id="photo-consent" name="consent" type="checkbox" required><span>I have permission to share these photos, including any required parent or guardian consent for minors shown.</span></label><label class="checkbox-wrap"><input id="social-consent" name="socialConsent" type="checkbox"><span><strong>Optional social spotlight:</strong> I also permit Texas SCTP to feature an approved photo and reviewed caption on our official Facebook and Instagram pages. Public posts may be reshared. Gallery submission does not require this permission.</span></label><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">${guestReady()?`<div class="captcha-wrap"><div class="captcha-note">${icon('shield','icon-sm')} Quick security check</div><div data-turnstile-slot="upload"></div></div>`:'<p class="form-message form-warn">Photo uploads will open once the final security verification is enabled.</p>'}<div class="form-actions"><button class="btn btn-outline" type="button" data-action="close-modal">Cancel</button><button class="btn btn-navy" type="submit" ${!guestReady()||state.uploadBusy?'disabled':''}>${icon('arrow','icon-sm')} ${state.uploadBusy?'Uploading...':state.guestPending?'Continue upload':'Submit photos'}</button></div><p class="field-note">Need a team or tournament added? <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20On%20the%20Range%20team%20request">Contact Texas SCTP</a>.</p></section>
+    <section class="upload-step upload-final"><div class="step-title"><span>3</span><div><h3>Submit for review</h3><p>Texas SCTP checks each submission before it's published.</p></div></div><label class="checkbox-wrap"><input id="photo-consent" name="consent" type="checkbox" required><span>I have permission to share these photos, including any required parent or guardian consent for minors shown.</span></label><label class="checkbox-wrap"><input id="social-consent" name="socialConsent" type="checkbox"><span><strong>Optional social spotlight:</strong> I also permit Texas SCTP to feature an approved photo and reviewed caption on our official Facebook and Instagram pages. Public posts may be reshared. Gallery submission does not require this permission.</span></label><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">${!guestReady()?'<p class="form-message form-warn">Photo uploads are temporarily unavailable.</p>':''}<div class="form-actions"><button class="btn btn-outline" type="button" data-action="close-modal">Cancel</button><button class="btn btn-navy" type="submit" ${!guestReady()||state.uploadBusy?'disabled':''}>${icon('arrow','icon-sm')} ${state.uploadBusy?'Uploading...':state.guestPending?'Continue upload':'Submit photos'}</button></div><p class="field-note">Need a team or tournament added? <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20On%20the%20Range%20team%20request">Contact Texas SCTP</a>.</p></section>
     </form></div>`;}
     function loginModal(){return `${modalHead('Texas SCTP staff access','For authorized photo and comment moderators only. Visitors do not need to sign in.')}<div class="modal-scroll"><form id="login-form"><div class="form-field"><label for="auth-email">Staff email address</label><input id="auth-email" name="email" type="email" autocomplete="email" required placeholder="staff@texassctp.com"></div><button class="btn btn-navy btn-block" type="submit" ${!connected()?'disabled':''}>${icon('mail')} Send staff sign-in link</button></form><p class="auth-rule">Staff access is granted separately by Texas SCTP. Entering an email here does not provide moderation privileges. If embedded, open the gallery in a full tab to complete staff sign-in.</p><div class="form-actions" style="justify-content:center"><button class="btn btn-outline btn-sm" data-action="open-full">Open gallery in a new tab ${icon('external','icon-xs')}</button></div></div>`;}
 
   function accountModal(){return `${modalHead('Staff account','Texas SCTP moderation access')}<div class="modal-scroll"><p class="form-message">${icon('check','icon-xs')} Signed in as <strong>${esc(state.user?.email||'Texas SCTP staff')}</strong></p><div class="form-actions"><button class="btn btn-outline" type="button" data-action="logout">Sign out</button>${state.moderator?`<button class="btn btn-navy" data-action="admin">${icon('shield')} Review submissions</button>`:''}</div></div>`;}
 
   function viewModal(){const post=state.selectedPost;if(!post)return '';const arr=assets(post.id),photo=arr[state.selectedImage]||arr[0],url=photo&&state.imageUrls.get(photo.storage_path),t=team(post.team_id),ev=tournament(post.tournament_id);
-    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div><div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">${guestReady()?`<div class="captcha-wrap"><div class="captcha-note">${icon('shield','icon-sm')} Quick security check</div><div data-turnstile-slot="comment"></div></div>`:''}<button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button class="reset-link" data-action="report" data-id="${attr(post.id)}">Report or request photo removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
+    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div><div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button class="reset-link" data-action="report" data-id="${attr(post.id)}">Report or request photo removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
   }
     function privacyModal(){return `${modalHead('Community photo guidelines','Keeping our athletes and families safe is our first priority.')}<div class="modal-scroll"><p>Share photos you own or have permission to submit. For athletes under 18, confirm any required parent or guardian consent before posting. Avoid disclosing private athlete information, home addresses, or personal contact details.</p><p>All photos and comments are reviewed before publication. Texas SCTP may decline, hide, or remove submissions. Comments should be positive, relevant, and respectful. We do not allow harassment or unsolicited advertising.</p><p>For correction, removal, or concerns, email <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20concern">${esc(config.contactEmail||'info@texassctp.com')}</a>.</p><p class="field-note">This page provides community guidelines and does not replace Texas SCTP's formal policies or required photography releases.</p></div>`;}
 
@@ -496,7 +468,6 @@
     if(!state.teams.some(t=>t.id===teamId)||!eventId||(eventId==='other'&&eventName.length<3)||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day)||!fields.get('consent')){
       toast('Complete the team, tournament, date, and permission fields.',true);return;
     }
-    if(!state.guestPending&&!state.turnstileTokens.upload){toast('Complete the quick security check.',true);return;}
     if(day>todayCentral()){toast('Please use the actual tournament date.',true);return;}
     state.uploadBusy=true;const button=$('#upload-form button[type=submit]');if(button){button.disabled=true;button.textContent='Preparing and uploading photos...';}
     try{
@@ -506,7 +477,7 @@
         const started=await guestCall({action:'begin',teamId,tournamentId:event?.id||null,otherTournament:eventId==='other'?eventName:null,
           photoDate:day,credit:String(fields.get('credit')||'').trim(),caption:String(fields.get('caption')||'').trim(),
           fileCount:blobs.length,consent:true,socialConsent:Boolean(fields.get('socialConsent')),
-          logoRequested:Boolean(logoBlob),website:String(fields.get('website')||''),turnstileToken:state.turnstileTokens.upload});
+          logoRequested:Boolean(logoBlob),website:String(fields.get('website')||'')});
         if(!started?.slots||started.slots.length!==blobs.length||(logoBlob&&!started.logoSlot))throw Error('Unexpected upload response.');
         state.guestPending={...started,blobs,next:0,logoBlob,logoUploaded:false};
       }
@@ -539,7 +510,7 @@
           ? 'Photos submitted for review. Team logo received; staff can choose whether to replace the existing logo.'
           : 'Your tournament photos are submitted for review. Thanks for sharing the action!');
     }catch(e){console.error('Upload failed:',e);toast('Could not complete your photos. '+(e?.message||'Please try again.'),true);}
-    finally{state.uploadBusy=false;if(button?.isConnected){button.disabled=false;button.textContent=state.guestPending?'Continue photo upload':'Submit for approval';}if(!state.guestPending)resetChallenge('upload');}
+    finally{state.uploadBusy=false;if(button?.isConnected){button.disabled=false;button.textContent=state.guestPending?'Continue photo upload':'Submit for approval';}}
   }
   async function compress(file){
     if(!isSupportedImage(file))throw new Error('Choose a JPG, PNG, WebP or supported iPhone photo.');
@@ -584,13 +555,12 @@
     if(!guestReady())return toast('Comments will be available once the gallery is connected.',true);
     const f=new FormData(form),displayName=String(f.get('displayName')||'').trim(),body=String(f.get('body')||'').trim();
     if(displayName.length<2||displayName.length>60||!body||body.length>400){toast('Enter your display name and a comment of 400 characters or fewer.',true);return;}
-    if(!state.turnstileTokens.comment){toast('Complete the quick security check.',true);return;}
     const submit=form.querySelector('button[type=submit]');if(submit)submit.disabled=true;
     try{
-      await guestCall({action:'comment',postId:String(f.get('postId')),displayName,body,website:String(f.get('website')||''),turnstileToken:state.turnstileTokens.comment});
+      await guestCall({action:'comment',postId:String(f.get('postId')),displayName,body,website:String(f.get('website')||'')});
       form.reset();toast('Your comment has been submitted for review.');
-      resetChallenge('comment');
-    }catch(e){toast('Comment could not be submitted. '+e.message,true);resetChallenge('comment');}
+      
+    }catch(e){toast('Comment could not be submitted. '+e.message,true);}
     finally{if(submit)submit.disabled=false;}
   }
   async function toggleLike(id){
