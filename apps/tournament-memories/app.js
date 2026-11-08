@@ -327,7 +327,7 @@
       }));
       heroLastLoadedAt=Date.now();
       rebuildHeroScenes();
-      if(Date.now()-logosLastLoadedAt>30*60*1000){
+      if(Date.now()-logosLastLoadedAt>5*60*1000){
         try{await loadTeamLogos();}catch(error){console.warn('Could not refresh team logo URLs',error);}
       }
     }catch(error){
@@ -528,7 +528,11 @@
       if(button)button.textContent='Sending for approval...';
       const done=await guestCall({action:'finish',submissionId:pending.submissionId,submissionKey:pending.submissionKey});
       if(!done?.accepted)throw Error('Could not finalize your submission.');
-      state.guestPending=null;releaseUploads();state.modal=null;render();
+      state.guestPending=null;releaseUploads();
+      if(done.teamLogoResult==='public'){
+        try{await loadTeamLogos();}catch(error){console.warn('Unable to refresh newly public team logo',error);}
+      }
+      state.modal=null;render();
       toast(done.teamLogoResult==='public'
         ? 'Photos submitted for review. This team\'s first logo is now publicly displayed across its gallery.'
         : done.teamLogoResult==='replacement'
