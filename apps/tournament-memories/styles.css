@@ -374,3 +374,7 @@ body{background:var(--paper)}
  .sample-photo-list{gap:15px}
 }
 @media(prefers-reduced-motion:reduce){.sample-photo-card,.memory-card,.hero-see{transition:none;transform:none}}
+
+/* Clear staging illustrative-photo notice, distinct from real parent submissions */
+.sample-preview-banner{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:0 0 18px;padding:12px 15px;background:#eef3f5;border:1px solid #dce5ea;border-left:4px solid #d1a14b;border-radius:7px;color:#445b6e;font-size:12px;line-height:1.5}
+.sample-preview-banner strong{color:#153a59;font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:900}
