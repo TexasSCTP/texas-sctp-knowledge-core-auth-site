@@ -104,7 +104,7 @@
     client:null, ready:false, user:null, moderator:false, screen:'gallery',
     teams:[], tournaments:[], availableSeasons:[], posts:[], photos:[], comments:[], reactions:[],
     teamLogos:new Map(), logoUrls:new Map(), adminLogoRequests:[], pendingLogoUrls:new Map(), logoScopes:[],
-    logoUploadFile:null, logoBusy:false, logoManageTeam:'', logoSource:'moderator',
+    logoUploadFile:null, logoBusy:false, logoManageTeam:'', logoSource:'moderator', logoSearch:'', logoView:'saved',
     totalFetched:0, hasMore:true, loading:false, fetching:false, galleryError:'',
     filter:{team:'', tournament:'', season:'', query:'', sort:'newest'},
     feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],
@@ -605,13 +605,44 @@
     render();
   }
 
+
+  function renderLogoCatalogResults(){
+    const allowed=state.teams.filter(t=>state.logoScopes.includes(null)||state.logoScopes.includes(t.id));
+    const query=state.logoSearch.trim().toLocaleLowerCase();
+    const filtered=allowed.filter(t=>
+      (state.logoView==='all'||(state.logoView==='saved'?state.teamLogos.has(t.id):!state.teamLogos.has(t.id))) &&
+      (!query||[t.name,t.shot_team_id||''].join(' ').toLocaleLowerCase().includes(query))
+    );
+    const selected=allowed.find(t=>t.id===state.logoManageTeam)||allowed[0];
+    return `<p class="logo-catalog-result-count" role="status">Showing ${filtered.length} ${filtered.length===1?'team':'teams'}${query?' matching your search':''}</p>
+      <div class="logo-catalog-grid">
+        ${filtered.map(t=>{
+          const saved=state.teamLogos.has(t.id),url=state.logoUrls.get(t.id);
+          return `<button type="button" class="logo-catalog-card ${selected?.id===t.id?'is-selected':''}" data-action="manage-logo-card" data-id="${attr(t.id)}" aria-label="${saved?'Manage':'Add'} team logo for ${attr(t.name)}">
+            <span class="logo-catalog-image">
+              ${url?`<img src="${cleanUrl(url)}" alt="${attr(t.name)} team logo" loading="lazy">`:`<span class="logo-catalog-placeholder" aria-hidden="true">${saved?'?':esc(t.name.slice(0,2).toUpperCase())}</span>`}
+            </span>
+            <span class="logo-catalog-caption">
+              <strong>${esc(t.name)}</strong>
+              <span class="logo-catalog-status ${saved?'is-saved':''}">${saved?(url?'Logo saved':'Preview unavailable'):'No logo yet'}</span>
+            </span>
+            <span class="logo-catalog-manage">${saved?'View and manage':'Add logo'} ${icon('arrow','icon-xs')}</span>
+          </button>`;
+        }).join('')||`<div class="logo-catalog-empty"><strong>${query?'No teams match your search.':state.logoView==='saved'?'No logos have been saved yet.':'No teams in this view.'}</strong>
+          <p>${query?'Try a different team name or clear your search.':state.logoView==='saved'?'Choose the Missing logos filter to start adding team logos.':'Choose another filter to see teams.'}</p>
+          ${query?'<button type="button" class="btn btn-outline btn-sm" data-action="logo-clear-search">Clear search</button>':''}
+        </div>`}
+      </div>`;
+  }
+
   function renderTeamLogoAdmin(){
     const pending=state.adminLogoRequests;
     const allowed=state.teams.filter(t=>state.logoScopes.includes(null)||state.logoScopes.includes(t.id));
     const chosen=allowed.find(t=>t.id===state.logoManageTeam)||allowed[0]||null;
     const selected=chosen?.id||'',src=state.logoUrls.get(selected);
+    const savedCount=allowed.filter(t=>state.teamLogos.has(t.id)).length,missingCount=allowed.length-savedCount;
     return `<div class="team-logo-admin">
-      <section class="logo-admin-panel">
+      ${pending.length?`<section class="logo-admin-panel">
         <h3>Logo replacement suggestions (${pending.length})</h3>
         <p class="field-note">First-time team logos are public by default. When a different logo is already on file, choose whether the new submission should replace it.</p>
         <div class="review-grid">${pending.map(r=>{
@@ -629,8 +660,8 @@
             </div>
           </div>`;
         }).join('')||'<p class="full-width-notice">No replacement requests. First-time logos are published automatically.</p>'}</div>
-      </section>
-      <section class="logo-admin-panel">
+      </section>`:""}
+      <section class="logo-admin-panel" id="team-logo-library" tabindex="-1">
         <h3>Team logo library</h3>
         <p>Manage the team's public logo, displayed on every gallery photo tagged with that team.</p>
         <div class="form-field"><label for="team-logo-team">Select team</label>
@@ -640,7 +671,7 @@
           <div class="logo-current-preview">${src?logoForTeam(selected,chosen.name):'<span>No logo on file</span>'}</div>
           <div><strong>${esc(chosen.name)}</strong><p class="field-note">${src?'This logo appears on every matching gallery photo.':'A team logo is optional. Posts use team initials until a logo is uploaded.'}</p></div>
         </div>
-        <div class="form-field"><label for="team-logo-source">Source of replacement logo</label>
+        <div class="form-field"><label for="team-logo-source">Logo source</label>
           <select id="team-logo-source">
             <option value="moderator" ${state.logoSource==='moderator'?'selected':''}>Provided by team or coach</option>
             <option value="team_accounts" ${state.logoSource==='team_accounts'?'selected':''}>Existing Team Accounts logo (authorized copy)</option>
@@ -652,15 +683,37 @@
           <input id="staff-logo-picker" type="file" accept="image/png,image/jpeg,image/webp" ${state.logoBusy?'disabled':''}>
           <button type="button" class="btn btn-danger btn-sm" data-action="remove-current-team-logo" data-id="${attr(selected)}" ${src?'':'disabled'}>Remove team logo</button>
         </div>
-        <p class="field-note">PNG, JPG or WebP. Images are reduced to a secure WebP copy under 2 MB. Team logos are approved for public display by default. Changes apply to every photo for this team.</p>`:'<p class="field-note">No teams are assigned to this moderator.</p>'}
+        <p class="field-note">PNG, JPG or WebP. Images are reduced to a secure WebP copy under 2 MB. Team logos are approved for public display by default. Choosing a file saves it immediately and updates every photo for this team.</p>`:'<p class="field-note">No teams are assigned to this moderator.</p>'}
         <p class="field-note">Team Accounts logos are stored privately. Authorized staff may copy a team logo from <a href="https://teamaccounts.texassctp.com/" target="_blank" rel="noopener noreferrer">Team Accounts</a> and upload that copy here. This does not share private portal access or account data.</p>
+      </section>
+
+      <section class="logo-admin-panel logo-catalog-panel" id="logo-catalog-panel">
+        <div class="logo-catalog-header">
+          <div><h3>Team logo gallery</h3>
+            <p>See all saved team logos in one place. Select any team below to add, replace, or remove its logo.</p></div>
+          <div class="logo-catalog-totals" aria-label="Team logo status">
+            <div class="logo-catalog-total"><strong>${savedCount}</strong><span>Logos saved</span></div>
+            <div class="logo-catalog-total"><strong>${missingCount}</strong><span>Teams without logos</span></div>
+          </div>
+        </div>
+        <div class="logo-catalog-toolbar">
+          <div class="form-field logo-catalog-search"><label for="team-logo-search">Find a team</label>
+            <input type="search" id="team-logo-search" placeholder="Search team name or ID" aria-label="Search team logos" autocomplete="off" value="${attr(state.logoSearch)}">
+          </div>
+          <div class="logo-catalog-filters" role="group" aria-label="Filter team logos">
+            <button type="button" class="logo-catalog-filter ${state.logoView==='saved'?'active':''}" data-action="logo-filter-saved" aria-pressed="${state.logoView==='saved'}">Saved <strong>${savedCount}</strong></button>
+            <button type="button" class="logo-catalog-filter ${state.logoView==='missing'?'active':''}" data-action="logo-filter-missing" aria-pressed="${state.logoView==='missing'}">Missing <strong>${missingCount}</strong></button>
+            <button type="button" class="logo-catalog-filter ${state.logoView==='all'?'active':''}" data-action="logo-filter-all" aria-pressed="${state.logoView==='all'}">All teams <strong>${allowed.length}</strong></button>
+          </div>
+        </div>
+        <div id="logo-catalog-results">${renderLogoCatalogResults()}</div>
       </section>
     </div>`;
   }
   function renderAdmin(){const pendingP=state.adminPosts.length,pendingC=state.adminComments.length,pendingL=state.adminLogoRequests.length;
     return `<div class="content-wrap admin-shell"><div class="admin-heading"><div><div class="eyebrow" style="color:#b78031">ADMINISTRATION</div><h2>Community moderation</h2><p>Review athlete photos and comments before they appear to the public.</p></div><div class="admin-heading-actions"><a class="btn btn-outline" href="./hero-studio.html">Adjust slideshow photos</a><button class="btn btn-outline" data-action="refresh-admin">Refresh queue</button></div></div>
     <div class="admin-stats"><div class="admin-stat"><strong>${pendingP}</strong><small>Photo submissions waiting</small></div><div class="admin-stat"><strong>${pendingC}</strong><small>Comments waiting</small></div><div class="admin-stat"><strong>${shownPosts().length}</strong><small>Published photo posts loaded</small></div></div>
-    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos (${pendingL})</button></div>
+    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos${pendingL?` (${pendingL} to review)`:""}</button></div>
     ${state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button>${p.social_consent?`<button class='btn btn-outline btn-sm' data-action='approve-social-post' data-id='${attr(p.id)}' ${a.length?'':'disabled'}>${icon('camera')} Approve + Spotlight</button>`:''}<button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social promotion permission given. Approve the exact photo and caption before selecting the spotlight option.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:state.adminTab==='logos'?renderTeamLogoAdmin():
     `<div class="review-grid">${state.adminComments.map(c=>{const p=state.adminPosts.find(x=>x.id===c.post_id)||state.posts.find(x=>x.id===c.post_id);return `<div class="review-card"><div class="review-body review-comment"><strong>${esc(c.display_name)}</strong><div class="meta">${dateFmt(c.created_at)} · ${esc(team(p?.team_id)?.name||'Tournament photo')}</div><p>${esc(c.body)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-comment" data-id="${attr(c.id)}">${icon('check')} Approve</button><button class="btn btn-danger btn-sm" data-action="reject-comment" data-id="${attr(c.id)}">Decline</button></div></div></div>`;}).join('')||'<p class="full-width-notice">No pending comments. You are caught up.</p>'}</div>`}</div>`;
   }
@@ -748,6 +801,21 @@
     if(action==='gallery'){state.screen='gallery';render();return;}
     if(action==='admin'){if(!state.moderator){state.modal='login';renderModal();return;}state.modal=null;state.screen='admin';render();await loadAdmin();return;}
     if(action==='admin-photos'||action==='admin-comments'||action==='admin-logos'){state.adminTab=action==='admin-photos'?'photos':action==='admin-logos'?'logos':'comments';render();return;}
+
+    if(action.startsWith('logo-filter-')){
+      const view=action.slice('logo-filter-'.length);
+      if(!['saved','missing','all'].includes(view))return;
+      state.logoView=view;render();return;
+    }
+    if(action==='logo-clear-search'){state.logoSearch='';render();$('#team-logo-search')?.focus();return;}
+    if(action==='manage-logo-card'){
+      if(!state.logoScopes.includes(null)&&!state.logoScopes.includes(id))return;
+      state.logoManageTeam=id;render();
+      const panel=$('#team-logo-library');
+      panel?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+      panel?.focus({preventScroll:true});
+      return;
+    }
     if(action==='approve-team-logo'||action==='reject-team-logo'){await reviewTeamLogo(id,action==='approve-team-logo');return;}
     if(action==='remove-current-team-logo'){await removeTeamLogo(id);return;}
     if(action==='refresh-admin'){await loadAdmin();return;}
@@ -844,7 +912,14 @@
       const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');
   }
   let searchTimer;
-  function onInput(e){if(e.target.dataset.filter==='query'){const v=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{state.filter.query=v;render();$('#memory-search')?.focus();$('#memory-search')?.setSelectionRange(v.length,v.length);},250);}}
+  function onInput(e){
+    if(e.target.id==='team-logo-search'){
+      state.logoSearch=e.target.value;
+      const results=$('#logo-catalog-results');
+      if(results)results.innerHTML=renderLogoCatalogResults();
+      return;
+    }
+    if(e.target.dataset.filter==='query'){const v=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{state.filter.query=v;render();$('#memory-search')?.focus();$('#memory-search')?.setSelectionRange(v.length,v.length);},250);}}
   document.addEventListener('dragover',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.add('drag-over');});
   document.addEventListener('dragleave',e=>{const zone=e.target.closest?.('#upload-dropzone');if(zone)zone.classList.remove('drag-over');});
   document.addEventListener('drop',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.remove('drag-over');addChosenPhotos([...e.dataTransfer.files]);});
