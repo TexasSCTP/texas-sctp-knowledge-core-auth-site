@@ -47,7 +47,7 @@ async function quota(req: Request, action: 'begin' | 'comment' | 'react', perHou
   const first = await admin.rpc('memory_consume_quota', { p_hash: who, p_action: action, p_limit: perHour, p_minutes: 60 });
   if (first.error) throw first.error;
   const second = await admin.rpc('memory_consume_quota', { p_hash: global, p_action: action,
-    p_limit: action === 'begin' ? 150 : action === 'comment' ? 500 : 10000, p_minutes: 1440 });
+    p_limit: action === 'begin' ? 400 : action === 'comment' ? 1000 : 10000, p_minutes: 1440 });
   if (second.error) throw second.error;
   if (!first.data || !second.data) throw Error('Too many requests. Try again later.');
   return who;
