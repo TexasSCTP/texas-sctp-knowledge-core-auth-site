@@ -469,11 +469,11 @@
     <section class="upload-step"><div class="step-title"><span>2</span><div><h3>Tag your team and shoot</h3><p>Select your team and tournament. We fill in the date.</p></div></div><div class="form-grid"><div class="form-field"><label for="upload-team">Your team *</label><select id="upload-team" name="team" required>${selectTeams()}</select></div><div class="form-field"><label for="upload-event">Tournament *</label><select id="upload-event" name="tournament" required>${selectEvents()}</select></div></div><input id="upload-date" name="photoDate" type="hidden" value=""><div class="event-date-info" id="event-date-info" hidden>${icon('calendar','icon-sm')} <span id="event-date-text"></span></div><div id="other-event-wrap" hidden><div class="form-grid"><div class="form-field"><label for="upload-other">Tournament name *</label><input id="upload-other" name="other" maxlength="120" placeholder="Name of the tournament"></div><div class="form-field"><label for="upload-manual-date">Tournament date *</label><input id="upload-manual-date" type="date" max="${todayCentral()}"></div></div></div><div class="form-field"><label for="upload-caption">Add a caption <span class="optional">(optional)</span></label><textarea id="upload-caption" name="caption" maxlength="900" rows="3" placeholder="What is your team doing on the range?"></textarea></div>
     <div class="form-field logo-submission-section">
       <label for="logo-picker">Offer your team logo <span class="optional">(optional, only needed once per team)</span></label>
-      <p class="field-note">If your team already has a logo in this gallery, you do not need to upload it again. A new logo will be reviewed before replacing an existing one.</p>
+      <p class="field-note">Team logos are public by default. A first-time logo appears across this team's gallery photos after upload. Existing logos can only be replaced by authorized staff.</p>
       <div id="team-existing-logo" class="team-existing-logo" hidden></div>
       <input type="file" id="logo-picker" accept="image/jpeg,image/png,image/webp" aria-label="Optional team logo image">
       <div id="logo-preview" class="logo-upload-preview">${state.logoUploadFile?`<img src="${attr(state.logoUploadFile.preview)}" alt="Proposed team logo preview"><span>${esc(state.logoUploadFile.file.name)}</span><button type="button" data-action="remove-logo-upload" class="btn btn-outline btn-sm">Remove</button>`:''}</div>
-      <label class="checkbox-wrap"><input id="team-logo-permission" name="logoPermission" type="checkbox"><span>If submitting a logo, I confirm I am authorized to let Texas SCTP display it publicly with this team's gallery photos.</span></label>
+      <p class="field-note">Only provide the official logo for the team selected above. Team logos are intended for public display.</p>
     </div></section>
     <section class="upload-step upload-final"><div class="step-title"><span>3</span><div><h3>Submit for review</h3><p>Texas SCTP checks each submission before it's published.</p></div></div><label class="checkbox-wrap"><input id="photo-consent" name="consent" type="checkbox" required><span>I have permission to share these photos, including any required parent or guardian consent for minors shown.</span></label><label class="checkbox-wrap"><input id="social-consent" name="socialConsent" type="checkbox"><span><strong>Optional social spotlight:</strong> I also permit Texas SCTP to feature an approved photo and reviewed caption on our official Facebook and Instagram pages. Public posts may be reshared. Gallery submission does not require this permission.</span></label><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">${guestReady()?`<div class="captcha-wrap"><div class="captcha-note">${icon('shield','icon-sm')} Quick security check</div><div data-turnstile-slot="upload"></div></div>`:'<p class="form-message form-warn">Photo uploads will open once the final security verification is enabled.</p>'}<div class="form-actions"><button class="btn btn-outline" type="button" data-action="close-modal">Cancel</button><button class="btn btn-navy" type="submit" ${!guestReady()||state.uploadBusy?'disabled':''}>${icon('arrow','icon-sm')} ${state.uploadBusy?'Uploading...':state.guestPending?'Continue upload':'Submit photos'}</button></div><p class="field-note">Need a team or tournament added? <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20On%20the%20Range%20team%20request">Contact Texas SCTP</a>.</p></section>
     </form></div>`;}
@@ -496,7 +496,6 @@
     if(!state.teams.some(t=>t.id===teamId)||!eventId||(eventId==='other'&&eventName.length<3)||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day)||!fields.get('consent')){
       toast('Complete the team, tournament, date, and permission fields.',true);return;
     }
-    if(state.logoUploadFile&&!fields.get('logoPermission')){toast('Confirm permission to display the proposed team logo publicly.',true);return;}
     if(!state.guestPending&&!state.turnstileTokens.upload){toast('Complete the quick security check.',true);return;}
     if(day>todayCentral()){toast('Please use the actual tournament date.',true);return;}
     state.uploadBusy=true;const button=$('#upload-form button[type=submit]');if(button){button.disabled=true;button.textContent='Preparing and uploading photos...';}
@@ -507,7 +506,7 @@
         const started=await guestCall({action:'begin',teamId,tournamentId:event?.id||null,otherTournament:eventId==='other'?eventName:null,
           photoDate:day,credit:String(fields.get('credit')||'').trim(),caption:String(fields.get('caption')||'').trim(),
           fileCount:blobs.length,consent:true,socialConsent:Boolean(fields.get('socialConsent')),
-          logoRequested:Boolean(logoBlob),logoPermission:Boolean(fields.get('logoPermission')),website:String(fields.get('website')||''),turnstileToken:state.turnstileTokens.upload});
+          logoRequested:Boolean(logoBlob),website:String(fields.get('website')||''),turnstileToken:state.turnstileTokens.upload});
         if(!started?.slots||started.slots.length!==blobs.length||(logoBlob&&!started.logoSlot))throw Error('Unexpected upload response.');
         state.guestPending={...started,blobs,next:0,logoBlob,logoUploaded:false};
       }
@@ -520,7 +519,7 @@
         pending.next++;
       }
       if(pending.logoSlot&&pending.logoBlob&&!pending.logoUploaded){
-        if(button)button.textContent='Uploading proposed team logo...';
+        if(button)button.textContent='Uploading team logo...';
         const {error}=await state.client.storage.from(LOGO_BUCKET)
           .uploadToSignedUrl(pending.logoSlot.path,pending.logoSlot.token,pending.logoBlob,{contentType:'image/webp'});
         if(error)throw error;
@@ -635,33 +634,33 @@
     const selected=chosen?.id||'',src=state.logoUrls.get(selected);
     return `<div class="team-logo-admin">
       <section class="logo-admin-panel">
-        <h3>Proposed team logos (${pending.length})</h3>
-        <p class="field-note">A submitted logo does not change the team's gallery branding until you approve it.</p>
+        <h3>Logo replacement suggestions (${pending.length})</h3>
+        <p class="field-note">First-time team logos are public by default. When a different logo is already on file, choose whether the new submission should replace it.</p>
         <div class="review-grid">${pending.map(r=>{
           const t=team(r.team_id),url=state.pendingLogoUrls.get(r.storage_path);
           return `<div class="review-card team-logo-request">
             ${url?`<div class="logo-review-image"><img src="${cleanUrl(url)}" alt="Proposed logo for ${attr(t?.name||'team')}"></div>`:'<div class="logo-review-image">Preview unavailable</div>'}
             <div class="review-body">
               <strong>${esc(t?.name||'Unlisted team')}</strong>
-              <div class="meta">Proposed ${dateFmt(r.created_at)} · Awaiting public-display approval</div>
-              <p class="field-note">Approval applies this logo to every approved photo from the same team.</p>
+              <div class="meta">Submitted ${dateFmt(r.created_at)} · Existing logo is protected</div>
+              <p class="field-note">Choosing this as the current logo updates all gallery photos from this team.</p>
               <div class="review-actions">
-                <button class="btn btn-primary btn-sm" data-action="approve-team-logo" data-id="${attr(r.id)}" ${url?'':'disabled'}>Approve team logo</button>
-                <button class="btn btn-danger btn-sm" data-action="reject-team-logo" data-id="${attr(r.id)}">Decline</button>
+                <button class="btn btn-primary btn-sm" data-action="approve-team-logo" data-id="${attr(r.id)}" ${url?'':'disabled'}>Use this logo</button>
+                <button class="btn btn-danger btn-sm" data-action="reject-team-logo" data-id="${attr(r.id)}">Keep existing</button>
               </div>
             </div>
           </div>`;
-        }).join('')||'<p class="full-width-notice">No team logos awaiting approval.</p>'}</div>
+        }).join('')||'<p class="full-width-notice">No replacement requests. First-time logos are published automatically.</p>'}</div>
       </section>
       <section class="logo-admin-panel">
         <h3>Team logo library</h3>
-        <p>Manage the single approved logo shown on every gallery photo tagged with a team.</p>
+        <p>Manage the team's public logo, displayed on every gallery photo tagged with that team.</p>
         <div class="form-field"><label for="team-logo-team">Select team</label>
           <select id="team-logo-team">${allowed.map(t=>`<option value="${attr(t.id)}" ${t.id===selected?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
         </div>
         ${chosen?`<div class="logo-current-record">
-          <div class="logo-current-preview">${src?logoForTeam(selected,chosen.name):'<span>No logo currently approved</span>'}</div>
-          <div><strong>${esc(chosen.name)}</strong><p class="field-note">${src?'Approved logo is shown on every matching gallery photo.':'A team logo is optional. Posts use team initials until one is approved.'}</p></div>
+          <div class="logo-current-preview">${src?logoForTeam(selected,chosen.name):'<span>No logo on file</span>'}</div>
+          <div><strong>${esc(chosen.name)}</strong><p class="field-note">${src?'This logo appears on every matching gallery photo.':'A team logo is optional. Posts use team initials until a logo is uploaded.'}</p></div>
         </div>
         <div class="form-field"><label for="team-logo-source">Source of replacement logo</label>
           <select id="team-logo-source">
@@ -675,8 +674,8 @@
           <input id="staff-logo-picker" type="file" accept="image/png,image/jpeg,image/webp" ${state.logoBusy?'disabled':''}>
           <button type="button" class="btn btn-danger btn-sm" data-action="remove-current-team-logo" data-id="${attr(selected)}" ${src?'':'disabled'}>Remove team logo</button>
         </div>
-        <p class="field-note">PNG, JPG or WebP. Images are reduced to a secure WebP copy under 2 MB. Confirm permission for public display when prompted. Changes apply to every photo for this team.</p>`:'<p class="field-note">No teams are assigned to this moderator.</p>'}
-        <p class="field-note">Team Accounts logos are stored privately. Authorized staff may copy an existing approved logo from <a href="https://teamaccounts.texassctp.com/" target="_blank" rel="noopener noreferrer">Team Accounts</a> and upload that copy here. This does not share private portal access or account data.</p>
+        <p class="field-note">PNG, JPG or WebP. Images are reduced to a secure WebP copy under 2 MB. Team logos are approved for public display by default. Changes apply to every photo for this team.</p>`:'<p class="field-note">No teams are assigned to this moderator.</p>'}
+        <p class="field-note">Team Accounts logos are stored privately. Authorized staff may copy a team logo from <a href="https://teamaccounts.texassctp.com/" target="_blank" rel="noopener noreferrer">Team Accounts</a> and upload that copy here. This does not share private portal access or account data.</p>
       </section>
     </div>`;
   }
@@ -690,7 +689,7 @@
 
   async function reviewTeamLogo(id,approve){
     if(!state.moderator||!state.adminLogoRequests.some(row=>row.id===id))return;
-    if(approve&&!confirm('Approve this logo for public display on every gallery photo from this team?'))return;
+    if(approve&&!confirm('Use this replacement as the logo for every gallery photo from this team?'))return;
     const {error}=await state.client.rpc('memory_review_team_logo_request',{
       p_request_id:id,p_approve:approve
     });
@@ -698,14 +697,13 @@
     state.pendingLogoUrls.clear();
     await loadTeamLogos();
     await loadAdmin();
-    toast(approve?'Team logo approved for this team.':'Proposed team logo declined.');
+    toast(approve?'Team logo updated across the gallery.':'Existing team logo preserved.');
   }
   async function saveStaffLogo(file){
     if(!state.moderator||!state.user||state.logoBusy)return;
     const teamId=$('#team-logo-team')?.value||state.logoManageTeam;
     const selected=team(teamId);
     if(!selected){toast('Select the correct team before uploading a logo.',true);return;}
-    if(!confirm('Confirm that '+selected.name+' owns this logo or has authorized Texas SCTP to display it publicly across its team gallery.'))return;
     state.logoBusy=true;
     let path='';
     try{
@@ -793,8 +791,7 @@
       if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
       state.logoUploadFile=null;
       const wrap=$('#logo-preview');if(wrap)wrap.innerHTML='';
-      const consent=$('#team-logo-permission');if(consent)consent.checked=false;
-      return;
+        return;
     }
     if(action==='remove-upload'){state.guestPending=null;let n=Number(target.dataset.index);if(state.uploadFiles[n])URL.revokeObjectURL(state.uploadFiles[n].preview);state.uploadFiles.splice(n,1);const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');return;}
     if(action==='open-full'){window.open(window.location.href,'_blank','noopener,noreferrer');return;}
@@ -831,7 +828,7 @@
       const wrap=$('#team-existing-logo'),src=state.logoUrls.get(element.value);
       if(wrap){
         wrap.hidden=!src;
-        wrap.innerHTML=src?`${logoForTeam(element.value,team(element.value)?.name||'Team')} <span>Approved team logo already on file. No reupload needed.</span>`:'';
+        wrap.innerHTML=src?`${logoForTeam(element.value,team(element.value)?.name||'Team')} <span>Team logo already displayed. Staff can replace it if needed.</span>`:'';
       }
       return;
     }
