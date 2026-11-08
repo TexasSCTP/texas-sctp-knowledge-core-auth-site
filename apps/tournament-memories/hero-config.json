@@ -5,7 +5,7 @@
     {
       "id": "scene-02",
       "src": "./public/images/scene-02.webp",
-      "label": "Between stations",
+      "label": "Between Stations",
       "enabled": true,
       "desktop": {
         "x": 30,
@@ -26,7 +26,7 @@
     {
       "id": "scene-01",
       "src": "./public/images/scene-01.webp",
-      "label": "Eyes on the target",
+      "label": "Eyes on the Target",
       "enabled": true,
       "desktop": {
         "x": 36,
@@ -47,7 +47,7 @@
     {
       "id": "scene-03",
       "src": "./public/images/scene-03.webp",
-      "label": "A moment of focus",
+      "label": "Target in Sight",
       "enabled": true,
       "desktop": {
         "x": 32,
@@ -68,7 +68,7 @@
     {
       "id": "scene-04",
       "src": "./public/images/scene-04.webp",
-      "label": "Teamwork worth celebrating",
+      "label": "Squad Celebration",
       "enabled": true,
       "desktop": {
         "x": 41,
@@ -89,7 +89,7 @@
     {
       "id": "scene-05",
       "src": "./public/images/scene-05.webp",
-      "label": "On the shooting line",
+      "label": "On the Shooting Line",
       "enabled": true,
       "desktop": {
         "x": 34,
@@ -110,7 +110,7 @@
     {
       "id": "scene-06",
       "src": "./public/images/scene-06.webp",
-      "label": "Learning from a coach",
+      "label": "Coach on the Range",
       "enabled": true,
       "desktop": {
         "x": 43,
@@ -131,7 +131,7 @@
     {
       "id": "scene-07",
       "src": "./public/images/scene-07.webp",
-      "label": "The memories we share",
+      "label": "Team on the Range",
       "enabled": true,
       "desktop": {
         "x": 31,
