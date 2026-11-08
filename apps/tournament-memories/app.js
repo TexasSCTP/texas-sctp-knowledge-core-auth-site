@@ -595,12 +595,25 @@
   }
   async function loadAdmin(){
     if(!state.client||!state.moderator)return;
-    const [p,c]=await Promise.all([
+    const [p,c,l,scopes]=await Promise.all([
       state.client.from('memory_posts').select('id,team_id,tournament_id,other_tournament,photo_date,photo_credit,caption,status,created_at,social_consent,social_reviewed,caption_social_approved,privacy_hold,expected_photo_count,upload_verified_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
-      state.client.from('memory_comments').select('id,post_id,display_name,body,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100)
+      state.client.from('memory_comments').select('id,post_id,display_name,body,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
+      state.client.from('memory_team_logo_requests').select('id,post_id,team_id,storage_path,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(200),
+      state.client.from('memory_moderators').select('team_id').eq('user_id',state.user.id).limit(500)
     ]);
-    if(p.error||c.error){toast('Could not load moderation queue.',true);return;}
+    if(p.error||c.error||l.error||scopes.error){toast('Could not load moderation queue.',true);return;}
     state.adminPosts=p.data||[];state.adminComments=c.data||[];
+    state.adminLogoRequests=l.data||[];
+    state.logoScopes=(scopes.data||[]).map(x=>x.team_id);
+    if(!state.logoScopes.includes(null)&&
+        !state.logoScopes.includes(state.logoManageTeam))state.logoManageTeam=state.logoScopes.find(Boolean)||'';
+    const knownPending=new Map();
+    await Promise.all(state.adminLogoRequests.map(async row=>{
+      if(state.pendingLogoUrls.has(row.storage_path))return;
+      const {data,error}=await state.client.storage.from(LOGO_BUCKET).createSignedUrl(row.storage_path,3600);
+      if(!error&&data?.signedUrl)knownPending.set(row.storage_path,data.signedUrl);
+    }));
+    for(const [key,url] of knownPending)state.pendingLogoUrls.set(key,url);
     const missing=state.adminPosts.filter(p=>!state.posts.some(x=>x.id===p.id));
     const allIds=state.adminPosts.map(x=>x.id);
     if(allIds.length){
