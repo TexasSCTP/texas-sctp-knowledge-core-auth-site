@@ -177,6 +177,7 @@ begin
       insert into public.memory_social_outbox(post_id,photo_id,platform,publication_key)
       select NEW.id,chosen,c.platform,NEW.id::text||':'||chosen::text||':'||c.platform||':v1'
       from public.memory_social_channels c
+      where true
       on conflict(photo_id,platform) do nothing;
     end if;
   else
