@@ -32,7 +32,7 @@ const str = (x: unknown) => typeof x === 'string' ? x.trim() : '';
 const sha256 = async (x: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(x))))
   .map(v => v.toString(16).padStart(2, '0')).join('');
 async function hmac(x: string) {
-  const key = await crypto.subtle.importKey('raw', encoder.encode(RATE_SECRET), 'HMAC', false, ['sign']);
+  const key = await crypto.subtle.importKey('raw', encoder.encode(RATE_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', key, encoder.encode(x))))
     .map(v => v.toString(16).padStart(2, '0')).join('');
 }
