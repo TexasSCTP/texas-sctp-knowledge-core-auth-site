@@ -5,6 +5,7 @@
   'use strict';
   const config = window.TEXAS_SCTP_CONFIG || {};
   const BUCKET = config.storageBucket || 'memories-private';
+  const LOGO_BUCKET = 'memories-team-logos';
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
   const PAGE_SIZE = 24;
@@ -101,6 +102,8 @@
   const state = {
     client:null, ready:false, user:null, moderator:false, screen:'gallery',
     teams:[], tournaments:[], availableSeasons:[], posts:[], photos:[], comments:[], reactions:[],
+    teamLogos:new Map(), logoUrls:new Map(), adminLogoRequests:[], pendingLogoUrls:new Map(), logoScopes:[],
+    logoUploadFile:null, logoBusy:false, logoManageTeam:'', logoSource:'moderator',
     totalFetched:0, hasMore:true, loading:false, fetching:false, galleryError:'',
     filter:{team:'', tournament:'', season:'', query:'', sort:'newest'},
     feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],
@@ -258,6 +261,30 @@
     if(t.error)throw t.error;if(e.error)throw e.error;
     state.teams=t.data||[];state.tournaments=e.data||[];
     state.availableSeasons=seasons.error?[]:(seasons.data||[]).map(row=>row.season_label);
+    await loadTeamLogos();
+  }
+  async function loadTeamLogos(){
+    if(!state.client)return;
+    const {data,error}=await state.client.from('memory_team_logos')
+      .select('team_id,storage_path,updated_at').limit(1000);
+    if(error){console.warn('Team logo catalog unavailable',error);return;}
+    const rows=data||[];
+    const signed=new Map(),paths=[...new Set(rows.map(row=>row.storage_path))];
+    for(let i=0;i<paths.length;i+=40){
+      const result=await state.client.storage.from(LOGO_BUCKET)
+        .createSignedUrls(paths.slice(i,i+40),3600);
+      if(result.error){console.warn('Approved team logo images unavailable',result.error);continue;}
+      for(const item of result.data||[])if(item.path&&item.signedUrl)signed.set(item.path,item.signedUrl);
+    }
+    state.teamLogos=new Map(rows.map(row=>[row.team_id,row]));
+    state.logoUrls=new Map(rows.filter(row=>signed.has(row.storage_path))
+      .map(row=>[row.team_id,signed.get(row.storage_path)]));
+  }
+  function logoForTeam(id,name='Texas SCTP team',extra=''){
+    const src=state.logoUrls.get(id);
+    return src
+      ? `<img class="team-logo-img ${extra}" src="${cleanUrl(src)}" alt="${attr(name)} team logo" loading="lazy">`
+      : `<span class="team-logo-initials ${extra}" aria-hidden="true">${esc(initials(name))}</span>`;
   }
   async function refreshAccount(){
     if(!state.client)return;
