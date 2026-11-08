@@ -86,7 +86,6 @@ async function begin(req: Request, x: Record<string, unknown>) {
   const other = str(x.otherTournament), date = str(x.photoDate), credit = str(x.credit), caption = str(x.caption);
   const count = Number(x.fileCount);
   const logoRequested=x.logoRequested===true;
-  if(logoRequested && x.logoPermission!==true) throw Error('Confirm you have permission to propose this team logo.');
   if (!teamId || !isDate(date) || !Number.isInteger(count) || count < 1 || count > MAX_UPLOADS
       || credit.length > 80 || caption.length > 900 || other.length > 120
       || (tournamentId === null && other.length < 3)) throw Error('Review your team, event, date and photos.');
@@ -120,8 +119,9 @@ async function begin(req: Request, x: Record<string, unknown>) {
     if (signed.error || !signed.data?.token) throw Error('Could not reserve secure photo upload. Please try again.');
     slots.push({ path: item.storage_path, token: signed.data.token });
   }
-  // Logo proposal is independent of photo approval, and never changes the live
-  // team identity until an authorized moderator reviews and approves it.
+  // The first completed team logo becomes public by default after server-side
+  // validation. A different logo cannot overwrite existing team branding from
+  // an anonymous photo submission; moderators choose any replacement.
   let logoSlot: { path: string, token: string } | null = null;
   if(logoRequested){
     const logoPath='submissions/'+submissionId+'/'+crypto.randomUUID()+'.webp';
@@ -164,10 +164,29 @@ async function finish(x: Record<string, unknown>) {
        !String(uploaded.data.contentType||uploaded.data.mimetype||'').startsWith('image/webp'))
       throw Error('The optional team logo has not finished uploading.');
     if(logoRequest.status==='draft'){
-      const verified=await admin!.from('memory_team_logo_requests').update({
-        status:'pending',upload_verified_at:new Date().toISOString()
+      const verifiedAt=new Date().toISOString();
+      const postTeam=await admin!.from('memory_posts')
+        .select('team_id').eq('id',id).single();
+      if(postTeam.error||!postTeam.data?.team_id)throw Error('Could not verify the logo team.');
+      // First completed logo wins atomically; a guest cannot replace an
+      // existing official logo for the same team.
+      const insert=await admin!.from('memory_team_logos').upsert({
+        team_id:postTeam.data.team_id,storage_path:logoRequest.storage_path,
+        source:'gallery',updated_by:null,updated_at:verifiedAt
+      },{onConflict:'team_id',ignoreDuplicates:true});
+      if(insert.error)throw Error('Could not associate the optional team logo.');
+      const current=await admin!.from('memory_team_logos')
+        .select('storage_path').eq('team_id',postTeam.data.team_id).single();
+      if(current.error||!current.data)throw Error('Could not verify the team logo association.');
+      const nowInUse=current.data.storage_path===logoRequest.storage_path;
+      // A new team logo is immediately available publicly. Only competing
+      // replacements require a moderator to select which logo represents
+      // the team, not a second public-use consent or approval.
+      const finalized=await admin!.from('memory_team_logo_requests').update({
+        status:nowInUse?'approved':'pending',upload_verified_at:verifiedAt,
+        moderated_at:nowInUse?verifiedAt:null
       }).eq('id',logoRequest.id).eq('status','draft');
-      if(verified.error) throw Error('Could not submit the team logo for review.');
+      if(finalized.error)throw Error('Could not finalize the team logo.');
     }
   }
   const done = await admin!.from('memory_posts').update({ status: 'pending', upload_verified_at: new Date().toISOString() }).eq('id',id).eq('status','draft');
