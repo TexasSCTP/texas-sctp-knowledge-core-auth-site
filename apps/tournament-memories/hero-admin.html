@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://api.github.com https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'">
   <title>Slideshow Studio | Texas SCTP On the Range</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./hero-admin.css">
+  <script src="./config.js"></script>
   <script src="./hero-admin.js" defer></script>
 </head>
 <body>
@@ -35,8 +36,9 @@
     <div class="editor-layout">
       <aside class="scene-sidebar" aria-label="Slideshow photos">
         <div class="section-label"><h2>Photo scenes</h2><span id="scene-count">7 scenes</span></div>
+        <p id="live-status" class="sidebar-hint" role="status">Checking approved gallery photographs…</p>
         <div id="scene-list" class="scene-list"></div>
-        <p class="sidebar-hint">Select a photo to adjust it. Use the arrows to change slideshow order, or hide a photo without deleting it.</p>
+        <p class="sidebar-hint">Select an image to adjust it. Approved tournament photos are added automatically. Hide any image from the slideshow without removing it from the gallery.</p>
       </aside>
 
       <section class="studio-center" aria-labelledby="preview-title">
@@ -67,12 +69,12 @@
           <div class="view-hint"><span id="view-label">Desktop hero • full-width action view</span><span id="frame-percent">Position 50% / 50% · 100%</span></div>
           <div class="preview-actions">
             <button type="button" id="play-toggle" class="button button-outline">▶ Preview movement</button>
-            <span class="action-caption">Photos change every 10 seconds. Framing is saved independently for each view.</span>
+            <span class="action-caption">Photos change every 10 seconds in random order. Desktop, mobile, and card framing are saved separately.</span>
           </div>
         </div>
 
         <div class="controls-panel">
-          <div class="controls-head"><div><h2>Fine-tune this photo</h2><p>Drag to move it or adjust the controls below.</p></div><button type="button" class="reset-button" id="reset-image">Reset this photo</button></div>
+          <div class="controls-head"><div><h2>Fine-tune this photo</h2><p>Drag to move it or adjust the controls below.</p></div><div class="editor-actions"><button type="button" class="button button-gold" id="save-live" hidden>Save photo placement</button><button type="button" class="reset-button" id="reset-image">Reset this photo</button></div></div>
           <div class="sliders">
             <label for="pos-x"><span>Horizontal position</span><output id="out-x" for="pos-x">50%</output><input type="range" min="0" max="100" step="1" id="pos-x" value="50"></label>
             <label for="pos-y"><span>Vertical position</span><output id="out-y" for="pos-y">50%</output><input type="range" min="0" max="100" step="1" id="pos-y" value="50"></label>
@@ -90,7 +92,7 @@
     <button type="button" class="dialog-x" id="publish-close" aria-label="Close">×</button>
     <div class="eyebrow"><span></span> CONTROLLED PUBLISHING</div>
     <h2 id="publish-title">Publish your photo placements</h2>
-    <p>To change the shared gallery, authorize a one-time update to the Texas SCTP staging repository. Your token is used for this request only and is never stored.</p>
+    <p>This publishing method is for the original seven illustration scenes only. Approved tournament photo placements are saved directly to the gallery from the editor without a GitHub token.</p>
     <label class="token-label" for="github-token">GitHub fine-grained access token</label>
     <input type="password" id="github-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste token with repository Contents: Read & write">
     <p class="dialog-info">Restricted to <strong>TexasSCTP/texas-sctp-knowledge-core-auth-site</strong>, staging branch only. The editor does not require a token for previews or local drafts.</p>
