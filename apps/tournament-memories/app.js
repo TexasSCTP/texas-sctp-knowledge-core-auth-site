@@ -451,11 +451,119 @@
     else if(state.modal==='login'){html=loginModal();}
     else if(state.modal==='account'){html=accountModal();}
     else if(state.modal==='view'){html=viewModal();cls='modal-post';}
+    else if(state.modal==='gallery-crop'){html=galleryCropEditorModal();cls='modal-wide gallery-position-modal';}
     else if(state.modal==='privacy'){html=privacyModal();}
     root.innerHTML=`<div class="modal-backdrop" data-action="backdrop"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${attr(state.modal==='upload'?'Share tournament photos':state.modal==='view'?'Tournament photo':'Texas SCTP')}">${html}</div></div>`;
     const close=$('.close-modal',root);if(close)close.focus();
   }
   function modalHead(title,desc=''){return `<div class="modal-top"><div><h2>${title}</h2>${desc?`<p>${desc}</p>`:''}</div><button class="close-modal" data-action="close-modal" aria-label="Close dialog">${icon('close')}</button></div>`;}
+
+  function galleryCropEditorModal(){
+    const photo=state.photos.find(item=>item.id===state.cropPhotoId);
+    const post=state.selectedPost, draft=state.cropDraft;
+    if(!photo||!draft||!post)return modalHead('Photo placement unavailable');
+    const src=state.imageUrls.get(photo.storage_path);
+    const teamLabel=team(post.team_id)?.name||'Texas SCTP';
+    const photoNumber=assets(post.id).findIndex(item=>item.id===photo.id)+1;
+    const disabled=state.cropBusy?'disabled':'';
+    return `${modalHead('Adjust gallery photo', 'Fine-tune how this individual photograph appears in the regular tournament gallery.')}
+      <div class="modal-scroll gallery-crop-editor">
+        <div class="gallery-crop-intro"><strong>${esc(teamLabel)}</strong><span>Photo ${photoNumber} of ${assets(post.id).length} · ${esc(tournament(post.tournament_id)?.title||post.other_tournament||'Tournament')}</span></div>
+        <div class="gallery-crop-body">
+          <section class="gallery-crop-preview-side" aria-label="Live photo preview">
+            <div class="gallery-crop-preview-heading"><span>LIVE GALLERY CARD PREVIEW</span><span>3:2 DISPLAY</span></div>
+            <div class="gallery-crop-viewport">
+              ${src?`<img id="gallery-crop-preview-img" src="${cleanUrl(src)}" alt="Preview of adjusted ${attr(teamLabel)} photograph" style="${galleryPhotoStyle(draft)}">`:'<p>Photo preview unavailable. Please refresh the gallery.</p>'}
+            </div>
+            <p class="gallery-crop-caption">This frame matches the gallery feed. The original photo is never edited or replaced.</p>
+            <details class="gallery-crop-original"><summary>Compare with the full original photograph</summary>
+              ${src?`<img src="${cleanUrl(src)}" alt="Uncropped submitted photo">`:''}
+            </details>
+          </section>
+          <section class="gallery-crop-control-side">
+            <fieldset class="gallery-crop-mode"><legend>How should the image fit?</legend>
+              <label><input type="radio" name="gallery-crop-fit" value="cover" ${draft.fit==='cover'?'checked':''} ${disabled}><span><strong>Fill the frame</strong><small>Move the photo to keep faces and awards visible</small></span></label>
+              <label><input type="radio" name="gallery-crop-fit" value="contain" ${draft.fit==='contain'?'checked':''} ${disabled}><span><strong>Show entire photo</strong><small>No cropping. Background margins may be visible</small></span></label>
+            </fieldset>
+            <div class="gallery-crop-presets"><span>Quick vertical position</span>
+              <div><button type="button" data-action="crop-top" ${disabled}>Top / faces</button><button type="button" data-action="crop-center" ${disabled}>Center</button><button type="button" data-action="crop-bottom" ${disabled}>Bottom</button></div>
+            </div>
+            <div class="gallery-crop-range"><label for="gallery-crop-x">Horizontal focus <output data-crop-value="x">${Math.round(draft.x)}%</output></label><input type="range" id="gallery-crop-x" data-crop-field="x" min="0" max="100" step="1" value="${Math.round(draft.x)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Left</span><span>Right</span></div></div>
+            <div class="gallery-crop-range"><label for="gallery-crop-y">Vertical focus <output data-crop-value="y">${Math.round(draft.y)}%</output></label><input type="range" id="gallery-crop-y" data-crop-field="y" min="0" max="100" step="1" value="${Math.round(draft.y)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Top</span><span>Bottom</span></div></div>
+            <div class="gallery-crop-range"><label for="gallery-crop-zoom">Zoom <output data-crop-value="zoom">${Number(draft.zoom).toFixed(2)}×</output></label><input type="range" id="gallery-crop-zoom" data-crop-field="zoom" min="1" max="1.45" step="0.01" value="${Number(draft.zoom).toFixed(2)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Original</span><span>Closer</span></div></div>
+            <div class="gallery-crop-actions"><button type="button" class="btn btn-primary" data-action="save-gallery-crop" ${state.cropBusy||!src?'disabled':''}>${state.cropBusy?'Saving placement...':'Save photo placement'}</button><button type="button" class="btn btn-outline" data-action="crop-reset" ${disabled}>Reset to center</button><button type="button" class="btn btn-outline" data-action="cancel-gallery-crop" ${disabled}>Cancel</button></div>
+            <p class="gallery-crop-note">Adjustments apply only to this photograph in the ordinary gallery. Slideshow positioning stays independent.</p>
+          </section>
+        </div>
+      </div>`;
+  }
+  function refreshGalleryCropPreview(){
+    const draft=state.cropDraft;
+    if(!draft||state.modal!=='gallery-crop')return;
+    const preview=$('#gallery-crop-preview-img',root);
+    if(preview)preview.style.cssText=galleryPhotoStyle(draft);
+    for(const key of ['x','y','zoom']){
+      const slider=$('[data-crop-field="'+key+'"]',root);
+      const label=$('[data-crop-value="'+key+'"]',root);
+      if(slider){
+        slider.value=String(draft[key]);
+        slider.disabled=state.cropBusy||draft.fit==='contain';
+      }
+      if(label)label.textContent=key==='zoom'?Number(draft.zoom).toFixed(2)+'×':Math.round(draft[key])+'%';
+    }
+    for(const input of $('input[name="gallery-crop-fit"]',root)){
+      input.checked=input.value===draft.fit;
+      input.disabled=state.cropBusy;
+    }
+  }
+  function openGalleryCropEditor(postId,origin){
+    if(!state.moderator)return;
+    const post=state.posts.find(item=>item.id===postId)||state.selectedPost;
+    if(!post||post.id!==postId||post.status!=='approved')return;
+    const matching=assets(post.id);
+    const selected=origin==='view'?matching[state.selectedImage]||matching[0]:matching[0];
+    if(!selected){toast('No photograph found for this post.',true);return;}
+    state.selectedPost=post;
+    state.selectedImage=matching.findIndex(item=>item.id===selected.id);
+    state.cropPhotoId=selected.id;
+    state.cropDraft={...galleryPhotoCrop(selected)};
+    state.cropReturnModal=origin==='view'?'view':null;
+    state.modal='gallery-crop';
+    renderModal();
+  }
+  function closeGalleryCropEditor(){
+    const returnModal=state.cropReturnModal;
+    state.cropPhotoId=null;state.cropDraft=null;state.cropReturnModal=null;
+    state.modal=returnModal==='view'?'view':null;
+    render();
+  }
+  async function saveGalleryCrop(){
+    if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!state.cropDraft)return;
+    const draft={...state.cropDraft},photoId=state.cropPhotoId;
+    state.cropBusy=true;
+    const saveButton=$('[data-action="save-gallery-crop"]',root);
+    if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving placement...';}
+    try{
+      const {data,error}=await state.client.rpc('memory_staff_set_photo_card_crop',{
+        p_photo_id:photoId,p_x:Math.round(draft.x),p_y:Math.round(draft.y),
+        p_zoom:draft.fit==='contain'?1:Number(draft.zoom.toFixed(2)),p_fit:draft.fit
+      });
+      if(error)throw error;
+      if(!data?.saved||data?.photo_id!==photoId)throw Error('Photo placement was not confirmed.');
+      const photo=state.photos.find(item=>item.id===photoId);
+      if(photo)Object.assign(photo,{
+        card_crop_x:Number(data.x),card_crop_y:Number(data.y),
+        card_crop_zoom:Number(data.zoom),card_crop_fit:data.fit
+      });
+      state.cropBusy=false;
+      closeGalleryCropEditor();
+      toast('Photo placement saved. The original file and slideshow are unchanged.');
+    }catch(e){
+      state.cropBusy=false;
+      toast('Could not save gallery photo placement. '+(e?.message||''),true);
+      renderModal();
+    }
+  }
   function selectTeams(){return `<option value="">Choose your team</option>${state.teams.map(t=>`<option value="${attr(t.id)}">${esc(t.name)}</option>`).join('')}`;}
   function selectEvents(){return `<option value="">Choose a tournament</option>${state.tournaments.filter(t=>t.event_date<=todayCentral()).map(t=>`<option value="${attr(t.id)}" data-date="${attr(t.event_date)}">${esc(t.title)} · ${dateFmt(t.event_date)}</option>`).join('')}<option value="other">Other Texas SCTP tournament</option>`;}
 
@@ -489,7 +597,7 @@
   function accountModal(){return `${modalHead('Staff account','Texas SCTP moderation access')}<div class="modal-scroll"><p class="form-message">${icon('check','icon-xs')} Signed in as <strong>${esc(state.user?.email||'Texas SCTP staff')}</strong>${state.moderator?` <span class="staff-role-pill">${state.moderatorRole==='owner'?'Owner':state.moderatorRole==='administrator'?'Administrator':'Moderator'}</span>`:''}</p><div class="form-actions"><button class="btn btn-outline" type="button" data-action="logout">Sign out</button>${state.moderator?`<button class="btn btn-navy" data-action="admin">${icon('shield')} Review submissions</button>`:''}</div></div>`;}
 
   function viewModal(){const post=state.selectedPost;if(!post)return '';const arr=assets(post.id),photo=arr[state.selectedImage]||arr[0],url=photo&&state.imageUrls.get(photo.storage_path),t=team(post.team_id),ev=tournament(post.tournament_id);
-    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div><div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button class="reset-link" data-action="report" data-id="${attr(post.id)}">Report or request photo removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
+    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div>${state.moderator&&photo?`<button type="button" class="btn btn-outline btn-sm gallery-view-position-button" data-action="edit-gallery-crop" data-id="${attr(post.id)}">${icon('camera','icon-sm')} Adjust gallery photo placement</button>`:''}<div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button class="reset-link" data-action="report" data-id="${attr(post.id)}">Report or request photo removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
   }
     function privacyModal(){return `${modalHead('Community photo guidelines','Keeping our athletes and families safe is our first priority.')}<div class="modal-scroll"><p>Only adults age 18 or older may submit. Upload photos you own or have the copyright owner's permission to share. You must have necessary permissions from identifiable people in each photo, including any required parent or guardian permission for minors. Being a coach does not itself establish that permission. Avoid disclosing private athlete information, home addresses, or personal contact details.</p><p>All photos and comments are reviewed before publication. Texas SCTP may decline, hide, or remove submissions. Comments should be positive, relevant, and respectful. We do not allow harassment or unsolicited advertising.</p><p>For correction, removal, or concerns, email <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20concern">${esc(config.contactEmail||'info@texassctp.com')}</a>.</p><p class="field-note">This page provides community guidelines and does not replace Texas SCTP's formal policies or required photography releases.</p></div>`;}
 
