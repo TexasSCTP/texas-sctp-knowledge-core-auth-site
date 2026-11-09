@@ -583,3 +583,21 @@ body{background:var(--paper)}
 .gallery-position-admin-more{text-align:center;margin:26px 0}
 @media(max-width:1050px){.gallery-position-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.gallery-position-admin-grid{grid-template-columns:1fr}.gallery-position-admin-heading{align-items:flex-start;flex-direction:column}}
+
+
+/* Explicit three-dot photo menu: Outlook only opens after choosing Report. */
+.memory-action-container{position:relative;flex:0 0 32px;align-self:center;z-index:6}
+.memory-action-container .memory-more{cursor:pointer}
+.memory-more[aria-expanded="true"]{background:#edf3f7;color:#183f5b}
+.memory-actions-dropdown{position:absolute;right:0;top:calc(100% + 7px);z-index:20;min-width:225px;max-width:min(280px,calc(100vw - 30px));padding:6px;background:#fff;border:1px solid #dce5e9;border-radius:9px;box-shadow:0 13px 35px rgba(16,44,66,.18);display:flex;flex-direction:column;gap:2px}
+.memory-actions-dropdown[hidden]{display:none!important}
+.memory-actions-dropdown button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:11px 12px;line-height:1.4;border:0;border-radius:6px;background:transparent;color:#274e69;font-size:11.5px;font-weight:750;cursor:pointer}
+.memory-actions-dropdown button .icon{width:15px;height:15px;flex-shrink:0}
+.memory-actions-dropdown button:hover,.memory-actions-dropdown button:focus-visible{background:#edf3f7;outline:none}
+.memory-actions-dropdown button.danger{color:#a03831;border-top:1px solid #e5ecef;border-radius:0 0 6px 6px;margin-top:3px}
+.memory-actions-dropdown button.danger:hover{background:#fff0ee}
+.photo-edit-context{display:flex;justify-content:space-between;gap:8px 18px;flex-wrap:wrap;padding-bottom:15px;margin-bottom:20px;border-bottom:1px solid #e4eaec}
+.photo-edit-context strong{font-size:13px;color:#163e59}
+.photo-edit-context span{font-size:11px;color:#8395a0}
+.photo-edit-note{padding:13px 15px;border-left:3px solid #bd8f43;border-radius:0 6px 6px 0;background:#fff9eb;color:#6e614b;font-size:11px;line-height:1.65;margin:12px 0 18px}
+@media(max-width:620px){.memory-actions-dropdown{min-width:210px;right:0}.memory-action-container{flex-basis:32px}}
