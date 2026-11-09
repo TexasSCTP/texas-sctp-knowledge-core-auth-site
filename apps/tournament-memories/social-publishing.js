@@ -1,7 +1,7 @@
 window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
   'use strict';
   let context=null;
-  const local={posts:[],photos:[],outbox:[],channels:[],images:new Map(),drafts:new Map(),busy:false,loaded:false,error:'',loading:false};
+  const local={posts:[],photos:[],outbox:[],channels:[],authorizations:new Map(),images:new Map(),drafts:new Map(),busy:false,loaded:false,error:'',loading:false};
   const $=(s)=>document.querySelector(s);
   const h=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const platformName=(p)=>p==='facebook'?'Facebook':'Instagram';
@@ -29,12 +29,13 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
     local.loading=true;local.error='';context.redraw();
     const db=context.state.client;
     try{
-      const [posts,history,channels]=await Promise.all([
+      const [posts,history,channels,consents]=await Promise.all([
         db.from('memory_posts').select('id,team_id,tournament_id,other_tournament,photo_date,caption,photo_credit,status,gallery_consent,social_consent,social_reviewed,caption_social_approved,privacy_hold,created_at,social_reviewed_at').eq('status','approved').order('created_at',{ascending:false}).limit(150),
         db.from('memory_social_outbox').select('id,post_id,photo_id,platform,publication_key,status,created_at,scheduled_at,accepted_at,published_at,external_post_id,last_error,removal_required,approved_caption,approved_at').order('created_at',{ascending:false}).limit(150),
-        db.from('memory_social_channels').select('platform,enabled,max_per_seven_days').order('platform')
+        db.from('memory_social_channels').select('platform,enabled,max_per_seven_days').order('platform'),
+        db.rpc('memory_staff_list_photo_authorizations')
       ]);
-      if(posts.error||history.error||channels.error)throw Error(posts.error?.message||history.error?.message||channels.error?.message||'Could not load social review.');
+      if(posts.error||history.error||channels.error||consents.error)throw Error(posts.error?.message||history.error?.message||channels.error?.message||consents.error?.message||'Could not load social review.');
       const list=posts.data||[],ids=list.map(p=>p.id);
       let photos=[];
       if(ids.length){
@@ -48,6 +49,7 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
         if(!error&&data?.signedUrl)local.images.set(photo.storage_path,data.signedUrl);
       }));
       local.posts=list;local.photos=photos;local.outbox=history.data||[];local.channels=channels.data||[];
+      local.authorizations=new Map((Array.isArray(consents.data)?consents.data:[]).map(c=>[c.post_id,c]));
       local.loaded=true;
     }catch(e){local.error=e?.message||'Could not load social publishing.';}
     finally{local.loading=false;context.redraw();}
@@ -61,20 +63,24 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
     const current=photo.id===d.photoId;
     return `<label class="social-photo-option ${current?'chosen':''}"><input type="radio" name="social-photo-${h(p.id)}" data-social-photo="${h(p.id)}" value="${h(photo.id)}" ${current?'checked':''} aria-label="Choose photo ${index+1} for ${h(teamName(p))}"><span class="social-photo-window">${url?`<img src="${h(url)}" alt="${h(teamName(p))}, photo ${index+1}" loading="lazy">`:'<span class="social-placeholder">Image preview unavailable</span>'}</span><span class="social-photo-legend">${current?'✓ ':''}Photo ${index+1}</span></label>`;
   }
+  function authFor(p){return local.authorizations.get(p.id)||null;}
+  function roleLabel(role){return ({parent_guardian:'Parent or legal guardian',coach_team:'Coach or team representative',photographer:'Photographer or rights owner',other:'Other authorized adult'})[role]||'Authorized adult';}
   function consentLabel(p){
     if(p.privacy_hold)return '<span class="social-pill danger">Privacy hold</span>';
     if(!p.social_consent)return '<span class="social-pill warn">No social consent</span>';
+    if(!authFor(p))return '<span class="social-pill warn">Named release required</span>';
+    if(!authFor(p).social_granted)return '<span class="social-pill warn">Gallery permission only</span>';
     return '<span class="social-pill yes">Social consent recorded</span>';
   }
   function postCard(p){
-    const d=draftFor(p),imgs=photosFor(p.id),eligible=!!(p.social_consent&&!p.privacy_hold&&p.gallery_consent);
+    const d=draftFor(p),imgs=photosFor(p.id),auth=authFor(p),eligible=!!(p.social_consent&&auth?.social_granted&&auth?.confirmed_adult&&!p.privacy_hold&&p.gallery_consent);
     const already=local.outbox.filter(x=>x.post_id===p.id);
     const tags=already.map(x=>`<span class="social-pill neutral">${h(platformName(x.platform))} · ${h(x.status)}</span>`).join('');
     const allPlatforms=(d.facebook?1:0)+(d.instagram?1:0);
     const duplicate=already.some(x=>x.photo_id===d.photoId&&((x.platform==='facebook'&&d.facebook)||(x.platform==='instagram'&&d.instagram)));
     return `<article class="social-review-card">
       <div class="social-card-heading"><div><div class="social-overline">TEAM MEMORY · ${h(context.dateFmt(p.photo_date))}</div><h4>${h(teamName(p))}</h4><p>${h(eventName(p))}</p></div><div class="social-pill-stack">${consentLabel(p)}${tags}</div></div>
-      ${eligible?`<div class="social-review-body">
+      ${eligible?`<div class="social-authorization-proof"><strong>Permission recorded:</strong> ${h(auth.authorizer_name)} · ${h(roleLabel(auth.authorizer_role))} · <a href="mailto:${h(auth.authorizer_email)}">${h(auth.authorizer_email)}</a> · ${h(context.dateFmt(auth.accepted_at))}<small>Submission authorization ${h(auth.disclosure_version)}. Check any separate releases required for recognizable minors before queueing.</small></div><div class="social-review-body">
         <div class="social-photo-select"><strong class="social-section-label"><span>01</span> Choose the photo</strong><p>Select the exact image to publish.</p><div class="social-photo-options">${imgs.map((photo,i)=>photoOption(p,photo,i,d)).join('')||'<p class="social-info">No verified photographs attached.</p>'}</div></div>
         <div class="social-edit-column"><strong class="social-section-label"><span>02</span> Select channels</strong>
           <div class="social-channel-choices"><label><input type="checkbox" data-social-platform="facebook" data-social-post="${h(p.id)}" ${d.facebook?'checked':''}><span class="social-channel-symbol">f</span><span>Facebook<small>${h(channelStatus('facebook'))}</small></span></label>
@@ -86,7 +92,7 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
           <label class="social-review-confirm"><input type="checkbox" data-social-verified="${h(p.id)}" ${d.verified?'checked':''}><span>I reviewed the selected photo and final caption, verified social-sharing permission, and checked any required permissions for minors.</span></label>
           <div class="social-card-actions"><button class="btn btn-primary" data-action="queue-social" data-id="${h(p.id)}" ${(local.busy||!d.verified||!d.photoId||!allPlatforms||!imgs.length)?'disabled':''}>${local.busy?'Saving...':'Approve & Queue'} →</button><small>${duplicate?'Existing queue entries will not be duplicated. ':' '}Queueing does not immediately publish while channels are paused.</small></div>
         </div>
-      </div>`:`<div class="social-locked-message"><strong>Gallery approved, social publishing unavailable.</strong><p>${p.privacy_hold?'This submission is under a privacy hold.': 'This submission did not include affirmative social-media permission. A new, explicitly authorized submission is required before it can be queued.'}</p></div>`}
+      </div>`:`<div class="social-locked-message"><strong>Gallery approved, social publishing unavailable.</strong><p>${p.privacy_hold?'This submission is under a privacy hold.': !p.social_consent?'This submission has gallery permission only. Social-media permission was not granted.':!auth?'This earlier upload has no named adult authorization under the current release. Request a new consented submission before social posting.':'This submission has not granted social-media publication authorization.'}</p></div>`}
     </article>`;
   }
   function history(){
@@ -140,7 +146,7 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
     if(action==='queue-social'){
       const p=local.posts.find(x=>x.id===id);if(!p)return;
       const d=draftFor(p);
-      if(!d.verified||!p.social_consent||p.privacy_hold||!d.photoId){context.toast('Complete the photo review and permission confirmation.',true);return;}
+      if(!d.verified||!p.social_consent||!authFor(p)?.social_granted||p.privacy_hold||!d.photoId){context.toast('Complete the photo review and permission confirmation.',true);return;}
       const targets=['facebook','instagram'].filter(x=>d[x]);
       if(!targets.length){context.toast('Choose a publishing channel.',true);return;}
       local.busy=true;context.redraw();
