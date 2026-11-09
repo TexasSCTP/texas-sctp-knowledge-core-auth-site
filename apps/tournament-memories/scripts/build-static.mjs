@@ -21,6 +21,8 @@ for(const [source,release] of [
   ['app.js','app-range-open-submissions-20261108.js'],
   ['app.js','app-range-social-20261109.js'],
   ['app.js','app-range-consent-v1-20261109.js'],
+  ['app.js','app-range-adult-check-v2-20261109.js'],
+  ['styles.css','styles-range-adult-check-v2-20261109.css'],
   ['styles.css','styles-range-consent-v1-20261109.css'],
   ['social-publishing.js','social-publishing-consent-v1-20261109.js'],
   ['social-publishing.css','social-publishing-consent-v1-20261109.css'],
