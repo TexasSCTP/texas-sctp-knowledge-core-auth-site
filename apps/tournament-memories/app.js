@@ -491,7 +491,7 @@
     const roles=['parent_guardian','coach_team','photographer','other'];
     if(authorizerName.length<2||authorizerName.length>120
        ||authorizerEmail.length<5||authorizerEmail.length>254
-       ||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(authorizerEmail)
+       ||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authorizerEmail)
        ||!roles.includes(authorizerRole)
        ||(authorizerRole==='other'&&authorizerRoleDetail.length<3)
        ||authorizerRoleDetail.length>180||!adultConfirmed
