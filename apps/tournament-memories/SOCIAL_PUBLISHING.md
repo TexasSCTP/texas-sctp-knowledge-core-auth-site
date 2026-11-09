@@ -1,5 +1,19 @@
 # Texas SCTP | Tournament Memories | Social Publishing
 
+## Adult uploader authorization and privacy (November 9, 2026)
+
+The On the Range submission form now collects the full name, email address, and role of the adult authorizing the photographs. Uploaders must confirm they are at least 18 years old, give explicit website publishing permission, and separately choose whether they authorize Facebook/Instagram publication. Social permission is unchecked by default and optional.
+
+- The accepted photo authorization version is `TXSCTP_ON_THE_RANGE_2026_11_09_V1`.
+- `photo-use-policy.html` is a linked, public Photo Use & Privacy Notice. It explains intellectual property, minors, scope of publication, copying by third parties, contact details, removal requests, and private handling of uploader records.
+- `guest-memories` requires a valid adult authorizer, email, role, and version. The frontend also validates these items before initiating uploads.
+- Each authorization is recorded server-side in `memories_private.memory_photo_authorizations`. The record is append-only and includes full name, email, role, accepted gallery/social terms, optional social status, acceptance timestamp, related photo paths, and an HMAC request fingerprint. The uploader's details are not displayed publicly.
+- Only the backend service role may insert records. Public visitors and normal authenticated users cannot read or change the private audit table.
+- Authorized moderators can see authorizer contact details and role via the team-scoped staff authorization RPC on Photo Submissions and Social Publishing.
+- Previous submissions **do not inherit this new authorization automatically**, even when an older social-consent flag exists. The social queue now requires this named-adult authorization evidence. A new authorized submission must be obtained before sharing an older image on Facebook or Instagram.
+- Authorization records alone do not prove legal authority to consent for every minor in a group image; appropriate parental/guardian permissions and any separately required releases still need verification.
+
+
 ## What was built (November 9, 2026)
 
 A dedicated **Social Publishing** tab inside the existing Texas SCTP moderator interface, with Texas SCTP navy, gold, burnt-orange and responsive styling.
