@@ -627,8 +627,8 @@
     }catch(e){state.editPostBusy=false;toast('Could not save photo details: '+(e.message||'Unknown error'),true);if(button){button.disabled=false;button.textContent='Save changes';}}
   }
   function closePostMenus(){
-    for(const menu of $('.memory-actions-dropdown'))menu.hidden=true;
-    for(const button of $('[data-action="toggle-post-menu"]'))button.setAttribute('aria-expanded','false');
+    for(const menu of $$('.memory-actions-dropdown'))menu.hidden=true;
+    for(const button of $$('[data-action="toggle-post-menu"]'))button.setAttribute('aria-expanded','false');
   }
   function selectTeams(){return `<option value="">Choose your team</option>${state.teams.map(t=>`<option value="${attr(t.id)}">${esc(t.name)}</option>`).join('')}`;}
   function selectEvents(){return `<option value="">Choose a tournament</option>${state.tournaments.filter(t=>t.event_date<=todayCentral()).map(t=>`<option value="${attr(t.id)}" data-date="${attr(t.event_date)}">${esc(t.title)} · ${dateFmt(t.event_date)}</option>`).join('')}<option value="other">Other Texas SCTP tournament</option>`;}
