@@ -9,9 +9,9 @@
   <meta property="og:description" content="The official Texas SCTP team logo directory. Browse teams statewide and submit your team's logo.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261109-3">
+  <link rel="stylesheet" href="./styles.css?v=20261109-4">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261109-2"></script>
+  <script defer src="./app.js?v=20261109-3"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -33,18 +33,28 @@
       <div class="wrap hero-inner">
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-line"></span> OFFICIAL TEXAS SCTP DIRECTORY</p>
-          <h1>Your team.<br><em>Your official logo.</em></h1>
-          <p class="hero-description">Find your team, see the logo on file, or submit the correct logo for use throughout Texas SCTP. Upload or update in a few steps, without creating an account.</p>
-          <a href="#directory" class="primary-link">Find your team <span aria-hidden="true">↓</span></a>
+          <h1>Every team.<br><em>Every logo.</em></h1>
+          <p class="hero-description">The official home for the logos that represent Texas SCTP teams. Find your team, see the mark on file, or add the one your athletes wear.</p>
+          <a href="#directory" class="primary-link">Explore team logos <span aria-hidden="true">↓</span></a>
+          <p class="hero-proof"><span class="hero-proof-rule" aria-hidden="true"></span><strong id="hero-team-count">—</strong> Texas SCTP teams, one directory</p>
         </div>
-        <div class="hero-side" aria-hidden="true">
-          <div class="brand-showcase">
-            <div class="brand-showcase-head"><span>OFFICIAL TEAM DIRECTORY</span><span class="showcase-dots">● ● ●</span></div>
-            <div class="brand-showcase-image"><img src="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png" alt="" width="150" height="150"></div>
-            <div class="brand-showcase-footer"><span class="verified-dot"></span><span>Texas SCTP official logo</span></div>
+        <div class="hero-side">
+          <div class="logo-wall" aria-label="Featured official team logos from the live directory">
+            <div class="logo-wall-top">
+              <img src="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png" alt="Official Texas SCTP logo" width="44" height="44">
+              <div><span>THE OFFICIAL COLLECTION</span><strong>Texas SCTP Team Marks</strong></div>
+              <span class="logo-wall-top-accent" aria-hidden="true">✦</span>
+            </div>
+            <div class="logo-wall-caption">REAL TEAMS. REAL LOGOS.</div>
+            <div class="logo-wall-grid" id="hero-logo-grid">
+              <div class="logo-wall-loading" role="status">Loading team logos…</div>
+            </div>
+            <div class="logo-wall-footer">
+              <span class="logo-wall-live"><span aria-hidden="true"></span> LIVE TEAM DIRECTORY</span>
+              <span id="hero-logos-count">Logos on file</span>
+            </div>
           </div>
-          <div class="showcase-float showcase-float-first"><span class="showcase-icon">&#8593;</span><span>UPLOAD A LOGO</span></div>
-          <div class="showcase-float showcase-float-second"><span class="showcase-check">&#10003;</span><span>VIEW THE DIRECTORY</span></div>
+          <span class="logo-wall-stamp" aria-hidden="true">THE MARKS THAT REPRESENT OUR TEAMS</span>
         </div>
       </div>
     </section>
