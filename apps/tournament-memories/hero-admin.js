@@ -135,14 +135,14 @@
     const clean={};
     for(const type of ['desktop','mobile','card'])
       clean[type]=normalizePosition(slide[type],{x:50,y:50,zoom:1});
-    const payload={
-      photo_id:slide.photoId,enabled:slide.enabled!==false,
-      ...clean,updated_by:staffUser.id,updated_at:new Date().toISOString()
-    };
-    const {error}=await client.from('memory_hero_placements')
-      .upsert(payload,{onConflict:'photo_id'});
-    if(error){
-      setStatus('Could not save photo: '+error.message,'error');
+    // All edits go through the authorized server function, rather than
+    // attempting a direct table upsert that the browser role cannot perform.
+    const {data,error}=await client.rpc('memory_staff_save_hero_photo_placement',{
+      p_photo_id:slide.photoId,p_enabled:slide.enabled!==false,
+      p_desktop:clean.desktop,p_mobile:clean.mobile,p_card:clean.card
+    });
+    if(error||!data?.saved||data?.photo_id!==slide.photoId){
+      setStatus('Could not save photo: '+(error?.message||'Update not confirmed'),'error');
       return;
     }
     livePublished.set(slide.id,clone(slide));
