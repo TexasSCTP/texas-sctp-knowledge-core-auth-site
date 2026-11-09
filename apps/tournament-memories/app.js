@@ -486,7 +486,7 @@
   const loadingText=isHero&&state.cropHeroLoading?'Loading saved hero placement...':isHero&&state.cropHeroError?state.cropHeroError:'';
   const titles={card:'REGULAR GALLERY CARD PREVIEW',desktop:'HOMEPAGE HERO · DESKTOP',mobile:'HOMEPAGE HERO · MOBILE'};
   const ratios={card:'3:2 DISPLAY',desktop:'1680:430 WIDESCREEN',mobile:'390:548 MOBILE'};
-  const notes={card:'Drag with a mouse or finger to reframe this gallery photo. Arrow keys offer fine adjustments. Changes are not saved until you select Save.',
+  const notes={card:'Drag with a mouse or finger to reframe this gallery photo. When Show entire photo is selected, dragging switches to Fill the frame. Arrow keys offer fine adjustments. Save to apply changes.',
     desktop:'This previews the wide hero banner across the homepage. Drag to keep the athletes or trophy visible behind the page headline.',
     mobile:'This previews the tall hero banner on a phone. Mobile framing is saved separately from the desktop hero and the gallery.'};
   return `${modalHead('Position photo','Choose where the photograph appears, drag to adjust its placement, and save each view separately.')}
@@ -1333,6 +1333,7 @@
     viewport
   };
   event.preventDefault();
+  try{viewport.focus({preventScroll:true});}catch{}
   try{viewport.setPointerCapture(event.pointerId);}catch{}
   viewport.classList.add('is-dragging');
 }
