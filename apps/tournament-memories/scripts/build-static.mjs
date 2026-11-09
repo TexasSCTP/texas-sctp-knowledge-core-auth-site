@@ -7,6 +7,7 @@ const dist=resolve(root,'dist');
 // Stop a broken script from reaching the public preview.
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'team-logos/app.js')],{stdio:'inherit'});
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 for(const name of ['index.html','styles.css','app.js','config.js','favicon.svg','preview-catalog.json','hero-config.json','hero-admin.html','hero-studio.html','hero-admin.css','hero-admin.js','social-publishing.js','social-publishing.css','photo-use-policy.html']){
@@ -42,4 +43,7 @@ for(const [source,release] of [
   ['hero-admin.css','hero-admin-range-20261108.css']
 ])await copyFile(resolve(root,source),resolve(dist,release));
 await cp(resolve(root,'public'),resolve(dist,'public'),{recursive:true});
+await cp(resolve(root,'team-logos'),resolve(dist,'team-logos'),{recursive:true});
+await copyFile(resolve(root,'../../texas-sctp-logo.png'),resolve(dist,'texas-sctp-logo.png'));
+console.log('Published dedicated /team-logos/ portal and official Texas SCTP logo asset.');
 console.log('Created a minimal public gallery build in dist/. Backend source, SQL and reference rosters were not published.');
