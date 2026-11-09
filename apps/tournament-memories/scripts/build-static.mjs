@@ -29,6 +29,7 @@ for(const [source,release] of [
   ['app.js','app-range-menu-fixed-v6-20261109.js'],
   ['app.js','app-range-drag-hero-v7-20261109.js'],
   ['app.js','app-range-hero-toggle-v8-20261109.js'],
+  ['app.js','app-range-stale-hero-fix-v9-20261109.js'],
   ['styles.css','styles-range-adult-check-v2-20261109.css'],
   ['styles.css','styles-range-gallery-framing-v3-20261109.css'],
   ['styles.css','styles-range-menu-v5-20261109.css'],
@@ -44,6 +45,7 @@ for(const [source,release] of [
   ['hero-admin.js','hero-admin-drag-save-v2-20261109.js'],
   ['hero-admin.js','hero-admin-switch-v3-20261109.js'],
   ['hero-admin.js','hero-admin-save-feedback-v4-20261109.js'],
+  ['hero-admin.js','hero-admin-cross-tab-fix-v5-20261109.js'],
   ['hero-admin.css','hero-admin-range-20261108.css'],
   ['hero-admin.css','hero-admin-switch-v3-20261109.css'],
   ['hero-admin.css','hero-admin-save-feedback-v4-20261109.css']
