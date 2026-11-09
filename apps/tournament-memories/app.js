@@ -104,7 +104,9 @@
   let heroTimer = null;
   function nextHeroScene() {
     const slides=$$('.hero-slide');
-    if(slides.length!==HERO_SCENES.length)return;
+    // With no enabled slides, show the branded gradient. With exactly one,
+    // preserve its active state rather than accidentally clearing it.
+    if(HERO_SCENES.length<2||slides.length!==HERO_SCENES.length)return;
     const previous=currentHero;
     heroSequencePosition += 1;
     if(heroSequencePosition >= heroSequence.length){
