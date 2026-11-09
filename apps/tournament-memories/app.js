@@ -120,7 +120,7 @@
     modal:null, selectedPost:null, selectedImage:0, editPostBusy:false, uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
     guestPending:null, visitorId:null, guestLiked:new Set(),
-    filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false
+    filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false, cropGesture:null
   };
   const el = document.getElementById('app');
   const root = document.getElementById('modal-root');
@@ -190,7 +190,7 @@
     return slideCard?{...cropMode(slideCard,defaults),fit:'cover'}:defaults;
   }
   function galleryPhotoStyle(crop){
-    return `object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;object-fit:${crop.fit==='contain'?'contain':'cover'};transform:scale(${crop.fit==='contain'?1:Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})`;
+    return `object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;object-fit:${crop.fit==='contain'?'contain':'cover'};transform-origin:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;transform:scale(${crop.fit==='contain'?1:Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})`;
   }
   const postComments=(id)=>state.comments.filter(x=>x.post_id===id && x.status==='approved');
   const postReactions=(id)=>state.reactions.filter(x=>x.post_id===id);
@@ -484,10 +484,11 @@
         <div class="gallery-crop-body">
           <section class="gallery-crop-preview-side" aria-label="Live photo preview">
             <div class="gallery-crop-preview-heading"><span>LIVE GALLERY CARD PREVIEW</span><span>3:2 DISPLAY</span></div>
-            <div class="gallery-crop-viewport">
-              ${src?`<img id="gallery-crop-preview-img" src="${cleanUrl(src)}" alt="Preview of adjusted ${attr(teamLabel)} photograph" style="${galleryPhotoStyle(draft)}">`:'<p>Photo preview unavailable. Please refresh the gallery.</p>'}
+            <div class="gallery-crop-viewport gallery-crop-draggable" id="gallery-crop-viewport" data-crop-drag role="group" tabindex="0" aria-label="Interactive photo positioning preview. Drag with a mouse or touch, or use arrow keys to move the image within the frame.">
+              ${src?`<img id="gallery-crop-preview-img" src="${cleanUrl(src)}" alt="Preview of adjusted ${attr(teamLabel)} photograph" draggable="false" style="${galleryPhotoStyle(draft)}">`:'<p>Photo preview unavailable. Please refresh the gallery.</p>'}
+              ${src?'<span class="gallery-crop-drag-hint" aria-hidden="true">Drag photo to reposition</span>':''}
             </div>
-            <p class="gallery-crop-caption">This frame matches the gallery feed. The original photo is never edited or replaced.</p>
+            <p class="gallery-crop-caption">Drag the photo with your mouse or finger to position it. Dragging while <strong>Show entire photo</strong> is selected switches to <strong>Fill the frame</strong>. Arrow keys adjust the focus precisely. Changes remain in preview until you save.</p>
             <details class="gallery-crop-original"><summary>Compare with the full original photograph</summary>
               ${src?`<img src="${cleanUrl(src)}" alt="Uncropped submitted photo">`:''}
             </details>
@@ -523,7 +524,7 @@
       }
       if(label)label.textContent=key==='zoom'?Number(draft.zoom).toFixed(2)+'×':Math.round(draft[key])+'%';
     }
-    for(const input of $('input[name="gallery-crop-fit"]',root)){
+    for(const input of $$('input[name="gallery-crop-fit"]',root)){
       input.checked=input.value===draft.fit;
       input.disabled=state.cropBusy;
     }
@@ -539,12 +540,14 @@
     state.selectedImage=matching.findIndex(item=>item.id===selected.id);
     state.cropPhotoId=selected.id;
     state.cropDraft={...galleryPhotoCrop(selected)};
+    state.cropGesture=null;
     state.cropReturnModal=origin==='view'?'view':null;
     state.modal='gallery-crop';
     renderModal();
   }
   function closeGalleryCropEditor(){
     const returnModal=state.cropReturnModal;
+    state.cropGesture=null;
     state.cropPhotoId=null;state.cropDraft=null;state.cropReturnModal=null;
     state.modal=returnModal==='view'?'view':null;
     render();
