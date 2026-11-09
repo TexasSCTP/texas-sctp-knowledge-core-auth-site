@@ -30,8 +30,17 @@
   let heroIntervalMs = 10000;
   // A local safety block applies instantly, including across open gallery/studio tabs.
   // The server's enabled flag remains authoritative for fresh views.
-  const locallyHiddenHeroPhotos = new Set();
+  const locallyHiddenHeroPhotos = new Map();
   const HERO_VISIBILITY_KEY = 'txsctp-hero-visibility-v1';
+  function heroTemporarilyHidden(photoId){
+    const blockedAt=locallyHiddenHeroPhotos.get(photoId);
+    if(!blockedAt)return false;
+    if(Date.now()-blockedAt>120000){
+      locallyHiddenHeroPhotos.delete(photoId);
+      return false;
+    }
+    return true;
+  }
   function rebuildHeroScenes(preferredPhotoId=null){
     const currentSceneId=HERO_SCENES[currentHero]?.id||null;
     const base=ALL_SCENES.filter(scene=>scene.enabled);
@@ -40,7 +49,7 @@
     // If no approved hero photos are available, use only sample scenes explicitly
     // enabled in the published slideshow config. Zero scenes means branded gradient.
     const allowedLive=APPROVED_HERO_SCENES.filter(scene=>
-      !locallyHiddenHeroPhotos.has(scene.id.replace(/^approved-/,'')));
+      !heroTemporarilyHidden(scene.id.replace(/^approved-/,'')));
     HERO_SCENES=allowedLive.length?allowedLive:base;
     heroSequence=shuffleIndices(HERO_SCENES.length);
     const chosenId=preferredPhotoId||currentSceneId;
@@ -325,7 +334,7 @@
       if(error)throw error;
       // This block also closes the race where an earlier request completes after
       // a moderator disables a photo in another tab.
-      const rows=(data||[]).filter(row=>!locallyHiddenHeroPhotos.has(row.photo_id));
+      const rows=(data||[]).filter(row=>!heroTemporarilyHidden(row.photo_id));
       const paths=[...new Set(rows.map(r=>r.storage_path))];
       const signed=new Map();
       for(let i=0;i<paths.length;i+=40){
@@ -656,7 +665,7 @@
       if(state.cropPhotoId!==photoId||state.modal!=='gallery-crop')return;
       state.cropHeroEnabled=enabled;
       if(enabled)locallyHiddenHeroPhotos.delete(photoId);
-      else locallyHiddenHeroPhotos.add(photoId);
+      else locallyHiddenHeroPhotos.set(photoId,Date.now());
       if(!enabled){
         APPROVED_HERO_SCENES=APPROVED_HERO_SCENES.filter(scene=>scene.id!=='approved-'+photoId);
       }
@@ -1469,7 +1478,7 @@
       if(!/^[0-9a-f-]{36}$/i.test(update.photoId)||typeof update.enabled!=='boolean')return;
       if(update.enabled)locallyHiddenHeroPhotos.delete(update.photoId);
       else {
-        locallyHiddenHeroPhotos.add(update.photoId);
+        locallyHiddenHeroPhotos.set(update.photoId,Date.now());
         APPROVED_HERO_SCENES=APPROVED_HERO_SCENES.filter(
           scene=>scene.id!=='approved-'+update.photoId);
       }
