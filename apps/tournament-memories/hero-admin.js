@@ -177,6 +177,13 @@
         const drafts=getLiveDrafts();delete drafts[slide.id];
         localStorage.setItem(LIVE_DRAFT_KEY,JSON.stringify(drafts));
       }catch{}
+      // The gallery may be open in another browser tab. Notify it only after
+      // a verified backend save, so hidden photos stop rotating immediately.
+      try{
+        localStorage.setItem('txsctp-hero-visibility-v1',JSON.stringify({
+          photoId:slide.photoId,enabled:slide.enabled!==false,at:Date.now()
+        }));
+      }catch{}
       const at=new Date().toLocaleTimeString('en-US',{
         hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'
       });
