@@ -28,10 +28,12 @@ for(const [source,release] of [
   ['app.js','app-range-menu-v5-20261109.js'],
   ['app.js','app-range-menu-fixed-v6-20261109.js'],
   ['app.js','app-range-drag-hero-v7-20261109.js'],
+  ['app.js','app-range-hero-toggle-v8-20261109.js'],
   ['styles.css','styles-range-adult-check-v2-20261109.css'],
   ['styles.css','styles-range-gallery-framing-v3-20261109.css'],
   ['styles.css','styles-range-menu-v5-20261109.css'],
   ['styles.css','styles-range-drag-hero-v7-20261109.css'],
+  ['styles.css','styles-range-hero-toggle-v8-20261109.css'],
   ['styles.css','styles-range-consent-v1-20261109.css'],
   ['social-publishing.js','social-publishing-consent-v1-20261109.js'],
   ['social-publishing.css','social-publishing-consent-v1-20261109.css'],
@@ -40,7 +42,9 @@ for(const [source,release] of [
   ['styles.css','styles-range-logos-20261108.css'],
   ['hero-admin.js','hero-admin-range-20261108.js'],
   ['hero-admin.js','hero-admin-drag-save-v2-20261109.js'],
-  ['hero-admin.css','hero-admin-range-20261108.css']
+  ['hero-admin.js','hero-admin-switch-v3-20261109.js'],
+  ['hero-admin.css','hero-admin-range-20261108.css'],
+  ['hero-admin.css','hero-admin-switch-v3-20261109.css']
 ])await copyFile(resolve(root,source),resolve(dist,release));
 await cp(resolve(root,'public'),resolve(dist,'public'),{recursive:true});
 await cp(resolve(root,'team-logos'),resolve(dist,'team-logos'),{recursive:true});
