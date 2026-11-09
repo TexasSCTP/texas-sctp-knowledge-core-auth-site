@@ -634,3 +634,23 @@ body{background:var(--paper)}
 .gallery-crop-caption a{color:#166384;text-decoration:underline;font-weight:850}
 @media(max-width:720px){.gallery-crop-view-tabs{gap:3px;padding:4px}.gallery-crop-view-tabs button{font-size:10px;padding:9px 5px}.gallery-hero-preview.hero-desktop .gallery-hero-overlay span{font-size:7px}.gallery-hero-preview.hero-desktop .gallery-hero-overlay strong{font-size:clamp(13px,3.4vw,21px)}.gallery-hero-preview.hero-desktop .gallery-hero-overlay small{font-size:8px}}
 @media(max-width:420px){.gallery-crop-view-tabs{grid-template-columns:1fr}.gallery-crop-view-tabs button{min-height:34px}.gallery-crop-drag-hint{font-size:9px;padding:6px 10px}.gallery-hero-preview.hero-mobile{max-width:245px}}
+
+
+/* Per-photograph inclusion switch for the homepage hero rotation. */
+.hero-visibility-setting{margin:18px 0 5px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#f3f8f8;border:1px solid #d8e7e5;border-left:4px solid #c79b51;border-radius:8px;padding:16px 19px}
+.hero-visibility-description{flex:1;min-width:0}
+.hero-visibility-description strong{display:block;font-size:12.5px;font-weight:900;color:#1a4359;margin-bottom:5px}
+.hero-visibility-description small{display:block;font-size:10.8px;line-height:1.55;color:#64808b}
+.hero-visibility-toggle{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;flex-shrink:0;position:relative;cursor:pointer;padding:4px 0}
+.hero-visibility-toggle input{position:absolute;opacity:0;width:1px;height:1px;margin:0;overflow:hidden}
+.hero-visibility-track{display:inline-flex;align-items:center;width:54px;height:29px;padding:3px;border-radius:99px;background:#aab9c2;border:1px solid #879da9;transition:background .15s ease,border-color .15s ease}
+.hero-visibility-track>span{display:block;width:21px;height:21px;background:#fff;border-radius:50%;box-shadow:0 2px 5px rgba(14,39,54,.18);transform:translateX(0);transition:transform .15s ease}
+.hero-visibility-toggle input:checked+.hero-visibility-track{background:#26835b;border-color:#207850}
+.hero-visibility-toggle input:checked+.hero-visibility-track>span{transform:translateX(24px)}
+.hero-visibility-toggle input:focus-visible+.hero-visibility-track{outline:3px solid #d1a14b;outline-offset:3px}
+.hero-visibility-toggle input:disabled+.hero-visibility-track{opacity:.55}
+.hero-visibility-state{font-size:11px;font-weight:950;color:#496678;min-width:28px}
+.hero-visibility-toggle:has(input:checked) .hero-visibility-state{color:#1e794f}
+.hero-visibility-loading,.hero-visibility-error{font-size:11px;font-weight:850;color:#657f8a}
+.hero-visibility-error{color:#a94b3e}
+@media(max-width:600px){.hero-visibility-setting{align-items:flex-start;flex-direction:column;gap:10px;padding:14px 15px}.hero-visibility-toggle{align-self:flex-end}}
