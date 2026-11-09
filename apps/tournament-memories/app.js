@@ -28,12 +28,20 @@
   let logosLastLoadedAt = 0;
   let heroReloading = false;
   let heroIntervalMs = 10000;
+  // A local safety block applies instantly, including across open gallery/studio tabs.
+  // The server's enabled flag remains authoritative for fresh views.
+  const locallyHiddenHeroPhotos = new Set();
+  const HERO_VISIBILITY_KEY = 'txsctp-hero-visibility-v1';
   function rebuildHeroScenes(preferredPhotoId=null){
     const currentSceneId=HERO_SCENES[currentHero]?.id||null;
     const base=ALL_SCENES.filter(scene=>scene.enabled);
-    // Newly approved tournament memories lead the initial view; illustrative
-    // scenes stay in the rotation, and manually hidden live photos stay out.
-    HERO_SCENES=[...APPROVED_HERO_SCENES,...(base.length?base:ALL_SCENES)];
+    // Never reintroduce disabled photos. Once real approved photos are available,
+    // don't mix in staging illustrations that can be mistaken for real submissions.
+    // If no approved hero photos are available, use only sample scenes explicitly
+    // enabled in the published slideshow config. Zero scenes means branded gradient.
+    const allowedLive=APPROVED_HERO_SCENES.filter(scene=>
+      !locallyHiddenHeroPhotos.has(scene.id.replace(/^approved-/,'')));
+    HERO_SCENES=allowedLive.length?allowedLive:base;
     heroSequence=shuffleIndices(HERO_SCENES.length);
     const chosenId=preferredPhotoId||currentSceneId;
     const chosenIndex=HERO_SCENES.findIndex(scene=>scene.id===chosenId);
@@ -42,7 +50,7 @@
       if(slot>0)[heroSequence[0],heroSequence[slot]]=[heroSequence[slot],heroSequence[0]];
     }
     heroSequencePosition=0;
-    currentHero=heroSequence[0]||0;
+    currentHero=heroSequence[0]??0;
   }
   function clampCrop(v,fallback=50){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):fallback;}
   function cropMode(mode,defaultMode){return {
@@ -103,7 +111,7 @@
     if(heroTimer)return;
     heroTimer=window.setInterval(()=>{
       if(state.client && state.screen==='gallery' && !heroReloading &&
-         !document.hidden && Date.now()-heroLastLoadedAt>2*60*1000){
+         !document.hidden && Date.now()-heroLastLoadedAt>30*1000){
         loadHeroGallery().then(()=>{if(state.screen==='gallery')render();}).catch(()=>{});
       }
       if(!heroPaused && !document.hidden)nextHeroScene();
@@ -315,7 +323,9 @@
     try{
       const {data,error}=await state.client.rpc('memory_hero_candidates',{p_limit:24});
       if(error)throw error;
-      const rows=data||[];
+      // This block also closes the race where an earlier request completes after
+      // a moderator disables a photo in another tab.
+      const rows=(data||[]).filter(row=>!locallyHiddenHeroPhotos.has(row.photo_id));
       const paths=[...new Set(rows.map(r=>r.storage_path))];
       const signed=new Map();
       for(let i=0;i<paths.length;i+=40){
@@ -342,8 +352,12 @@
         try{await loadTeamLogos();}catch(error){console.warn('Could not refresh team logo URLs',error);}
       }
     }catch(error){
-      console.warn('Approved slideshow photos could not be loaded; retaining available slides.',error);
-      heroLastLoadedAt=Date.now();
+      // Fail closed. Never keep displaying a possibly disabled photo from an
+      // old signed URL when the source-of-truth visibility check fails.
+      console.warn('Slideshow visibility could not be verified. Retiring cached approved images.',error);
+      APPROVED_HERO_SCENES=[];
+      rebuildHeroScenes();
+      heroLastLoadedAt=Date.now()-20*1000;
     }finally{heroReloading=false;}
   }
 
@@ -641,10 +655,16 @@
       }
       if(state.cropPhotoId!==photoId||state.modal!=='gallery-crop')return;
       state.cropHeroEnabled=enabled;
+      if(enabled)locallyHiddenHeroPhotos.delete(photoId);
+      else locallyHiddenHeroPhotos.add(photoId);
       if(!enabled){
         APPROVED_HERO_SCENES=APPROVED_HERO_SCENES.filter(scene=>scene.id!=='approved-'+photoId);
-        rebuildHeroScenes();
       }
+      rebuildHeroScenes();
+      // Tell other already-open homepage tabs to retire the photo immediately.
+      try{localStorage.setItem(HERO_VISIBILITY_KEY,JSON.stringify({
+        photoId,enabled,at:Date.now()
+      }));}catch{}
       state.cropBusy=false;
       render();
       await loadHeroGallery();
@@ -1442,6 +1462,33 @@
   document.addEventListener('pointerup',endPhotoCropDrag);
   document.addEventListener('pointercancel',endPhotoCropDrag);
   document.addEventListener('keydown',cropPreviewKeyboard);
+  window.addEventListener('storage',event=>{
+    if(event.key!==HERO_VISIBILITY_KEY||!event.newValue)return;
+    try{
+      const update=JSON.parse(event.newValue);
+      if(!/^[0-9a-f-]{36}$/i.test(update.photoId)||typeof update.enabled!=='boolean')return;
+      if(update.enabled)locallyHiddenHeroPhotos.delete(update.photoId);
+      else {
+        locallyHiddenHeroPhotos.add(update.photoId);
+        APPROVED_HERO_SCENES=APPROVED_HERO_SCENES.filter(
+          scene=>scene.id!=='approved-'+update.photoId);
+      }
+      rebuildHeroScenes();
+      if(state.ready&&state.screen==='gallery')render();
+      void loadHeroGallery().then(()=>{
+        if(state.ready&&state.screen==='gallery')render();
+      });
+    }catch(error){console.warn('Could not apply gallery visibility event',error);}
+  });
+  function refreshHeroAfterReturning(){
+    if(!state.ready||!state.client||state.screen!=='gallery'||document.hidden)return;
+    if(Date.now()-heroLastLoadedAt<12*1000)return;
+    void loadHeroGallery().then(()=>{
+      if(state.screen==='gallery')render();
+    });
+  }
+  document.addEventListener('visibilitychange',refreshHeroAfterReturning);
+  window.addEventListener('focus',refreshHeroAfterReturning);
   document.addEventListener('dragover',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.add('drag-over');});
   document.addEventListener('dragleave',e=>{const zone=e.target.closest?.('#upload-dropzone');if(zone)zone.classList.remove('drag-over');});
   document.addEventListener('drop',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.remove('drag-over');addChosenPhotos([...e.dataTransfer.files]);});
