@@ -42,3 +42,26 @@ Use the existing Texas SCTP On the Range website, signed in through **Staff Acce
 A 3:2 preview simulates the normal gallery feed. **Show entire photo** preserves the complete photo, with neutral margins for images that do not match the frame. The original remains unchanged. This operation neither posts to Facebook nor changes social-media authorization.
 
 Status: code, database schema, and permission checks implemented; verify Render deployment before confirming the UI is visible.
+
+
+## Interactive drag positioning and separate hero banner previews
+
+Updated November 9, 2026.
+
+From **Moderation → Gallery Photo Placement → Adjust Placement**, or **Adjust Photo** on an existing gallery card, the authorized moderator now sees three distinct views:
+
+- **Gallery photo** (3:2). Drag the photo in the preview with a mouse or finger, use keyboard arrows or sliders to adjust the position, then select **Save gallery placement**. Select *Show entire photo* when needed. Starting a drag while that mode is active switches to *Fill the frame*, since an uncropped image has no off-frame region to reposition.
+- **Hero banner · Desktop** (1680:430 widescreen). Drag and adjust the crop specifically for the desktop homepage hero, then select **Save desktop hero**.
+- **Hero banner · Mobile** (390:548 mobile reference). Drag and adjust the separate phone hero crop, then select **Save mobile hero**.
+
+The three views use independent backend fields. Editing one never silently changes the other two. In particular, the card crop remains in `memory_photos`, and hero desktop/mobile positioning remains in `memory_hero_placements`.
+
+The same photo can also be opened directly with **⋯ → Adjust hero banner** from its gallery card. Hero preview includes a simplified homepage heading and scrim to help staff check subject visibility against hero text.
+
+Photo repositioning is **display-only**. The original uploaded image and any rights/consent records are unchanged.
+
+Authorized staff saves use server-validated RPCs `memory_staff_set_photo_card_crop` and `memory_staff_set_hero_photo_crop` scoped to authorized teams. Hero placement does not implicitly re-enable a photo manually hidden from the slideshow.
+
+The older **Slideshow Studio** supports dragging as well. Its old direct table-upsert was replaced with the authorized RPC `memory_staff_save_hero_photo_placement`, which preserves enabled state and saves all desktop/mobile/card preview settings.
+
+No CAPTCHA was added. Live Meta publishing remains separate and disabled.
