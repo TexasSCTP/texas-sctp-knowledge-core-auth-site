@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0F2C4C">
+  <meta name="description" content="Find your Texas SCTP team and upload or update its official team logo. No account required.">
+  <meta property="og:title" content="Texas SCTP | Team Logo Portal">
+  <meta property="og:description" content="The official Texas SCTP team logo directory. Browse teams statewide and submit your team's logo.">
+  <title>Texas SCTP | Team Logo Portal</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="./styles.css?v=20261109-1">
+  <script defer src="../config.js"></script>
+  <script defer src="./app.js?v=20261109-1"></script>
+</head>
+<body>
+  <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="https://www.texassctp.com/" aria-label="Texas SCTP home">
+        <img src="../texas-sctp-logo.png" alt="Official Texas SCTP logo" width="72" height="72">
+        <span class="brand-text"><strong>TEXAS SCTP</strong><small>TEAM LOGO PORTAL</small></span>
+      </a>
+      <nav class="header-links" aria-label="Main navigation">
+        <a class="nav-current" href="./" aria-current="page">Team Logos</a>
+        <a href="../">On the Range</a>
+        <a href="https://www.texassctp.com/">Main Website</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> OFFICIAL TEXAS SCTP DIRECTORY</p>
+          <h1>Every team.<br><em>One official logo.</em></h1>
+          <p class="hero-description">Find your team, see the logo on file, or submit the correct logo for use throughout Texas SCTP. Upload or update in a few steps, without creating an account.</p>
+          <a href="#directory" class="primary-link">Find your team <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero-side" aria-hidden="true">
+          <div class="target-art"><span class="ring ring-a"></span><span class="ring ring-b"></span><span class="ring ring-c"></span><span class="target-center"></span></div>
+          <div class="hero-art-caption">ONE DIRECTORY · STATEWIDE</div>
+        </div>
+      </div>
+    </section>
+    <section class="directory wrap" id="directory" aria-labelledby="directory-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">TEAM DIRECTORY</p>
+          <h2 id="directory-heading">Find your team</h2>
+          <p class="section-description">Search by name or SHOT team ID, or narrow the directory by league.</p>
+        </div>
+        <div class="directory-totals" aria-label="Directory totals">
+          <span><strong id="total-teams">—</strong><small>Teams</small></span>
+          <span><strong id="total-logos">—</strong><small>Logos on file</small></span>
+        </div>
+      </div>
+      <div class="tools">
+        <label class="search-control" for="team-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 5 5"></path></svg><input id="team-search" type="search" placeholder="Search team name or SHOT ID" autocomplete="off"></label>
+        <label class="select-control"><span>League</span><select id="league-filter"><option value="all">All leagues</option></select></label>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-buttons" role="group" aria-label="Logo status">
+          <button type="button" class="filter-pill active" data-status="all" aria-pressed="true">All teams</button>
+          <button type="button" class="filter-pill" data-status="missing" aria-pressed="false">Needs a logo</button>
+          <button type="button" class="filter-pill" data-status="present" aria-pressed="false">Logo on file</button>
+        </div>
+        <span id="results-count" class="result-count" aria-live="polite">Loading teams...</span>
+      </div>
+      <div id="directory-status" role="status" aria-live="polite" class="directory-status">Loading the team directory...</div>
+      <div id="team-grid" class="team-grid" aria-live="off"></div>
+    </section>
+    <section class="help-section">
+      <div class="wrap help-inner">
+        <div>
+          <p class="section-kicker">SUBMITTING A LOGO</p>
+          <h2>Make sure your team looks its best.</h2>
+          <p>Use a clear PNG, JPG, or WebP image. A transparent-background PNG works especially well. Your image is optimized before upload, and previous logo files are retained when a replacement is submitted.</p>
+        </div>
+        <div class="help-note"><strong>Need assistance?</strong><span>Can't find your team or need help with its logo?</span><a href="mailto:info@texassctp.com?subject=Texas%20SCTP%20Team%20Logo%20Assistance">Contact Texas SCTP →</a></div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-inner"><span>© <span id="current-year">2026</span> Texas SCTP, Inc.</span><span>Texas SCTP Team Logo Portal</span><a href="https://www.texassctp.com/">texassctp.com</a></div></footer>
+  <dialog id="upload-dialog" aria-labelledby="dialog-heading" class="upload-dialog">
+    <form id="upload-form" novalidate>
+      <div class="dialog-header">
+        <div><p class="section-kicker">OFFICIAL TEAM LOGO</p><h2 id="dialog-heading">Upload your team's logo</h2></div>
+        <button class="icon-button" id="close-dialog" type="button" aria-label="Close upload window">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="chosen-team"><span>Selected team</span><strong id="selected-team">Team</strong><small id="selected-league"></small></div>
+        <label id="upload-dropzone" class="dropzone" for="logo-file">
+          <span class="drop-icon" aria-hidden="true">↑</span>
+          <strong>Choose an image or drag it here</strong>
+          <span>PNG, JPG, or WebP · File optimized automatically · Maximum 2 MB after conversion</span>
+          <input id="logo-file" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" aria-describedby="file-description">
+        </label>
+        <div id="file-description" class="file-description" aria-live="polite">Choose a clear image of your team's official logo.</div>
+        <div class="preview-box" id="preview-box" hidden><div class="preview-image-wrap"><img id="logo-preview" alt="Preview of the logo you selected"></div><div class="preview-copy"><strong>Ready for upload</strong><span id="preview-size"></span></div></div>
+        <label class="confirmation"><input type="checkbox" id="upload-confirmation"><span>I confirm I am authorized to submit this team's official logo and that Texas SCTP may display it.</span></label>
+        <p class="dialog-error" id="dialog-error" role="alert" hidden></p>
+        <p class="dialog-progress" id="dialog-progress" role="status" aria-live="polite"></p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="secondary-button" id="cancel-upload">Cancel</button>
+        <button type="submit" class="submit-button" id="submit-upload" disabled>Save team logo</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
