@@ -964,8 +964,18 @@
       target.textContent=heroPaused?'Play motion':'Pause motion';
       return;
     }
-    if(action==='backdrop'){if(e.target===target){if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
-    if(action==='close-modal'){if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
+    if(action==='backdrop'){if(e.target===target){if(state.modal==='gallery-crop'){closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
+    if(action==='close-modal'){if(state.modal==='gallery-crop'){closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
+    if(action==='edit-gallery-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null);return;}
+    if(action==='save-gallery-crop'){await saveGalleryCrop();return;}
+    if(action==='cancel-gallery-crop'&&state.modal==='gallery-crop'&&!state.cropBusy){closeGalleryCropEditor();return;}
+    if(['crop-reset','crop-top','crop-center','crop-bottom'].includes(action)){
+      if(state.modal!=='gallery-crop'||!state.cropDraft||state.cropBusy)return;
+      const draft=state.cropDraft;
+      if(action==='crop-reset')Object.assign(draft,{x:50,y:50,zoom:1,fit:'cover'});
+      else {draft.fit='cover';draft.y=action==='crop-top'?0:action==='crop-bottom'?100:50;}
+      refreshGalleryCropPreview();return;
+    }
     if(action==='scroll-gallery'){$('#memories-gallery')?.scrollIntoView({behavior:'smooth'});return;}
     if(action==='gallery'){state.screen='gallery';render();return;}
     if(action==='admin'){if(!state.moderator){state.modal='login';renderModal();return;}state.modal=null;state.screen='admin';render();await loadAdmin();return;}
@@ -1029,6 +1039,12 @@
   async function onChange(e){
     if(socialAdmin?.onChange(e))return;
     const element=e.target;
+    if(element.name==='gallery-crop-fit'&&state.modal==='gallery-crop'&&state.cropDraft&&!state.cropBusy){
+      if(element.value!=='cover'&&element.value!=='contain')return;
+      state.cropDraft.fit=element.value;
+      if(element.value==='contain')Object.assign(state.cropDraft,{x:50,y:50,zoom:1});
+      refreshGalleryCropPreview();return;
+    }
     if(element.id==='authorizer-role'){
       const wrap=$('#authorizer-role-detail-wrap'),detail=$('#authorizer-role-detail');
       if(wrap)wrap.hidden=element.value!=='other';
@@ -1093,6 +1109,13 @@
   let searchTimer;
   function onInput(e){
     if(socialAdmin?.onInput(e))return;
+    const field=e.target.dataset.cropField;
+    if(field&&['x','y','zoom'].includes(field)&&state.modal==='gallery-crop'&&state.cropDraft&&!state.cropBusy){
+      const value=Number(e.target.value);
+      if(!Number.isFinite(value))return;
+      state.cropDraft[field]=field==='zoom'?Math.max(1,Math.min(1.45,Math.round(value*100)/100)):Math.max(0,Math.min(100,Math.round(value)));
+      refreshGalleryCropPreview();return;
+    }
     if(e.target.id==='team-logo-search'){
       state.logoSearch=e.target.value;
       const results=$('#logo-catalog-results');
@@ -1107,7 +1130,7 @@
   document.addEventListener('change',onChange);document.addEventListener('input',onInput);
   window.addEventListener('hashchange',()=>openHashMemory());
   document.addEventListener('error',e=>{if(e.target?.matches?.('.brand-seal img, .demo-photo img'))e.target.style.display='none';},true);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){state.modal=null;releaseUploads();state.guestPending=null;renderModal();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}state.modal=null;releaseUploads();state.guestPending=null;renderModal();}});
   socialAdmin?.attach({state,team,tournament,toast,redraw:render,dateFmt,bucket:BUCKET});
   getVisitorId();
   connect();
