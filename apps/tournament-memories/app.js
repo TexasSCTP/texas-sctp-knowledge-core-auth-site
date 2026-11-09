@@ -981,8 +981,8 @@
       target.textContent=heroPaused?'Play motion':'Pause motion';
       return;
     }
-    if(action==='backdrop'){if(e.target===target){if(state.modal==='gallery-crop'){closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
-    if(action==='close-modal'){if(state.modal==='gallery-crop'){closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
+    if(action==='backdrop'){if(e.target===target){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
+    if(action==='close-modal'){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
     if(action==='edit-gallery-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null);return;}
     if(action==='edit-photo-position'){openGalleryCropEditor(id,null,target.dataset.photoId);return;}
     if(action==='load-more-gallery-admin'){if(state.hasMore)await loadGallery(false);return;}
