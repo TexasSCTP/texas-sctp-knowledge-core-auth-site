@@ -65,3 +65,15 @@ Authorized staff saves use server-validated RPCs `memory_staff_set_photo_card_cr
 The older **Slideshow Studio** supports dragging as well. Its old direct table-upsert was replaced with the authorized RPC `memory_staff_save_hero_photo_placement`, which preserves enabled state and saves all desktop/mobile/card preview settings.
 
 No CAPTCHA was added. Live Meta publishing remains separate and disabled.
+
+
+## Optional per-photo slideshow inclusion switch (November 9, 2026)
+
+Each gallery-approved photograph now has a **Show this photo in the homepage hero slideshow** on/off switch in the authenticated photo positioning dialog. The switch appears below the Gallery / Hero Desktop / Hero Mobile tabs, and applies to the hero rotation on **both** desktop and mobile. It does not hide or remove the photo from the normal tournament gallery, delete the original image, alter cropping settings, or affect separate Facebook/Instagram publication approvals.
+
+- **ON**: This individual photo is eligible for the homepage slideshow.
+- **OFF**: This individual photo is excluded from the homepage slideshow but stays in the normal gallery. Turning the switch on again restores eligibility.
+- The switch is persisted immediately via the team-authorized `memory_staff_set_hero_photo_visibility` RPC with an audit timestamp and moderator ID. Public and unauthorized callers cannot modify it.
+- The homepage's `memory_hero_candidates` query excludes disabled records. Approved gallery photos may still be automatically enrolled by the database, but an existing manual OFF setting is **never overwritten** by future approval processing.
+- A matching switch is visible next to each item in **Slideshow Studio**. For approved live photos, changes save immediately and restore the previous state if saving fails. The seven illustrative/sample scenes remain file-backed and require **Publish settings** and a staging Render deployment for their changes.
+- This switch manages individual image/slide visibility, **not** removal of a logo already embedded within the pixels of a photograph.
