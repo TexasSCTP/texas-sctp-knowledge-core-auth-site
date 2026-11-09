@@ -529,74 +529,132 @@
     </div>`;
 }
   function refreshGalleryCropPreview(){
-    const draft=state.cropDraft;
-    if(!draft||state.modal!=='gallery-crop')return;
-    const preview=$('#gallery-crop-preview-img',root);
-    if(preview)preview.style.cssText=galleryPhotoStyle(draft);
-    for(const key of ['x','y','zoom']){
-      const slider=$('[data-crop-field="'+key+'"]',root);
-      const label=$('[data-crop-value="'+key+'"]',root);
-      if(slider){
-        slider.value=String(draft[key]);
-        slider.disabled=state.cropBusy||draft.fit==='contain';
-      }
-      if(label)label.textContent=key==='zoom'?Number(draft.zoom).toFixed(2)+'×':Math.round(draft[key])+'%';
+  const draft=activeCropDraft();
+  if(!draft||state.modal!=='gallery-crop')return;
+  const view=state.cropView||'card';
+  const preview=$('#gallery-crop-preview-img',root);
+  if(preview)preview.style.cssText=view==='card'?galleryPhotoStyle(draft):heroPhotoStyle(draft);
+  const frame=$('#gallery-crop-viewport',root);
+  if(frame)frame.classList.toggle('is-entire-image',view==='card'&&draft.fit==='contain');
+  for(const key of ['x','y','zoom']){
+    const slider=$('[data-crop-field="'+key+'"]',root);
+    const label=$('[data-crop-value="'+key+'"]',root);
+    if(slider){
+      slider.value=String(draft[key]);
+      slider.disabled=state.cropBusy||(view==='card'&&draft.fit==='contain');
     }
-    for(const input of $$('input[name="gallery-crop-fit"]',root)){
-      input.checked=input.value===draft.fit;
-      input.disabled=state.cropBusy;
+    if(label)label.textContent=key==='zoom'?Number(draft.zoom).toFixed(2)+'×':Math.round(draft[key])+'%';
+  }
+  for(const input of $$('input[name="gallery-crop-fit"]',root)){
+    input.checked=input.value===draft.fit;
+    input.disabled=state.cropBusy;
+  }
+}
+  async function loadHeroPhotoForCrop(photoId){
+  if(!state.client)return;
+  state.cropHeroLoading=true;
+  state.cropHeroError='';
+  try{
+    const {data,error}=await state.client.from('memory_hero_placements')
+      .select('photo_id,desktop,mobile,enabled').eq('photo_id',photoId).maybeSingle();
+    if(error)throw Error(error.message);
+    if(!data)throw Error('This photo is not in the slideshow. Refresh the gallery or check Slideshow Studio.');
+    if(state.cropPhotoId!==photoId||state.modal!=='gallery-crop')return;
+    const centered={x:50,y:50,zoom:1};
+    state.cropHeroDraft={
+      desktop:cropMode(data.desktop,centered),
+      mobile:cropMode(data.mobile,centered)
+    };
+    state.cropHeroEnabled=data.enabled!==false;
+  }catch(error){
+    if(state.cropPhotoId!==photoId||state.modal!=='gallery-crop')return;
+    state.cropHeroError='Cannot load the saved hero photo position: '+(error.message||'Unknown error');
+  }finally{
+    if(state.cropPhotoId===photoId&&state.modal==='gallery-crop'){
+      state.cropHeroLoading=false;
+      if(state.cropView!=='card')renderModal();
     }
   }
-  function openGalleryCropEditor(postId,origin,chosenPhotoId=null){
-    if(!state.moderator)return;
-    const post=state.posts.find(item=>item.id===postId)||state.selectedPost;
-    if(!post||post.id!==postId||post.status!=='approved')return;
-    const matching=assets(post.id);
-    const selected=chosenPhotoId?matching.find(item=>item.id===chosenPhotoId):(origin==='view'?matching[state.selectedImage]||matching[0]:matching[0]);
-    if(!selected){toast('No photograph found for this post.',true);return;}
-    state.selectedPost=post;
-    state.selectedImage=matching.findIndex(item=>item.id===selected.id);
-    state.cropPhotoId=selected.id;
-    state.cropDraft={...galleryPhotoCrop(selected)};
-    state.cropGesture=null;
-    state.cropReturnModal=origin==='view'?'view':null;
-    state.modal='gallery-crop';
-    renderModal();
-  }
+}
+  function openGalleryCropEditor(postId,origin,chosenPhotoId=null,initialView='card'){
+  if(!state.moderator)return;
+  const post=state.posts.find(item=>item.id===postId)||state.selectedPost;
+  if(!post||post.id!==postId||post.status!=='approved')return;
+  const matching=assets(post.id);
+  const selected=chosenPhotoId?matching.find(item=>item.id===chosenPhotoId):(origin==='view'?matching[state.selectedImage]||matching[0]:matching[0]);
+  if(!selected){toast('No photograph found for this post.',true);return;}
+  state.selectedPost=post;
+  state.selectedImage=matching.findIndex(item=>item.id===selected.id);
+  state.cropPhotoId=selected.id;
+  state.cropDraft={...galleryPhotoCrop(selected)};
+  state.cropView=['card','desktop','mobile'].includes(initialView)?initialView:'card';
+  state.cropHeroDraft=null;
+  state.cropHeroLoading=true;
+  state.cropHeroError='';
+  state.cropHeroEnabled=true;
+  state.cropGesture=null;
+  state.cropReturnModal=origin==='view'?'view':null;
+  state.modal='gallery-crop';
+  renderModal();
+  void loadHeroPhotoForCrop(selected.id);
+}
   function closeGalleryCropEditor(){
-    const returnModal=state.cropReturnModal;
-    state.cropGesture=null;
-    state.cropPhotoId=null;state.cropDraft=null;state.cropReturnModal=null;
-    state.modal=returnModal==='view'?'view':null;
-    render();
-  }
+  const returnModal=state.cropReturnModal;
+  state.cropGesture=null;
+  state.cropPhotoId=null;
+  state.cropDraft=null;
+  state.cropHeroDraft=null;
+  state.cropHeroLoading=false;
+  state.cropHeroError='';
+  state.cropView='card';
+  state.cropReturnModal=null;
+  state.modal=returnModal==='view'?'view':null;
+  render();
+}
   async function saveGalleryCrop(){
-    if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!state.cropDraft)return;
-    const draft={...state.cropDraft},photoId=state.cropPhotoId;
-    state.cropBusy=true;
-    const saveButton=$('[data-action="save-gallery-crop"]',root);
-    if(saveButton){saveButton.disabled=true;saveButton.textContent='Saving placement...';}
-    try{
-      const {data,error}=await state.client.rpc('memory_staff_set_photo_card_crop',{
-        p_photo_id:photoId,p_x:Math.round(draft.x),p_y:Math.round(draft.y),
+  const view=state.cropView||'card',draft=activeCropDraft(),photoId=state.cropPhotoId;
+  if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!draft||state.cropHeroLoading)return;
+  state.cropBusy=true;
+  const button=$('[data-action="save-gallery-crop"]',root);
+  if(button){button.disabled=true;button.textContent='Saving placement...';}
+  try{
+    let data,error;
+    if(view==='card'){
+      ({data,error}=await state.client.rpc('memory_staff_set_photo_card_crop',{
+        p_photo_id:photoId,p_x:Math.round(draft.x*100)/100,p_y:Math.round(draft.y*100)/100,
         p_zoom:draft.fit==='contain'?1:Number(draft.zoom.toFixed(2)),p_fit:draft.fit
-      });
-      if(error)throw error;
-      if(!data?.saved||data?.photo_id!==photoId)throw Error('Photo placement was not confirmed.');
+      }));
+    }else{
+      ({data,error}=await state.client.rpc('memory_staff_set_hero_photo_crop',{
+        p_photo_id:photoId,p_mode:view,p_x:Math.round(draft.x*100)/100,
+        p_y:Math.round(draft.y*100)/100,p_zoom:Number(draft.zoom.toFixed(2))
+      }));
+    }
+    if(error)throw Error(error.message);
+    if(!data?.saved||data?.photo_id!==photoId)throw Error('Photo placement was not confirmed.');
+    if(view==='card'){
       const photo=state.photos.find(item=>item.id===photoId);
       if(photo)Object.assign(photo,{
         card_crop_x:Number(data.x),card_crop_y:Number(data.y),
         card_crop_zoom:Number(data.zoom),card_crop_fit:data.fit
       });
-      state.cropBusy=false;
-      closeGalleryCropEditor();
-      toast('Photo placement saved. The original file and slideshow are unchanged.');
-    }catch(e){
-      state.cropBusy=false;
-      toast('Could not save gallery photo placement. '+(e?.message||''),true);
-      renderModal();
+    }else{
+      const verifiedCrop=cropMode(data.crop,{x:50,y:50,zoom:1});
+      for(const scene of [...APPROVED_HERO_SCENES,...HERO_SCENES]){
+        if(scene.id==='approved-'+photoId)scene[view]={...verifiedCrop};
+      }
     }
+    state.cropBusy=false;
+    closeGalleryCropEditor();
+    toast(view==='card'
+      ?'Gallery placement saved. Hero framing is unchanged.'
+      :`${view==='desktop'?'Desktop':'Mobile'} hero banner placement saved. Other views are unchanged.`);
+  }catch(error){
+    state.cropBusy=false;
+    toast('Could not save photo placement. '+(error.message||'Unknown error'),true);
+    renderModal();
   }
+}
   function editPublishedModal(){
     const post=state.selectedPost;
     if(!post||!state.moderator||post.status!=='approved')return modalHead('Post unavailable');
