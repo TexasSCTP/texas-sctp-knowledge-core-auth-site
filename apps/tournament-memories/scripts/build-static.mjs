@@ -25,6 +25,7 @@ for(const [source,release] of [
   ['app.js','app-range-gallery-framing-v3-20261109.js'],
   ['app.js','app-range-slideshow-auto-v4-20261109.js'],
   ['app.js','app-range-menu-v5-20261109.js'],
+  ['app.js','app-range-menu-fixed-v6-20261109.js'],
   ['styles.css','styles-range-adult-check-v2-20261109.css'],
   ['styles.css','styles-range-gallery-framing-v3-20261109.css'],
   ['styles.css','styles-range-menu-v5-20261109.css'],
