@@ -117,7 +117,7 @@
     totalFetched:0, hasMore:true, loading:false, fetching:false, galleryError:'',
     filter:{team:'', tournament:'', season:'', query:'', sort:'newest'},
     feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],adminAuthorizations:new Map(),
-    modal:null, selectedPost:null, selectedImage:0, uploadFiles:[],
+    modal:null, selectedPost:null, selectedImage:0, editPostBusy:false, uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
     guestPending:null, visitorId:null, guestLiked:new Set(),
     filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false
@@ -447,7 +447,7 @@
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
     const comments=postComments(p.id),likes=postReactions(p.id),liked=state.guestLiked.has(p.id);
     const cardStyle=first?` style="${galleryPhotoStyle(galleryPhotoCrop(first))}"`:'';
-    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<button class="memory-more" data-action="report" data-id="${attr(p.id)}" title="Report photo" aria-label="Report or request photo removal">${icon('more')}</button></div>
+    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<div class="memory-action-container"><button type="button" class="memory-more" data-action="toggle-post-menu" data-id="${attr(p.id)}" title="More photo options" aria-label="More photo options for ${attr(t?.name||'Texas SCTP')}" aria-haspopup="true" aria-expanded="false">${icon('more')}</button><div class="memory-actions-dropdown" hidden role="group" aria-label="Photo actions"><button type="button" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share photo link</button>${state.moderator?`<button type="button" data-action="edit-published" data-id="${attr(p.id)}">${icon('edit','icon-sm')} Edit post details</button><button type="button" data-action="edit-gallery-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust photo placement</button><button type="button" class="danger" data-action="remove-published" data-id="${attr(p.id)}">Remove post from gallery</button>`:''}<button type="button" data-action="report" data-id="${attr(p.id)}">${icon('mail','icon-sm')} Report a photo concern</button></div></div></div>
     <button class="memory-photo" data-action="view" data-id="${attr(p.id)}" aria-label="View photos from ${attr(t?.name||'Texas SCTP')}">${src?`<img src="${cleanUrl(src)}" alt="Tournament memory shared by ${attr(t?.name||'Texas SCTP')}" loading="lazy"${cardStyle}>`:`<span class="no-photo">${icon('image')} Photo temporarily unavailable</span>`}${photos.length>1?`<span class="multi-photo">${icon('image','icon-sm')} ${photos.length} photos</span>`:''}</button>
     <div class="memory-body"><p class="memory-caption">${esc(p.caption||'Action from the range.')}</p>${p.photo_credit?`<p class="photo-by">Photo by ${esc(p.photo_credit)}</p>`:''}<div class="memory-gestures"><button class="memory-gesture ${liked?'is-liked':''}" data-action="like" data-id="${attr(p.id)}" aria-label="${liked?'Remove appreciation':'Appreciate'}">${icon('heart','icon-sm')} <span>${likes.length?likes.length:'Appreciate'}</span></button><button class="memory-gesture" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} <span>${comments.length?`${comments.length} comments`:'Comment'}</span></button><button class="memory-gesture" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share</button></div>
     <div class="comments-preview">${comments.slice(-2).map(c=>`<div class="inline-comment"><span class="comment-avatar">${esc(initials(c.display_name))}</span><p><strong>${esc(c.display_name)}</strong> ${esc(c.body)}</p></div>`).join('')}${comments.length>2?`<button class="view-comments" data-action="view" data-id="${attr(p.id)}">View all ${comments.length} comments</button>`:''}<button class="comment-invite" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} Write a comment...</button></div></div></article>`;
@@ -463,6 +463,7 @@
     else if(state.modal==='account'){html=accountModal();}
     else if(state.modal==='view'){html=viewModal();cls='modal-post';}
     else if(state.modal==='gallery-crop'){html=galleryCropEditorModal();cls='modal-wide gallery-position-modal';}
+    else if(state.modal==='edit-published'){html=editPublishedModal();cls='modal-wide';}
     else if(state.modal==='privacy'){html=privacyModal();}
     root.innerHTML=`<div class="modal-backdrop" data-action="backdrop"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${attr(state.modal==='upload'?'Share tournament photos':state.modal==='view'?'Tournament photo':'Texas SCTP')}">${html}</div></div>`;
     const close=$('.close-modal',root);if(close)close.focus();
@@ -574,6 +575,60 @@
       toast('Could not save gallery photo placement. '+(e?.message||''),true);
       renderModal();
     }
+  }
+  function editPublishedModal(){
+    const post=state.selectedPost;
+    if(!post||!state.moderator||post.status!=='approved')return modalHead('Post unavailable');
+    const title=team(post.team_id)?.name||'Texas SCTP team';
+    const eventOptions=state.tournaments.map(t=>`<option value="${attr(t.id)}" ${post.tournament_id===t.id?'selected':''}>${esc(t.title)}</option>`).join('');
+    return `${modalHead('Edit published photo post','Update the caption and tournament details. The original photographs remain unchanged.')}
+      <div class="modal-scroll"><div class="photo-edit-context"><strong>${esc(title)}</strong><span>Gallery post · ${dateFmt(post.photo_date)}</span></div>
+      <form id="edit-published-form">
+        <div class="form-field"><label for="edit-published-caption">Photo caption</label><textarea id="edit-published-caption" name="caption" maxlength="900" rows="6" placeholder="Describe the tournament moment...">${esc(post.caption||'')}</textarea></div>
+        <div class="form-grid">
+          <div class="form-field"><label for="edit-published-credit">Photo credit</label><input id="edit-published-credit" name="credit" maxlength="80" value="${attr(post.photo_credit||'')}" placeholder="Optional photo credit"></div>
+          <div class="form-field"><label for="edit-published-date">Photo date</label><input id="edit-published-date" name="date" type="date" required value="${attr(post.photo_date)}" max="${attr(todayCentral())}"></div>
+        </div>
+        <div class="form-field"><label for="edit-published-event">Tournament</label>
+          <select id="edit-published-event" name="event" required>${eventOptions}<option value="other" ${!post.tournament_id?'selected':''}>Other tournament</option></select></div>
+        <div class="form-field" id="edit-published-other-wrap" ${post.tournament_id?'hidden':''}><label for="edit-published-other">Tournament name</label><input id="edit-published-other" name="otherEvent" maxlength="120" minlength="3" value="${attr(post.other_tournament||'')}" ${!post.tournament_id?'required':''}></div>
+        <p class="photo-edit-note">Updates appear in the On the Range gallery. They do not automatically change captions on already published Facebook or Instagram posts.</p>
+        <div class="form-actions"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button><button type="submit" class="btn btn-primary" ${state.editPostBusy?'disabled':''}>${state.editPostBusy?'Saving...':'Save changes'}</button></div>
+      </form></div>`;
+  }
+  async function savePublishedPost(form){
+    if(!state.moderator||!state.selectedPost||state.editPostBusy)return;
+    if(!form.reportValidity())return;
+    const values=new FormData(form);
+    const eventId=String(values.get('event')||'');
+    const payload={
+      p_post_id:state.selectedPost.id,
+      p_caption:String(values.get('caption')||'').trim(),
+      p_photo_credit:String(values.get('credit')||'').trim(),
+      p_photo_date:String(values.get('date')||''),
+      p_tournament_id:eventId==='other'?null:eventId,
+      p_other_tournament:eventId==='other'?String(values.get('otherEvent')||'').trim():null
+    };
+    state.editPostBusy=true;
+    const button=form.querySelector('button[type="submit"]');
+    if(button){button.disabled=true;button.textContent='Saving...';}
+    try{
+      const {data,error}=await state.client.rpc('memory_staff_edit_published_post',payload);
+      if(error)throw Error(error.message);
+      if(!data?.saved||data?.post_id!==payload.p_post_id)throw Error('Changes were not confirmed.');
+      Object.assign(state.selectedPost,{
+        caption:data.caption,photo_credit:data.photo_credit,
+        tournament_id:data.tournament_id,other_tournament:data.other_tournament,photo_date:data.photo_date
+      });
+      state.modal=null;
+      state.editPostBusy=false;
+      render();
+      toast('Published photo details updated.');
+    }catch(e){state.editPostBusy=false;toast('Could not save photo details: '+(e.message||'Unknown error'),true);if(button){button.disabled=false;button.textContent='Save changes';}}
+  }
+  function closePostMenus(){
+    for(const menu of $('.memory-actions-dropdown'))menu.hidden=true;
+    for(const button of $('[data-action="toggle-post-menu"]'))button.setAttribute('aria-expanded','false');
   }
   function selectTeams(){return `<option value="">Choose your team</option>${state.teams.map(t=>`<option value="${attr(t.id)}">${esc(t.name)}</option>`).join('')}`;}
   function selectEvents(){return `<option value="">Choose a tournament</option>${state.tournaments.filter(t=>t.event_date<=todayCentral()).map(t=>`<option value="${attr(t.id)}" data-date="${attr(t.event_date)}">${esc(t.title)} · ${dateFmt(t.event_date)}</option>`).join('')}<option value="other">Other Texas SCTP tournament</option>`;}
@@ -983,8 +1038,28 @@
     else if(navigator.clipboard?.writeText){navigator.clipboard.writeText(url.toString()).then(()=>toast('Link copied to clipboard.')).catch(()=>toast(url.toString()));}
     else toast(url.toString());
   }
-  async function onAction(e){const target=e.target.closest('[data-action]');if(!target)return;
+  async function onAction(e){
+    const target=e.target.closest('[data-action]');
+    if(!target){if(!e.target.closest('.memory-action-container'))closePostMenus();return;}
     const action=target.dataset.action,id=target.dataset.id;
+    if(action==='toggle-post-menu'){
+      const anchor=target.closest('.memory-action-container');
+      const menu=anchor?.querySelector('.memory-actions-dropdown');
+      if(!menu)return;
+      const wasOpen=!menu.hidden;
+      closePostMenus();
+      menu.hidden=wasOpen;
+      target.setAttribute('aria-expanded',String(!wasOpen));
+      if(!wasOpen)menu.querySelector('button')?.focus();
+      return;
+    }
+    closePostMenus();
+    if(action==='edit-published'){
+      if(!state.moderator)return;
+      const post=state.posts.find(p=>p.id===id);
+      if(!post)return;
+      state.selectedPost=post;state.modal='edit-published';renderModal();return;
+    }
     if(action==='toggle-slideshow'){
       heroPaused=!heroPaused;
       target.setAttribute('aria-pressed',String(heroPaused));
@@ -1065,6 +1140,7 @@
     }
     if(e.target.id==='upload-form'){e.preventDefault();await uploadPhotos(e.target);}
     if(e.target.id==='comment-form'){e.preventDefault();await submitComment(e.target);}
+    if(e.target.id==='edit-published-form'){e.preventDefault();await savePublishedPost(e.target);}
   }
   async function onChange(e){
     if(socialAdmin?.onChange(e))return;
@@ -1074,6 +1150,13 @@
       state.cropDraft.fit=element.value;
       if(element.value==='contain')Object.assign(state.cropDraft,{x:50,y:50,zoom:1});
       refreshGalleryCropPreview();return;
+    }
+    if(element.id==='edit-published-event'){
+      const wrap=$('#edit-published-other-wrap'),input=$('#edit-published-other');
+      const manual=element.value==='other';
+      if(wrap)wrap.hidden=!manual;
+      if(input)input.required=manual;
+      return;
     }
     if(element.id==='authorizer-role'){
       const wrap=$('#authorizer-role-detail-wrap'),detail=$('#authorizer-role-detail');
@@ -1160,7 +1243,7 @@
   document.addEventListener('change',onChange);document.addEventListener('input',onInput);
   window.addEventListener('hashchange',()=>openHashMemory());
   document.addEventListener('error',e=>{if(e.target?.matches?.('.brand-seal img, .demo-photo img'))e.target.style.display='none';},true);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}state.modal=null;releaseUploads();state.guestPending=null;renderModal();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!state.modal){closePostMenus();return;}if(e.key==='Escape'&&state.modal){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}state.modal=null;releaseUploads();state.guestPending=null;renderModal();}});
   socialAdmin?.attach({state,team,tournament,toast,redraw:render,dateFmt,bucket:BUCKET});
   getVisitorId();
   connect();
