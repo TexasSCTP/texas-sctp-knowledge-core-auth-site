@@ -494,3 +494,23 @@ body{background:var(--paper)}
 .photo-release-notice a{color:#1e628c;text-decoration:underline;font-weight:800}
 #authorizer-role-detail-wrap[hidden]{display:none!important}
 @media(max-width:600px){.photo-release-heading{padding:14px 16px}.photo-release-required,.photo-release-optional{padding:14px 13px!important}}
+
+
+/* Texas SCTP On the Range: verified staff roles and conservative adult leader status */
+.staff-role-directory{border:1px solid #e2e9ec;border-radius:10px;background:#fff;padding:16px 20px;margin:16px 0 25px;box-shadow:0 5px 20px rgba(16,44,76,.035)}
+.staff-role-directory-heading{font-size:10px;font-weight:900;letter-spacing:.13em;color:#587387;text-transform:uppercase;margin-bottom:12px}
+.staff-role-directory-list{display:flex;flex-wrap:wrap;align-items:stretch;gap:13px}
+.staff-person{display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap;background:#f6f8f9;border:1px solid #e6ecee;border-radius:7px;padding:11px 14px}
+.staff-person strong{font-size:12px;color:#173e59}
+.staff-person small{font-size:10px;color:#79909a}
+.staff-role-pill{display:inline-block;background:#e9edf1;color:#31536b;font-size:10px;font-weight:900;padding:5px 8px;border-radius:30px}
+.staff-role-pill.role-owner{background:#fbf0d4;color:#8a601d}
+.staff-role-pill.role-admin{background:#e3edf6;color:#2a5c85}
+.adult-verification-banner{display:flex;flex-direction:column;gap:5px;padding:14px 16px;border:2px solid #e6bd5b;background:#fff7dd;border-radius:9px;margin:15px 0;color:#7a5b1d}
+.adult-verification-banner strong{font-size:13px;font-weight:1000;letter-spacing:.08em}
+.adult-verification-banner>span{font-size:12px;font-weight:650;line-height:1.65}
+.adult-verification-banner small{font-size:10.3px;line-height:1.55;font-weight:500;opacity:.85}
+.adult-verification-approved{background:#e7f5eb;border-color:#75bd91;color:#1c653b}
+.adult-verification-declined{background:#fff0ef;border-color:#e79994;color:#9f2f28}
+.adult-verification-review{background:#fff7dd;border-color:#e6bd5b;color:#7a5b1d}
+@media(max-width:610px){.staff-role-directory{padding:14px}.staff-person{width:100%}.adult-verification-banner{padding:12px 13px}}
