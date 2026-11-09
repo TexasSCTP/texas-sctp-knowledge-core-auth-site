@@ -42,3 +42,14 @@ dialog{border:1px solid #e2e7e9;border-radius:15px;width:min(560px,calc(100vw - 
 .scene-inclusion-toggle input:disabled+.scene-inclusion-track{opacity:.55}
 .scene-inclusion-text{font-size:10px;line-height:1.3;font-weight:800;color:#6d7f8d}
 .scene-inclusion-toggle:has(input:checked) .scene-inclusion-text{color:#2d7956}
+
+
+/* Explicit save acknowledgement next to Fine-tune this photo, not only in header. */
+.live-save-feedback{display:block;margin:15px 0 18px;padding:14px 17px;border-radius:8px;border:1px solid #d7e0e4;border-left:4px solid #6c8494;background:#f5f8fa;color:#24475f;font-size:12.5px;font-weight:800;line-height:1.6;box-shadow:0 3px 10px rgba(20,49,72,.035)}
+.live-save-feedback[hidden]{display:none!important}
+.live-save-feedback.is-success{background:#eaf7ef;border-color:#b8dfc7;border-left-color:#238254;color:#1a6342}
+.live-save-feedback.is-saving{background:#f4f8fb;border-color:#c9dce8;border-left-color:#427ca0;color:#2b5774}
+.live-save-feedback.is-unsaved{background:#fff9e9;border-color:#f0dcaa;border-left-color:#b98028;color:#73561e}
+.live-save-feedback.is-error{background:#fff1ef;border-color:#e5bab4;border-left-color:#c1493e;color:#9e332b}
+#save-live:disabled,#publish-open:disabled{cursor:progress;opacity:.7}
+@media(max-width:700px){.live-save-feedback{padding:12px 14px;font-size:12px;margin:12px 0 16px}}
