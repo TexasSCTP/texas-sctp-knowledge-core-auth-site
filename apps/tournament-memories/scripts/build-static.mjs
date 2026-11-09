@@ -43,8 +43,10 @@ for(const [source,release] of [
   ['hero-admin.js','hero-admin-range-20261108.js'],
   ['hero-admin.js','hero-admin-drag-save-v2-20261109.js'],
   ['hero-admin.js','hero-admin-switch-v3-20261109.js'],
+  ['hero-admin.js','hero-admin-save-feedback-v4-20261109.js'],
   ['hero-admin.css','hero-admin-range-20261108.css'],
-  ['hero-admin.css','hero-admin-switch-v3-20261109.css']
+  ['hero-admin.css','hero-admin-switch-v3-20261109.css'],
+  ['hero-admin.css','hero-admin-save-feedback-v4-20261109.css']
 ])await copyFile(resolve(root,source),resolve(dist,release));
 await cp(resolve(root,'public'),resolve(dist,'public'),{recursive:true});
 await cp(resolve(root,'team-logos'),resolve(dist,'team-logos'),{recursive:true});
