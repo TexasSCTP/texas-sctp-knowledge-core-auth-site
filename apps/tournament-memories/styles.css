@@ -514,3 +514,51 @@ body{background:var(--paper)}
 .adult-verification-declined{background:#fff0ef;border-color:#e79994;color:#9f2f28}
 .adult-verification-review{background:#fff7dd;border-color:#e6bd5b;color:#7a5b1d}
 @media(max-width:610px){.staff-role-directory{padding:14px}.staff-person{width:100%}.adult-verification-banner{padding:12px 13px}}
+
+
+/* Texas SCTP On the Range: independent staff positioning for every regular gallery photo. */
+.memory-reposition{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;border:1px solid #d3dde3;border-radius:5px;background:#f8fafb;color:#244c67;padding:8px 9px;font-size:10px;font-weight:850;white-space:nowrap}
+.memory-reposition .icon{width:13px;height:13px}
+.memory-reposition:hover{border-color:#c59a53;background:#fff9ed;color:#785019}
+.memory-reposition:focus-visible{outline:3px solid #d5ad61;outline-offset:2px}
+.gallery-view-position-button{align-self:flex-start;margin:0 0 14px}
+.gallery-position-modal{width:min(1050px,calc(100vw - 32px))}
+.gallery-position-modal .modal-scroll{max-height:calc(92vh - 98px);overflow:auto}
+.gallery-crop-editor{background:#fff}
+.gallery-crop-intro{display:flex;align-items:baseline;flex-wrap:wrap;gap:7px 15px;padding-bottom:17px;border-bottom:1px solid #e4e9ed}
+.gallery-crop-intro strong{font-size:13px;font-weight:900;color:#1b425f}
+.gallery-crop-intro span{font-size:11.5px;color:#728493}
+.gallery-crop-body{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(275px,.85fr);gap:26px;margin-top:20px}
+.gallery-crop-preview-side{min-width:0}
+.gallery-crop-preview-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;color:#647889;font-size:9.5px;font-weight:900;letter-spacing:.1em}
+.gallery-crop-preview-heading span:last-child{color:#af7e2c}
+.gallery-crop-viewport{width:100%;aspect-ratio:3/2;background:#263848;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #d7e0e4;border-radius:7px;box-shadow:0 7px 18px rgba(17,42,64,.08)}
+.gallery-crop-viewport img{width:100%;height:100%;object-fit:cover;display:block;max-width:none;max-height:none;transform-origin:center center}
+.gallery-crop-caption,.gallery-crop-note{font-size:10.8px;line-height:1.65;color:#7d8e9a;margin:9px 0 0}
+.gallery-crop-original{margin-top:22px;border:1px solid #dbe3e7;border-radius:8px;overflow:hidden;background:#f8fafb}
+.gallery-crop-original summary{font-size:11px;font-weight:850;color:#315670;cursor:pointer;padding:12px 14px}
+.gallery-crop-original img{display:block;width:100%;height:auto;max-height:310px;object-fit:contain;background:#e7edef}
+.gallery-crop-control-side{min-width:0;display:flex;flex-direction:column;gap:18px}
+.gallery-crop-mode{margin:0;padding:0;border:0;display:grid;gap:9px}
+.gallery-crop-mode legend{font-size:12px;font-weight:900;margin-bottom:9px;color:#1f455f}
+.gallery-crop-mode label{display:flex;gap:11px;align-items:flex-start;background:#fff;border:1px solid #dce5e9;border-radius:7px;padding:11px 12px;cursor:pointer}
+.gallery-crop-mode label:has(input:checked){border-color:#d0a257;background:#fffcf4}
+.gallery-crop-mode input{width:17px;height:17px;flex:0 0 17px;margin:3px 0 0;accent-color:#163c5a}
+.gallery-crop-mode strong,.gallery-crop-mode small{display:block}
+.gallery-crop-mode strong{color:#23465e;font-size:11.6px}
+.gallery-crop-mode small{font-size:10px;color:#7a8e9b;line-height:1.55;margin-top:4px}
+.gallery-crop-presets>span{display:block;font-size:11px;font-weight:900;color:#294b63;margin-bottom:8px}
+.gallery-crop-presets>div{display:flex;gap:7px;flex-wrap:wrap}
+.gallery-crop-presets button{background:#f8fafb;color:#31546b;border:1px solid #dce3e7;padding:9px 11px;border-radius:5px;font-size:10.8px;font-weight:750;cursor:pointer}
+.gallery-crop-presets button:hover:not(:disabled){background:#fff8e8;border-color:#c89c55}
+.gallery-crop-range{display:grid;gap:6px}
+.gallery-crop-range label{font-size:11.5px;font-weight:850;color:#2d4d63;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gallery-crop-range output{font-size:11.5px;font-weight:850;color:#986a2c}
+.gallery-crop-range input{width:100%;cursor:pointer;accent-color:#bd8940}
+.gallery-crop-range input:disabled{opacity:.4;cursor:not-allowed}
+.gallery-crop-axis{display:flex;justify-content:space-between;color:#8192a0;font-size:10px}
+.gallery-crop-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:4px;padding-top:16px;border-top:1px solid #e6edef}
+.gallery-crop-actions .btn{font-size:11px;min-height:38px}
+.gallery-crop-note{margin-top:0}
+@media(max-width:740px){.gallery-crop-body{grid-template-columns:1fr;gap:22px}.gallery-crop-original img{max-height:200px}}
+@media(max-width:560px){.memory-head{flex-wrap:wrap}.memory-reposition{order:3;margin-left:51px}.gallery-position-modal{width:calc(100vw - 20px)}.gallery-position-modal .modal-scroll{padding:18px 17px}.gallery-crop-editor .gallery-crop-intro{padding-bottom:12px}.gallery-crop-actions .btn{flex:1 1 auto}}
