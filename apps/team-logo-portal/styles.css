@@ -18,3 +18,21 @@
 .hero-illustration{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 22px rgba(0,0,0,.12))}
 @media(max-width:1000px){.hero-side{width:310px;height:300px}}
 @media(max-width:750px){.hero-side{display:none}}
+
+/* The hero uses the unmodified, official Texas SCTP image asset. */
+.hero-copy{max-width:650px}
+.hero-side{width:395px;height:330px;position:relative;flex:none;display:block}
+.brand-showcase{position:absolute;right:18px;top:14px;width:340px;height:288px;border:1px solid rgba(228,235,242,.9);border-radius:16px;overflow:hidden;background:#fff;color:var(--navy);box-shadow:0 28px 58px rgba(0,10,22,.34);transform:rotate(2deg)}
+.brand-showcase-head{height:49px;background:#eff3f6;border-bottom:1px solid #dce5eb;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:9px;letter-spacing:.10em;font-weight:850;color:#557086}
+.showcase-dots{color:#9aabb8;font-size:12px;letter-spacing:.13em}
+.brand-showcase-image{height:187px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#fff 40%,#f4f7f8 100%)}
+.brand-showcase-image img{width:158px;height:158px;object-fit:contain}
+.brand-showcase-footer{height:52px;display:flex;align-items:center;gap:8px;padding:0 19px;border-top:1px solid #e5edf0;color:#405a6a;font-size:12px;font-weight:800}
+.verified-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#26825e;box-shadow:0 0 0 4px #e1f4eb}
+.showcase-float{position:absolute;z-index:2;padding:11px 15px;border-radius:9px;display:flex;align-items:center;gap:10px;background:#fff;color:#183d59;box-shadow:0 13px 28px rgba(0,13,27,.27);font-size:10px;font-weight:900;letter-spacing:.04em;white-space:nowrap}
+.showcase-float-first{left:-8px;top:84px;transform:rotate(-4deg)}
+.showcase-float-second{right:-6px;bottom:15px;transform:rotate(-3deg)}
+.showcase-icon,.showcase-check{display:grid;place-items:center;width:26px;height:26px;line-height:1;border-radius:7px;background:#f1f5f7;font-size:18px;color:#cc912e}
+.showcase-check{background:#e1f4eb;color:#28845c;font-size:17px}
+@media(max-width:1100px){.hero-side{width:335px;height:295px}.brand-showcase{width:285px;height:248px}.brand-showcase-image{height:152px}.brand-showcase-image img{width:132px;height:132px}.brand-showcase-footer{height:47px}.showcase-float{font-size:9px}.hero-copy{max-width:570px}}
+@media(max-width:750px){.hero-side{display:none}}
