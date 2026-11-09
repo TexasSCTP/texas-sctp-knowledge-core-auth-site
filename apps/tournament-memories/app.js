@@ -115,6 +115,7 @@
   };
   const el = document.getElementById('app');
   const root = document.getElementById('modal-root');
+  const socialAdmin = window.TEXAS_SCTP_SOCIAL_ADMIN || null;
   const svgPaths = {
     camera:'<path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4l-2-3Z"/><circle cx="12" cy="13" r="3"/>',
     upload:'<path d="M12 16V3m-5 5 5-5 5 5"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/>',
@@ -713,8 +714,8 @@
   function renderAdmin(){const pendingP=state.adminPosts.length,pendingC=state.adminComments.length,pendingL=state.adminLogoRequests.length;
     return `<div class="content-wrap admin-shell"><div class="admin-heading"><div><div class="eyebrow" style="color:#b78031">ADMINISTRATION</div><h2>Community moderation</h2><p>Review athlete photos and comments before they appear to the public.</p></div><div class="admin-heading-actions"><a class="btn btn-outline" href="./hero-studio.html">Adjust slideshow photos</a><button class="btn btn-outline" data-action="refresh-admin">Refresh queue</button></div></div>
     <div class="admin-stats"><div class="admin-stat"><strong>${pendingP}</strong><small>Photo submissions waiting</small></div><div class="admin-stat"><strong>${pendingC}</strong><small>Comments waiting</small></div><div class="admin-stat"><strong>${shownPosts().length}</strong><small>Published photo posts loaded</small></div></div>
-    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos${pendingL?` (${pendingL} to review)`:""}</button></div>
-    ${state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button>${p.social_consent?`<button class='btn btn-outline btn-sm' data-action='approve-social-post' data-id='${attr(p.id)}' ${a.length?'':'disabled'}>${icon('camera')} Approve + Spotlight</button>`:''}<button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social promotion permission given. Approve the exact photo and caption before selecting the spotlight option.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:state.adminTab==='logos'?renderTeamLogoAdmin():
+    <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos${pendingL?` (${pendingL} to review)`:""}</button><button class="admin-tab ${state.adminTab==='social'?'active':''}" data-action="admin-social">Social Publishing</button></div>
+    ${state.adminTab==='social'?(socialAdmin?socialAdmin.render():'<p class="full-width-notice">Social Publishing is unavailable.</p>'):state.adminTab==='photos'?`<div class="review-grid">${state.adminPosts.map(p=>{const a=assets(p.id),img=a[0]&&state.imageUrls.get(a[0].storage_path);return `<div class="review-card">${img?`<img src="${cleanUrl(img)}" alt="Photo awaiting moderation" loading="lazy">`:`<div style="background:#edf0f1;height:170px;display:grid;place-items:center">${icon('camera','icon-lg')}</div>`}<div class="review-body"><div class="review-team-logo">${logoForTeam(p.team_id,team(p.team_id)?.name||'Texas SCTP team')}<strong>${esc(team(p.team_id)?.name||'Unlisted team')}</strong></div><div class="meta">${esc(tournament(p.tournament_id)?.title||p.other_tournament||'Unlisted event')} · ${dateFmt(p.photo_date)} · ${a.length} photo(s)</div><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span><p>${esc(p.caption||'No caption')}</p><p class="field-note">Submitted ${dateFmt(p.created_at)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-post" data-id="${attr(p.id)}" ${a.length?'':'disabled'}>${icon('check')} Approve</button><button class="btn btn-danger btn-sm" data-action="reject-post" data-id="${attr(p.id)}">Decline</button></div>${p.social_consent?`<p class='field-note'>Social permission recorded. Approve the gallery submission first, then select the exact image and caption in Social Publishing.</p>`:`<p class='field-note'>Gallery permission only. No Facebook or Instagram sharing.</p>`}${!a.length?'<p class="field-note">No photo file attached. Do not approve.</p>':''}</div></div>`;}).join('')||'<p class="full-width-notice">No pending photos. You are caught up.</p>'}</div>`:state.adminTab==='logos'?renderTeamLogoAdmin():
     `<div class="review-grid">${state.adminComments.map(c=>{const p=state.adminPosts.find(x=>x.id===c.post_id)||state.posts.find(x=>x.id===c.post_id);return `<div class="review-card"><div class="review-body review-comment"><strong>${esc(c.display_name)}</strong><div class="meta">${dateFmt(c.created_at)} · ${esc(team(p?.team_id)?.name||'Tournament photo')}</div><p>${esc(c.body)}</p><div class="review-actions"><button class="btn btn-primary btn-sm" data-action="approve-comment" data-id="${attr(c.id)}">${icon('check')} Approve</button><button class="btn btn-danger btn-sm" data-action="reject-comment" data-id="${attr(c.id)}">Decline</button></div></div></div>`;}).join('')||'<p class="full-width-notice">No pending comments. You are caught up.</p>'}</div>`}</div>`;
   }
 
@@ -775,11 +776,11 @@
   async function moderate(type,id,decision){
     if(!state.moderator)return;
     const tbl=type==='post'?'memory_posts':'memory_comments';
-    const approved=decision==='approve'||decision==='approveSocial';const update={status:approved?'approved':'rejected',moderated_at:new Date().toISOString(),moderated_by:state.user.id};if(type==='post'&&decision==='approveSocial'){if(!state.adminPosts.some(p=>p.id===id&&p.social_consent)){toast('Social promotion was not authorized.',true);return;}Object.assign(update,{social_reviewed:true,caption_social_approved:true,social_reviewed_at:new Date().toISOString(),social_reviewed_by:state.user.id});}
+    const approved=decision==='approve';const update={status:approved?'approved':'rejected',moderated_at:new Date().toISOString(),moderated_by:state.user.id};
     if(type==='post'&&approved&&!assets(id).length){toast('Cannot approve a submission without a photo.',true);return;}
     const {error}=await state.client.from(tbl).update(update).eq('id',id);
     if(error){toast('Moderation failed: '+error.message,true);return;}
-    toast(approved?(decision==='approveSocial'?'Approved for gallery and social spotlight.':'Approved for gallery only.'):'Submission declined.');await loadGallery(true);await loadAdmin();
+    toast(approved?'Approved for gallery. Review social publication separately in Social Publishing.':'Submission declined.');await loadGallery(true);await loadAdmin();
   }
   function sharePost(id){const url=new URL(window.location.href);url.hash=`memory-${id}`;
     if(navigator.share){navigator.share({title:'Texas SCTP | On the Range',url:url.toString()}).catch(()=>{});}
@@ -800,7 +801,7 @@
     if(action==='scroll-gallery'){$('#memories-gallery')?.scrollIntoView({behavior:'smooth'});return;}
     if(action==='gallery'){state.screen='gallery';render();return;}
     if(action==='admin'){if(!state.moderator){state.modal='login';renderModal();return;}state.modal=null;state.screen='admin';render();await loadAdmin();return;}
-    if(action==='admin-photos'||action==='admin-comments'||action==='admin-logos'){state.adminTab=action==='admin-photos'?'photos':action==='admin-logos'?'logos':'comments';render();return;}
+    if(action==='admin-photos'||action==='admin-comments'||action==='admin-logos'||action==='admin-social'){state.adminTab=action==='admin-photos'?'photos':action==='admin-logos'?'logos':action==='admin-social'?'social':'comments';render();if(state.adminTab==='social')await socialAdmin?.load();return;}
 
     if(action.startsWith('logo-filter-')){
       const view=action.slice('logo-filter-'.length);
@@ -818,7 +819,8 @@
     }
     if(action==='approve-team-logo'||action==='reject-team-logo'){await reviewTeamLogo(id,action==='approve-team-logo');return;}
     if(action==='remove-current-team-logo'){await removeTeamLogo(id);return;}
-    if(action==='refresh-admin'){await loadAdmin();return;}
+    if(action==='refresh-admin'){if(state.adminTab==='social')await socialAdmin?.load();else await loadAdmin();return;}
+    if(['queue-social','cancel-social','refresh-social'].includes(action)){await socialAdmin?.onAction(action,id);return;}
     if(action==='login'||action==='account'||action==='privacy'){state.modal=action;renderModal();return;}
     if(action==='upload'){state.modal='upload';renderModal();return;}
     if(action==='logout'&&state.client){const {error}=await state.client.auth.signOut();if(error)toast(error.message,true);else{state.user=null;state.moderator=false;state.modal=null;await refreshAccount();render();toast('Signed out.');}return;}
@@ -841,7 +843,8 @@
     }
     if(action==='remove-upload'){state.guestPending=null;let n=Number(target.dataset.index);if(state.uploadFiles[n])URL.revokeObjectURL(state.uploadFiles[n].preview);state.uploadFiles.splice(n,1);const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');return;}
     if(action==='open-full'){window.open(window.location.href,'_blank','noopener,noreferrer');return;}
-    if(action.startsWith('approve-')||action.startsWith('reject-')){await moderate(action.endsWith('post')?'post':'comment',id,action==='approve-social-post'?'approveSocial':action.startsWith('approve')?'approve':'reject');return;}
+    if(action==='approve-social-post'){toast('Approve the gallery submission first, then use Social Publishing.',true);return;}
+    if(action.startsWith('approve-')||action.startsWith('reject-')){await moderate(action.endsWith('post')?'post':'comment',id,action.startsWith('approve')?'approve':'reject');return;}
   }
   async function onSubmit(e){
     if(e.target.id==='login-form'){
@@ -855,6 +858,7 @@
     if(e.target.id==='comment-form'){e.preventDefault();await submitComment(e.target);}
   }
   async function onChange(e){
+    if(socialAdmin?.onChange(e))return;
     const element=e.target;
     if(element.id==='team-logo-team'){
       state.logoManageTeam=element.value;render();return;
@@ -913,6 +917,7 @@
   }
   let searchTimer;
   function onInput(e){
+    if(socialAdmin?.onInput(e))return;
     if(e.target.id==='team-logo-search'){
       state.logoSearch=e.target.value;
       const results=$('#logo-catalog-results');
@@ -928,6 +933,7 @@
   window.addEventListener('hashchange',()=>openHashMemory());
   document.addEventListener('error',e=>{if(e.target?.matches?.('.brand-seal img, .demo-photo img'))e.target.style.display='none';},true);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){state.modal=null;releaseUploads();state.guestPending=null;renderModal();}});
+  socialAdmin?.attach({state,team,tournament,toast,redraw:render,dateFmt,bucket:BUCKET});
   getVisitorId();
   connect();
 })();
