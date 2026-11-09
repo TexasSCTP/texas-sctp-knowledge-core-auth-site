@@ -40,6 +40,55 @@
   function updateCounts() {
     $('#total-teams').textContent = String(allTeams.length);
     $('#total-logos').textContent = String(countLogo());
+    const heroTotal = $('#hero-team-count');
+    if (heroTotal) heroTotal.textContent = String(allTeams.length);
+  }
+  function renderHeroLogos() {
+    const wall = $('#hero-logo-grid');
+    if (!wall) return;
+    wall.replaceChildren();
+    const featured = [
+      ...allTeams.filter(t => t.logoUrl).sort((a,b) => a.name.localeCompare(b.name)).slice(0, 3),
+    ];
+    const openSpaces = allTeams.filter(t => !t.logoUrl).sort((a,b) => a.name.localeCompare(b.name));
+    featured.push(...openSpaces.slice(0, Math.max(0, 4 - featured.length)));
+    for (const team of featured.slice(0, 4)) {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'logo-wall-tile' + (team.logoUrl ? ' has-logo' : '');
+      tile.setAttribute('aria-label', (team.logoUrl ? 'Update ' : 'Upload ') + team.name + ' team logo');
+      tile.addEventListener('click', () => openUpload(team.id));
+      if (team.logoUrl) {
+        const img = document.createElement('img');
+        img.src = team.logoUrl;
+        img.alt = team.name + ' logo';
+        img.loading = 'eager';
+        img.onerror = () => { img.replaceWith(makeEmptyMark()); tile.classList.remove('has-logo'); };
+        tile.append(img);
+      } else {
+        tile.append(makeEmptyMark());
+      }
+      const name = document.createElement('strong');
+      name.textContent = team.name;
+      const small = document.createElement('small');
+      small.textContent = team.logoUrl ? 'On file • Update' : 'Add team logo';
+      tile.append(name, small);
+      wall.append(tile);
+    }
+    if (!featured.length) {
+      const empty = document.createElement('div');
+      empty.className = 'logo-wall-loading';
+      empty.textContent = 'Team logos will appear here as they are submitted.';
+      wall.append(empty);
+    }
+    $('#hero-logos-count').textContent = countLogo() + ' logos on file';
+  }
+  function makeEmptyMark() {
+    const empty = document.createElement('span');
+    empty.className = 'logo-wall-empty';
+    empty.setAttribute('aria-hidden', 'true');
+    empty.textContent = '+';
+    return empty;
   }
   function logoPlaceholder() {
     const wrap = document.createElement('div');
@@ -125,6 +174,7 @@
         leagueSelect.add(new Option(league, league));
       if ([...leagueSelect.options].some(o => o.value === previous)) leagueSelect.value = previous;
       updateCounts();
+      renderHeroLogos();
       render();
     } catch (e) {
       statusMessage.hidden = false;
