@@ -1308,6 +1308,65 @@
       // Updating only the preview grid preserves the rest of the form.
       const wrap=$('#upload-previews');if(wrap)wrap.innerHTML=state.uploadFiles.map((f,i)=>`<div class="preview-thumb"><img alt="Selected photo ${i+1}" src="${attr(f.preview)}"><button type="button" data-action="remove-upload" data-index="${i}" aria-label="Remove photo">${icon('close')}</button></div>`).join('');
   }
+  function beginPhotoCropDrag(event){
+  if(state.modal!=='gallery-crop'||state.cropBusy||state.cropHeroLoading&&state.cropView!=='card')return;
+  const viewport=event.target.closest?.('[data-crop-drag]');
+  const draft=activeCropDraft();
+  if(!viewport||!draft||state.cropGesture)return;
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  const image=viewport.querySelector('#gallery-crop-preview-img');
+  if(!image?.naturalWidth||!image.naturalHeight)return;
+  if(state.cropView==='card'&&draft.fit==='contain'){
+    draft.fit='cover';
+    refreshGalleryCropPreview();
+  }
+  const rect=viewport.getBoundingClientRect();
+  if(rect.width<10||rect.height<10)return;
+  const cover=Math.max(rect.width/image.naturalWidth,rect.height/image.naturalHeight);
+  const zoom=Math.max(1,Number(draft.zoom)||1);
+  state.cropGesture={
+    id:event.pointerId,
+    startX:event.clientX,startY:event.clientY,
+    x:Number(draft.x),y:Number(draft.y),
+    rangeX:Math.max(0,(image.naturalWidth*cover*zoom-rect.width)),
+    rangeY:Math.max(0,(image.naturalHeight*cover*zoom-rect.height)),
+    viewport
+  };
+  event.preventDefault();
+  try{viewport.setPointerCapture(event.pointerId);}catch{}
+  viewport.classList.add('is-dragging');
+}
+  function movePhotoCropDrag(event){
+  const gesture=state.cropGesture;
+  const draft=activeCropDraft();
+  if(!gesture||!draft||state.modal!=='gallery-crop'||event.pointerId!==gesture.id)return;
+  const dx=event.clientX-gesture.startX,dy=event.clientY-gesture.startY;
+  if(gesture.rangeX>3)draft.x=Math.max(0,Math.min(100,Math.round((gesture.x-dx/gesture.rangeX*100)*10)/10));
+  if(gesture.rangeY>3)draft.y=Math.max(0,Math.min(100,Math.round((gesture.y-dy/gesture.rangeY*100)*10)/10));
+  event.preventDefault();
+  refreshGalleryCropPreview();
+}
+  function endPhotoCropDrag(event){
+  const gesture=state.cropGesture;
+  if(!gesture||gesture.id!==event.pointerId)return;
+  try{gesture.viewport.releasePointerCapture(event.pointerId);}catch{}
+  gesture.viewport.classList.remove('is-dragging');
+  state.cropGesture=null;
+}
+  function cropPreviewKeyboard(event){
+  if(state.modal!=='gallery-crop'||state.cropBusy||!event.target.matches?.('[data-crop-drag]'))return;
+  const draft=activeCropDraft();
+  if(!draft)return;
+  const delta=event.shiftKey?10:2;
+  if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key))return;
+  if(state.cropView==='card'&&draft.fit==='contain')draft.fit='cover';
+  if(event.key==='ArrowLeft')draft.x=Math.min(100,draft.x+delta);
+  if(event.key==='ArrowRight')draft.x=Math.max(0,draft.x-delta);
+  if(event.key==='ArrowUp')draft.y=Math.min(100,draft.y+delta);
+  if(event.key==='ArrowDown')draft.y=Math.max(0,draft.y-delta);
+  event.preventDefault();
+  refreshGalleryCropPreview();
+}
   let searchTimer;
   function onInput(e){
     if(socialAdmin?.onInput(e))return;
@@ -1326,6 +1385,11 @@
       return;
     }
     if(e.target.dataset.filter==='query'){const v=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{state.filter.query=v;render();$('#memory-search')?.focus();$('#memory-search')?.setSelectionRange(v.length,v.length);},250);}}
+  document.addEventListener('pointerdown',beginPhotoCropDrag);
+  document.addEventListener('pointermove',movePhotoCropDrag);
+  document.addEventListener('pointerup',endPhotoCropDrag);
+  document.addEventListener('pointercancel',endPhotoCropDrag);
+  document.addEventListener('keydown',cropPreviewKeyboard);
   document.addEventListener('dragover',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.add('drag-over');});
   document.addEventListener('dragleave',e=>{const zone=e.target.closest?.('#upload-dropzone');if(zone)zone.classList.remove('drag-over');});
   document.addEventListener('drop',e=>{const zone=e.target.closest?.('#upload-dropzone');if(!zone)return;e.preventDefault();zone.classList.remove('drag-over');addChosenPhotos([...e.dataTransfer.files]);});
