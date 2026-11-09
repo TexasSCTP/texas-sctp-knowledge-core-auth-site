@@ -111,7 +111,7 @@
     modal:null, selectedPost:null, selectedImage:0, uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
     guestPending:null, visitorId:null, guestLiked:new Set(),
-    filtersExpanded:false, cardCrops:new Map()
+    filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false
   };
   const el = document.getElementById('app');
   const root = document.getElementById('modal-root');
@@ -168,6 +168,21 @@
   const team=(id)=>state.teams.find(x=>x.id===id);
   const tournament=(id)=>state.tournaments.find(x=>x.id===id);
   const assets=(id)=>state.photos.filter(x=>x.post_id===id).sort((a,b)=>a.position-b.position);
+  function galleryPhotoCrop(photo){
+    const defaults={x:50,y:50,zoom:1,fit:'cover'};
+    if(!photo)return defaults;
+    const stored=photo.card_crop_fit;
+    if(stored==='cover'||stored==='contain')return {
+      x:clampCrop(photo.card_crop_x),y:clampCrop(photo.card_crop_y),
+      zoom:stored==='contain'?1:Math.max(1,Math.min(1.45,Number(photo.card_crop_zoom)||1)),
+      fit:stored
+    };
+    const slideCard=state.cardCrops.get(photo.id);
+    return slideCard?{...cropMode(slideCard,defaults),fit:'cover'}:defaults;
+  }
+  function galleryPhotoStyle(crop){
+    return `object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;object-fit:${crop.fit==='contain'?'contain':'cover'};transform:scale(${crop.fit==='contain'?1:Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})`;
+  }
   const postComments=(id)=>state.comments.filter(x=>x.post_id===id && x.status==='approved');
   const postReactions=(id)=>state.reactions.filter(x=>x.post_id===id);
   const shownPosts=()=>state.posts.filter(x=>x.status==='approved');
@@ -361,7 +376,7 @@
     if(!posts.length)return;
     const ids=posts.map(x=>x.id);
     const [img,com,likes]=await Promise.all([
-      state.client.from('memory_photos').select('id,post_id,storage_path,position').in('post_id',ids).order('position'),
+      state.client.from('memory_photos').select('id,post_id,storage_path,position,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',ids).order('position'),
       state.client.from('memory_comments').select('id,post_id,display_name,body,status,created_at').in('post_id',ids).eq('status','approved').order('created_at'),
       state.client.from('memory_reactions').select('post_id').in('post_id',ids)
     ]);
@@ -420,9 +435,8 @@
     function postCard(p){
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
     const comments=postComments(p.id),likes=postReactions(p.id),liked=state.guestLiked.has(p.id);
-    const crop=first&&state.cardCrops.get(first.id);
-    const cardStyle=crop?` style="object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;transform:scale(${Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})"` : '';
-    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div><button class="memory-more" data-action="report" data-id="${attr(p.id)}" title="Report photo" aria-label="Report or request photo removal">${icon('more')}</button></div>
+    const cardStyle=first?` style="${galleryPhotoStyle(galleryPhotoCrop(first))}"`:'';
+    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<button class="memory-more" data-action="report" data-id="${attr(p.id)}" title="Report photo" aria-label="Report or request photo removal">${icon('more')}</button></div>
     <button class="memory-photo" data-action="view" data-id="${attr(p.id)}" aria-label="View photos from ${attr(t?.name||'Texas SCTP')}">${src?`<img src="${cleanUrl(src)}" alt="Tournament memory shared by ${attr(t?.name||'Texas SCTP')}" loading="lazy"${cardStyle}>`:`<span class="no-photo">${icon('image')} Photo temporarily unavailable</span>`}${photos.length>1?`<span class="multi-photo">${icon('image','icon-sm')} ${photos.length} photos</span>`:''}</button>
     <div class="memory-body"><p class="memory-caption">${esc(p.caption||'Action from the range.')}</p>${p.photo_credit?`<p class="photo-by">Photo by ${esc(p.photo_credit)}</p>`:''}<div class="memory-gestures"><button class="memory-gesture ${liked?'is-liked':''}" data-action="like" data-id="${attr(p.id)}" aria-label="${liked?'Remove appreciation':'Appreciate'}">${icon('heart','icon-sm')} <span>${likes.length?likes.length:'Appreciate'}</span></button><button class="memory-gesture" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} <span>${comments.length?`${comments.length} comments`:'Comment'}</span></button><button class="memory-gesture" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share</button></div>
     <div class="comments-preview">${comments.slice(-2).map(c=>`<div class="inline-comment"><span class="comment-avatar">${esc(initials(c.display_name))}</span><p><strong>${esc(c.display_name)}</strong> ${esc(c.body)}</p></div>`).join('')}${comments.length>2?`<button class="view-comments" data-action="view" data-id="${attr(p.id)}">View all ${comments.length} comments</button>`:''}<button class="comment-invite" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} Write a comment...</button></div></div></article>`;
@@ -645,7 +659,7 @@
     const missing=state.adminPosts.filter(p=>!state.posts.some(x=>x.id===p.id));
     const allIds=state.adminPosts.map(x=>x.id);
     if(allIds.length){
-      const {data,error}=await state.client.from('memory_photos').select('id,post_id,position,storage_path').in('post_id',allIds);
+      const {data,error}=await state.client.from('memory_photos').select('id,post_id,position,storage_path,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',allIds);
       if(!error){state.photos=state.photos.filter(x=>!allIds.includes(x.post_id)).concat(data||[]);await Promise.all((data||[]).map(async x=>{if(!state.imageUrls.has(x.storage_path)){const signed=await state.client.storage.from(BUCKET).createSignedUrl(x.storage_path,3600);if(signed.data?.signedUrl)state.imageUrls.set(x.storage_path,signed.data.signedUrl);}}));}
     }
     render();
