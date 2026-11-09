@@ -29,3 +29,16 @@ dialog{border:1px solid #e2e7e9;border-radius:15px;width:min(560px,calc(100vw - 
 #save-live[hidden]{display:none!important}
 #live-status{padding:10px 12px;background:#f0f5f7;border:1px solid #dae5e9;border-radius:7px;margin:10px 0;color:#3a586c;line-height:1.45}
 #live-status a{color:#164568;text-decoration:underline;font-weight:800}
+
+
+/* Explicit accessible slideshow switch on every sample or approved live scene. */
+.scene-inclusion-toggle{display:inline-flex;align-items:center;gap:7px;margin-top:7px;cursor:pointer;position:relative;width:max-content;max-width:100%}
+.scene-inclusion-toggle input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;margin:0}
+.scene-inclusion-track{display:inline-flex;align-items:center;width:35px;height:19px;padding:2px;border-radius:20px;background:#a9b8c0;border:1px solid #a0afb8;transition:background .16s ease;flex-shrink:0}
+.scene-inclusion-track::after{content:"";width:13px;height:13px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(12,37,55,.18);transform:translateX(0);transition:transform .16s ease}
+.scene-inclusion-toggle input:checked+.scene-inclusion-track{background:#2e8861;border-color:#257651}
+.scene-inclusion-toggle input:checked+.scene-inclusion-track::after{transform:translateX(16px)}
+.scene-inclusion-toggle input:focus-visible+.scene-inclusion-track{outline:3px solid #d6a94d;outline-offset:2px}
+.scene-inclusion-toggle input:disabled+.scene-inclusion-track{opacity:.55}
+.scene-inclusion-text{font-size:10px;line-height:1.3;font-weight:800;color:#6d7f8d}
+.scene-inclusion-toggle:has(input:checked) .scene-inclusion-text{color:#2d7956}
