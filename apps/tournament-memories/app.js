@@ -120,7 +120,7 @@
     modal:null, selectedPost:null, selectedImage:0, editPostBusy:false, uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
     guestPending:null, visitorId:null, guestLiked:new Set(),
-    filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false, cropGesture:null
+    filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false, cropGesture:null, cropView:'card', cropHeroDraft:null, cropHeroLoading:false, cropHeroError:'', cropHeroEnabled:true
   };
   const el = document.getElementById('app');
   const root = document.getElementById('modal-root');
@@ -189,6 +189,8 @@
     const slideCard=state.cardCrops.get(photo.id);
     return slideCard?{...cropMode(slideCard,defaults),fit:'cover'}:defaults;
   }
+  function heroPhotoStyle(crop){return `object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;object-fit:cover;transform-origin:center center;transform:scale(${Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})`;}
+  function activeCropDraft(){return state.cropView==='card'?state.cropDraft:state.cropHeroDraft?.[state.cropView]||null;}
   function galleryPhotoStyle(crop){
     return `object-position:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;object-fit:${crop.fit==='contain'?'contain':'cover'};transform-origin:${clampCrop(crop.x)}% ${clampCrop(crop.y)}%;transform:scale(${crop.fit==='contain'?1:Math.max(1,Math.min(1.45,Number(crop.zoom)||1))})`;
   }
@@ -471,45 +473,61 @@
   function modalHead(title,desc=''){return `<div class="modal-top"><div><h2>${title}</h2>${desc?`<p>${desc}</p>`:''}</div><button class="close-modal" data-action="close-modal" aria-label="Close dialog">${icon('close')}</button></div>`;}
 
   function galleryCropEditorModal(){
-    const photo=state.photos.find(item=>item.id===state.cropPhotoId);
-    const post=state.selectedPost, draft=state.cropDraft;
-    if(!photo||!draft||!post)return modalHead('Photo placement unavailable');
-    const src=state.imageUrls.get(photo.storage_path);
-    const teamLabel=team(post.team_id)?.name||'Texas SCTP';
-    const photoNumber=assets(post.id).findIndex(item=>item.id===photo.id)+1;
-    const disabled=state.cropBusy?'disabled':'';
-    return `${modalHead('Adjust gallery photo', 'Fine-tune how this individual photograph appears in the regular tournament gallery.')}
-      <div class="modal-scroll gallery-crop-editor">
-        <div class="gallery-crop-intro"><strong>${esc(teamLabel)}</strong><span>Photo ${photoNumber} of ${assets(post.id).length} · ${esc(tournament(post.tournament_id)?.title||post.other_tournament||'Tournament')}</span></div>
-        <div class="gallery-crop-body">
-          <section class="gallery-crop-preview-side" aria-label="Live photo preview">
-            <div class="gallery-crop-preview-heading"><span>LIVE GALLERY CARD PREVIEW</span><span>3:2 DISPLAY</span></div>
-            <div class="gallery-crop-viewport gallery-crop-draggable" id="gallery-crop-viewport" data-crop-drag role="group" tabindex="0" aria-label="Interactive photo positioning preview. Drag with a mouse or touch, or use arrow keys to move the image within the frame.">
-              ${src?`<img id="gallery-crop-preview-img" src="${cleanUrl(src)}" alt="Preview of adjusted ${attr(teamLabel)} photograph" draggable="false" style="${galleryPhotoStyle(draft)}">`:'<p>Photo preview unavailable. Please refresh the gallery.</p>'}
-              ${src?'<span class="gallery-crop-drag-hint" aria-hidden="true">Drag photo to reposition</span>':''}
-            </div>
-            <p class="gallery-crop-caption">Drag the photo with your mouse or finger to position it. Dragging while <strong>Show entire photo</strong> is selected switches to <strong>Fill the frame</strong>. Arrow keys adjust the focus precisely. Changes remain in preview until you save.</p>
-            <details class="gallery-crop-original"><summary>Compare with the full original photograph</summary>
-              ${src?`<img src="${cleanUrl(src)}" alt="Uncropped submitted photo">`:''}
-            </details>
-          </section>
-          <section class="gallery-crop-control-side">
-            <fieldset class="gallery-crop-mode"><legend>How should the image fit?</legend>
-              <label><input type="radio" name="gallery-crop-fit" value="cover" ${draft.fit==='cover'?'checked':''} ${disabled}><span><strong>Fill the frame</strong><small>Move the photo to keep faces and awards visible</small></span></label>
-              <label><input type="radio" name="gallery-crop-fit" value="contain" ${draft.fit==='contain'?'checked':''} ${disabled}><span><strong>Show entire photo</strong><small>No cropping. Background margins may be visible</small></span></label>
-            </fieldset>
-            <div class="gallery-crop-presets"><span>Quick vertical position</span>
-              <div><button type="button" data-action="crop-top" ${disabled}>Top / faces</button><button type="button" data-action="crop-center" ${disabled}>Center</button><button type="button" data-action="crop-bottom" ${disabled}>Bottom</button></div>
-            </div>
-            <div class="gallery-crop-range"><label for="gallery-crop-x">Horizontal focus <output data-crop-value="x">${Math.round(draft.x)}%</output></label><input type="range" id="gallery-crop-x" data-crop-field="x" min="0" max="100" step="1" value="${Math.round(draft.x)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Left</span><span>Right</span></div></div>
-            <div class="gallery-crop-range"><label for="gallery-crop-y">Vertical focus <output data-crop-value="y">${Math.round(draft.y)}%</output></label><input type="range" id="gallery-crop-y" data-crop-field="y" min="0" max="100" step="1" value="${Math.round(draft.y)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Top</span><span>Bottom</span></div></div>
-            <div class="gallery-crop-range"><label for="gallery-crop-zoom">Zoom <output data-crop-value="zoom">${Number(draft.zoom).toFixed(2)}×</output></label><input type="range" id="gallery-crop-zoom" data-crop-field="zoom" min="1" max="1.45" step="0.01" value="${Number(draft.zoom).toFixed(2)}" ${draft.fit==='contain'||state.cropBusy?'disabled':''}><div class="gallery-crop-axis"><span>Original</span><span>Closer</span></div></div>
-            <div class="gallery-crop-actions"><button type="button" class="btn btn-primary" data-action="save-gallery-crop" ${state.cropBusy||!src?'disabled':''}>${state.cropBusy?'Saving placement...':'Save photo placement'}</button><button type="button" class="btn btn-outline" data-action="crop-reset" ${disabled}>Reset to center</button><button type="button" class="btn btn-outline" data-action="cancel-gallery-crop" ${disabled}>Cancel</button></div>
-            <p class="gallery-crop-note">Adjustments apply only to this photograph in the ordinary gallery. Slideshow positioning stays independent.</p>
-          </section>
-        </div>
-      </div>`;
-  }
+  const photo=state.photos.find(item=>item.id===state.cropPhotoId);
+  const post=state.selectedPost;
+  if(!photo||!state.cropDraft||!post)return modalHead('Photo placement unavailable');
+  const view=state.cropView||'card',isHero=view!=='card';
+  const draft=activeCropDraft();
+  const shown=draft||{x:50,y:50,zoom:1,fit:'cover'};
+  const src=state.imageUrls.get(photo.storage_path);
+  const teamLabel=team(post.team_id)?.name||'Texas SCTP';
+  const photoNumber=assets(post.id).findIndex(item=>item.id===photo.id)+1;
+  const disabled=state.cropBusy||isHero&&(!draft||state.cropHeroLoading);
+  const loadingText=isHero&&state.cropHeroLoading?'Loading saved hero placement...':isHero&&state.cropHeroError?state.cropHeroError:'';
+  const titles={card:'REGULAR GALLERY CARD PREVIEW',desktop:'HOMEPAGE HERO · DESKTOP',mobile:'HOMEPAGE HERO · MOBILE'};
+  const ratios={card:'3:2 DISPLAY',desktop:'1680:430 WIDESCREEN',mobile:'390:548 MOBILE'};
+  const notes={card:'Drag with a mouse or finger to reframe this gallery photo. Arrow keys offer fine adjustments. Changes are not saved until you select Save.',
+    desktop:'This previews the wide hero banner across the homepage. Drag to keep the athletes or trophy visible behind the page headline.',
+    mobile:'This previews the tall hero banner on a phone. Mobile framing is saved separately from the desktop hero and the gallery.'};
+  return `${modalHead('Position photo','Choose where the photograph appears, drag to adjust its placement, and save each view separately.')}
+    <div class="modal-scroll gallery-crop-editor">
+      <div class="gallery-crop-intro"><strong>${esc(teamLabel)}</strong><span>Photo ${photoNumber} of ${assets(post.id).length} · ${esc(tournament(post.tournament_id)?.title||post.other_tournament||'Tournament')}</span></div>
+      <div class="gallery-crop-view-tabs" role="tablist" aria-label="Which photo placement do you want to edit?">
+        ${[['card','Gallery photo'],['desktop','Hero banner · Desktop'],['mobile','Hero banner · Mobile']].map(([name,label])=>`<button type="button" role="tab" data-action="crop-set-view" data-view="${name}" aria-selected="${view===name}" class="${view===name?'active':''}" ${state.cropBusy?'disabled':''}>${label}</button>`).join('')}
+      </div>
+      <div class="gallery-crop-body ${isHero?'gallery-hero-layout':''}">
+        <section class="gallery-crop-preview-side" aria-label="Live photo preview">
+          <div class="gallery-crop-preview-heading"><span>${titles[view]}</span><span>${ratios[view]}</span></div>
+          <div class="gallery-crop-viewport gallery-crop-draggable ${isHero?'gallery-hero-preview hero-'+view:''}" id="gallery-crop-viewport" data-crop-drag role="group" tabindex="0" aria-label="Drag photo to position it. Use arrow keys for fine adjustments.">
+            ${src?`<img id="gallery-crop-preview-img" src="${cleanUrl(src)}" alt="Preview of ${attr(teamLabel)} photo positioning" draggable="false" style="${isHero?heroPhotoStyle(shown):galleryPhotoStyle(shown)}">`:'<p>Photo preview unavailable. Refresh the gallery.</p>'}
+            ${src&&isHero?`<div class="gallery-hero-overlay" aria-hidden="true"><span>TEXAS SCTP / TOURNAMENT ACTION</span><strong>THE ACTION <em>IS ON.</em></strong><small>See the teams in action. Share what's happening on your range.</small></div>`:''}
+            ${src?'<span class="gallery-crop-drag-hint" aria-hidden="true">Drag photo to reposition</span>':''}
+          </div>
+          <p class="gallery-crop-caption">${notes[view]}</p>
+          ${isHero&&state.cropHeroEnabled===false?'<p class="gallery-crop-hero-state">This photo is currently hidden from the slideshow. Its framing may be saved without turning the photo on.</p>':''}
+          ${isHero?'<p class="gallery-crop-caption">For slideshow visibility and sequencing, use <a href="./hero-studio.html" target="_blank" rel="noopener noreferrer">Slideshow Studio</a>.</p>':''}
+          <details class="gallery-crop-original"><summary>Compare with the full original photograph</summary>
+            ${src?`<img src="${cleanUrl(src)}" alt="Original photo, uncropped">`:''}
+          </details>
+        </section>
+        <section class="gallery-crop-control-side">
+          ${loadingText?`<p class="gallery-crop-notice" role="status">${esc(loadingText)}</p>`:''}
+          ${!isHero?`<fieldset class="gallery-crop-mode"><legend>How should the image fit?</legend>
+            <label><input type="radio" name="gallery-crop-fit" value="cover" ${shown.fit==='cover'?'checked':''} ${disabled?'disabled':''}><span><strong>Fill the frame</strong><small>Move the photo to keep faces and awards visible</small></span></label>
+            <label><input type="radio" name="gallery-crop-fit" value="contain" ${shown.fit==='contain'?'checked':''} ${disabled?'disabled':''}><span><strong>Show entire photo</strong><small>No cropping. Background margins may be visible</small></span></label>
+          </fieldset>`:'<p class="gallery-crop-hero-state">The hero banner always fills its frame. Drag the image to decide what stays visible. Its desktop and mobile framing are independent.</p>'}
+          <div class="gallery-crop-presets"><span>Quick vertical position</span>
+            <div><button type="button" data-action="crop-top" ${disabled?'disabled':''}>Top / faces</button><button type="button" data-action="crop-center" ${disabled?'disabled':''}>Center</button><button type="button" data-action="crop-bottom" ${disabled?'disabled':''}>Bottom</button></div>
+          </div>
+          <div class="gallery-crop-range"><label for="gallery-crop-x">Horizontal focus <output data-crop-value="x">${Math.round(shown.x)}%</output></label><input type="range" id="gallery-crop-x" data-crop-field="x" min="0" max="100" step="1" value="${Math.round(shown.x)}" ${disabled||!isHero&&shown.fit==='contain'?'disabled':''}><div class="gallery-crop-axis"><span>Left</span><span>Right</span></div></div>
+          <div class="gallery-crop-range"><label for="gallery-crop-y">Vertical focus <output data-crop-value="y">${Math.round(shown.y)}%</output></label><input type="range" id="gallery-crop-y" data-crop-field="y" min="0" max="100" step="1" value="${Math.round(shown.y)}" ${disabled||!isHero&&shown.fit==='contain'?'disabled':''}><div class="gallery-crop-axis"><span>Top</span><span>Bottom</span></div></div>
+          <div class="gallery-crop-range"><label for="gallery-crop-zoom">Zoom <output data-crop-value="zoom">${Number(shown.zoom).toFixed(2)}×</output></label><input type="range" id="gallery-crop-zoom" data-crop-field="zoom" min="1" max="1.45" step="0.01" value="${Number(shown.zoom).toFixed(2)}" ${disabled||!isHero&&shown.fit==='contain'?'disabled':''}><div class="gallery-crop-axis"><span>Original</span><span>Closer</span></div></div>
+          <div class="gallery-crop-actions"><button type="button" class="btn btn-primary" data-action="save-gallery-crop" ${disabled||!src?'disabled':''}>${state.cropBusy?'Saving placement...':view==='card'?'Save gallery placement':view==='desktop'?'Save desktop hero':'Save mobile hero'}</button><button type="button" class="btn btn-outline" data-action="crop-reset" ${disabled?'disabled':''}>Reset position</button><button type="button" class="btn btn-outline" data-action="cancel-gallery-crop" ${state.cropBusy?'disabled':''}>Cancel</button></div>
+          <p class="gallery-crop-note">${view==='card'?'Only the ordinary gallery card changes. Hero banner settings remain unchanged.':'Only this hero banner view changes. The gallery and other hero size remain unchanged.'} The original image file is preserved.</p>
+        </section>
+      </div>
+    </div>`;
+}
   function refreshGalleryCropPreview(){
     const draft=state.cropDraft;
     if(!draft||state.modal!=='gallery-crop')return;
