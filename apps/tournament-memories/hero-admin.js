@@ -130,7 +130,7 @@
   }
   async function saveLiveSlide(slide){
     if(!slide?.live||!client||!staffUser){
-      setStatus('Sign in as a Texas SCTP moderator before saving approved photos.','error');return;
+      setStatus('Sign in as a Texas SCTP moderator before saving approved photos.','error');return false;
     }
     const clean={};
     for(const type of ['desktop','mobile','card'])
@@ -143,7 +143,7 @@
     });
     if(error||!data?.saved||data?.photo_id!==slide.photoId){
       setStatus('Could not save photo: '+(error?.message||'Update not confirmed'),'error');
-      return;
+      return false;
     }
     livePublished.set(slide.id,clone(slide));
     DEFAULTS[slide.id]=clone(slide);
@@ -151,8 +151,9 @@
       const drafts=getLiveDrafts();delete drafts[slide.id];
       localStorage.setItem(LIVE_DRAFT_KEY,JSON.stringify(drafts));
     }catch{}
-    setStatus('Photo placement saved to the live gallery','good');
+    setStatus('Photo placement and slideshow inclusion saved.','good');
     renderList();
+    return true;
   }
 
   function selectSlide(id){
@@ -172,9 +173,35 @@
       const content=document.createElement('div');
       const name=document.createElement('button');name.type='button';name.className='scene-name';name.textContent=`${i+1}. ${s.label}`;name.addEventListener('click',()=>{stopPlayback();selectSlide(s.id)});
       const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.id.replace('scene-','Scene ')+' · '+(s.enabled?'Included':'Hidden');
-      const visible=document.createElement('button');visible.className='scene-visibility';visible.type='button';visible.setAttribute('aria-pressed',String(s.enabled));visible.textContent=s.enabled?'Included in slideshow':'Hidden from slideshow';
-      visible.addEventListener('click',async()=>{if(s.enabled&&config.slides.filter(x=>x.enabled).length===1){setStatus('At least one photo must remain in the slideshow.','error');return;}s.enabled=!s.enabled;if(s.live)await saveLiveSlide(s);else saveDraft();renderList();});
-      content.append(name,order,visible);
+      const toggle=document.createElement('label');toggle.className='scene-inclusion-toggle';
+      const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.setAttribute('role','switch');
+      checkbox.setAttribute('aria-label','Show '+s.label+' in the homepage hero slideshow');
+      checkbox.checked=s.enabled!==false;
+      const track=document.createElement('span');track.className='scene-inclusion-track';track.setAttribute('aria-hidden','true');
+      const label=document.createElement('span');label.className='scene-inclusion-text';
+      label.textContent=s.enabled?'Shown in hero':'Hidden from hero';
+      checkbox.addEventListener('change',async()=>{
+        const previous=s.enabled!==false;
+        if(previous&&config.slides.filter(item=>item.enabled).length===1){
+          checkbox.checked=true;
+          setStatus('At least one slide must remain visible in the slideshow.','error');
+          return;
+        }
+        const targetEnabled=checkbox.checked;
+        checkbox.disabled=true;
+        s.enabled=targetEnabled;
+        if(s.live){
+          const saved=await saveLiveSlide(s);
+          if(!saved){s.enabled=previous;renderList();return;}
+          setStatus(targetEnabled?'Photo now appears in the homepage hero slideshow.':'Photo hidden from the homepage hero slideshow; gallery photo remains published.','good');
+        }else{
+          saveDraft();
+          setStatus('Sample scene choice saved locally. Click Publish settings to apply it to the live website.');
+        }
+        renderList();
+      });
+      toggle.append(checkbox,track,label);
+      content.append(name,order,toggle);
       const actions=document.createElement('div');actions.className='scene-actions';
       const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move earlier';up.setAttribute('aria-label',`Move ${s.label} earlier`);up.disabled=i===0;
       up.addEventListener('click',()=>{const tmp=config.slides[i-1];config.slides[i-1]=config.slides[i];config.slides[i]=tmp;saveDraft();renderList();});
