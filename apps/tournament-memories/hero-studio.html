@@ -75,6 +75,7 @@
 
         <div class="controls-panel">
           <div class="controls-head"><div><h2>Fine-tune this photo</h2><p>Drag to move it or adjust the controls below.</p></div><div class="editor-actions"><button type="button" class="button button-gold" id="save-live" hidden>Save photo placement</button><button type="button" class="reset-button" id="reset-image">Reset this photo</button></div></div>
+          <div id="live-save-feedback" class="live-save-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></div>
           <div class="sliders">
             <label for="pos-x"><span>Horizontal position</span><output id="out-x" for="pos-x">50%</output><input type="range" min="0" max="100" step="1" id="pos-x" value="50"></label>
             <label for="pos-y"><span>Vertical position</span><output id="out-y" for="pos-y">50%</output><input type="range" min="0" max="100" step="1" id="pos-y" value="50"></label>
