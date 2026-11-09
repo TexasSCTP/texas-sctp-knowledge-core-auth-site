@@ -28,10 +28,19 @@
   let logosLastLoadedAt = 0;
   let heroReloading = false;
   let heroIntervalMs = 10000;
-  function rebuildHeroScenes(){
+  function rebuildHeroScenes(preferredPhotoId=null){
+    const currentSceneId=HERO_SCENES[currentHero]?.id||null;
     const base=ALL_SCENES.filter(scene=>scene.enabled);
-    HERO_SCENES=[...(base.length?base:ALL_SCENES),...APPROVED_HERO_SCENES];
+    // Newly approved tournament memories lead the initial view; illustrative
+    // scenes stay in the rotation, and manually hidden live photos stay out.
+    HERO_SCENES=[...APPROVED_HERO_SCENES,...(base.length?base:ALL_SCENES)];
     heroSequence=shuffleIndices(HERO_SCENES.length);
+    const chosenId=preferredPhotoId||currentSceneId;
+    const chosenIndex=HERO_SCENES.findIndex(scene=>scene.id===chosenId);
+    if(chosenIndex>=0){
+      const slot=heroSequence.indexOf(chosenIndex);
+      if(slot>0)[heroSequence[0],heroSequence[slot]]=[heroSequence[slot],heroSequence[0]];
+    }
     heroSequencePosition=0;
     currentHero=heroSequence[0]||0;
   }
@@ -94,7 +103,7 @@
     if(heroTimer)return;
     heroTimer=window.setInterval(()=>{
       if(state.client && state.screen==='gallery' && !heroReloading &&
-         !document.hidden && Date.now()-heroLastLoadedAt>5*60*1000){
+         !document.hidden && Date.now()-heroLastLoadedAt>2*60*1000){
         loadHeroGallery().then(()=>{if(state.screen==='gallery')render();}).catch(()=>{});
       }
       if(!heroPaused && !document.hidden)nextHeroScene();
@@ -315,6 +324,7 @@
           state.imageUrls.set(item.path,item.signedUrl);
         }
       }
+      const previousPhotoIds=new Set(APPROVED_HERO_SCENES.map(scene=>scene.id));
       const centered={x:50,y:50,zoom:1};
       APPROVED_HERO_SCENES=rows.filter(r=>signed.has(r.storage_path)).map(r=>({
         id:'approved-'+r.photo_id,
@@ -323,8 +333,9 @@
         enabled:true,desktop:cropMode(r.desktop,centered),
         mobile:cropMode(r.mobile,centered),card:cropMode(r.card,centered)
       }));
+      const newestApproval=APPROVED_HERO_SCENES.find(scene=>!previousPhotoIds.has(scene.id));
       heroLastLoadedAt=Date.now();
-      rebuildHeroScenes();
+      rebuildHeroScenes(newestApproval?.id||null);
       if(Date.now()-logosLastLoadedAt>5*60*1000){
         try{await loadTeamLogos();}catch(error){console.warn('Could not refresh team logo URLs',error);}
       }
