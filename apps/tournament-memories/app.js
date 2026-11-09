@@ -495,6 +495,18 @@
       <div class="gallery-crop-view-tabs" role="tablist" aria-label="Which photo placement do you want to edit?">
         ${[['card','Gallery photo'],['desktop','Hero banner · Desktop'],['mobile','Hero banner · Mobile']].map(([name,label])=>`<button type="button" role="tab" data-action="crop-set-view" data-view="${name}" aria-selected="${view===name}" class="${view===name?'active':''}" ${state.cropBusy?'disabled':''}>${label}</button>`).join('')}
       </div>
+      <section class="hero-visibility-setting" aria-label="Hero slideshow visibility">
+        <div class="hero-visibility-description">
+          <strong>Show this photo in the homepage hero slideshow</strong>
+          <small>Turn off to remove this individual photograph from the hero rotation on desktop and mobile. It stays published in the normal gallery.</small>
+        </div>
+        ${state.cropHeroLoading?'<span class="hero-visibility-loading" role="status">Checking…</span>':state.cropHeroError?'<span class="hero-visibility-error" role="status">Unavailable</span>':`
+          <label class="hero-visibility-toggle">
+            <input id="hero-photo-visibility" type="checkbox" role="switch" aria-label="Show this photo in homepage hero slideshow" ${state.cropHeroEnabled?'checked':''} ${state.cropBusy?'disabled':''}>
+            <span class="hero-visibility-track" aria-hidden="true"><span></span></span>
+            <span class="hero-visibility-state">${state.cropHeroEnabled?'ON':'OFF'}</span>
+          </label>`}
+      </section>
       <div class="gallery-crop-body ${isHero?'gallery-hero-layout':''}">
         <section class="gallery-crop-preview-side" aria-label="Live photo preview">
           <div class="gallery-crop-preview-heading"><span>${titles[view]}</span><span>${ratios[view]}</span></div>
@@ -504,8 +516,8 @@
             ${src?'<span class="gallery-crop-drag-hint" aria-hidden="true">Drag photo to reposition</span>':''}
           </div>
           <p class="gallery-crop-caption">${notes[view]}</p>
-          ${isHero&&state.cropHeroEnabled===false?'<p class="gallery-crop-hero-state">This photo is currently hidden from the slideshow. Its framing may be saved without turning the photo on.</p>':''}
-          ${isHero?'<p class="gallery-crop-caption">For slideshow visibility and sequencing, use <a href="./hero-studio.html" target="_blank" rel="noopener noreferrer">Slideshow Studio</a>.</p>':''}
+          ${isHero&&state.cropHeroEnabled===false?'<p class="gallery-crop-hero-state">This photo is hidden from the slideshow. Turn on the switch above whenever you want to show it again.</p>':''}
+          ${isHero?'<p class="gallery-crop-caption">For additional slideshow order and positioning controls, use <a href="./hero-studio.html" target="_blank" rel="noopener noreferrer">Slideshow Studio</a>.</p>':''}
           <details class="gallery-crop-original"><summary>Compare with the full original photograph</summary>
             ${src?`<img src="${cleanUrl(src)}" alt="Original photo, uncropped">`:''}
           </details>
@@ -572,7 +584,7 @@
   }finally{
     if(state.cropPhotoId===photoId&&state.modal==='gallery-crop'){
       state.cropHeroLoading=false;
-      if(state.cropView!=='card')renderModal();
+      renderModal();
     }
   }
 }
@@ -611,6 +623,42 @@
   state.modal=returnModal==='view'?'view':null;
   render();
 }
+
+  async function setHeroSlideshowVisibility(enabled){
+    const photoId=state.cropPhotoId;
+    if(!state.moderator||!state.client||state.cropBusy||state.cropHeroLoading
+       ||!state.cropHeroDraft||state.modal!=='gallery-crop'||typeof enabled!=='boolean')return;
+    const previous=state.cropHeroEnabled;
+    state.cropBusy=true;
+    renderModal();
+    try{
+      const {data,error}=await state.client.rpc('memory_staff_set_hero_photo_visibility',{
+        p_photo_id:photoId,p_enabled:enabled
+      });
+      if(error)throw Error(error.message);
+      if(!data?.saved||data?.photo_id!==photoId||data.enabled!==enabled){
+        throw Error('The slideshow update was not confirmed.');
+      }
+      if(state.cropPhotoId!==photoId||state.modal!=='gallery-crop')return;
+      state.cropHeroEnabled=enabled;
+      if(!enabled){
+        APPROVED_HERO_SCENES=APPROVED_HERO_SCENES.filter(scene=>scene.id!=='approved-'+photoId);
+        rebuildHeroScenes();
+      }
+      state.cropBusy=false;
+      render();
+      await loadHeroGallery();
+      render();
+      toast(enabled?'Photo included in the homepage hero slideshow.':'Photo hidden from homepage hero slideshow. It remains in the gallery.');
+    }catch(error){
+      state.cropBusy=false;
+      if(state.cropPhotoId===photoId&&state.modal==='gallery-crop'){
+        state.cropHeroEnabled=previous;
+        renderModal();
+      }
+      toast('Could not update slideshow visibility: '+(error?.message||'Unknown error'),true);
+    }
+  }
   async function saveGalleryCrop(){
   const view=state.cropView||'card',draft=activeCropDraft(),photoId=state.cropPhotoId;
   if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!draft||(view!=='card'&&state.cropHeroLoading))return;
@@ -1234,6 +1282,9 @@
   async function onChange(e){
     if(socialAdmin?.onChange(e))return;
     const element=e.target;
+    if(element.id==='hero-photo-visibility'&&state.modal==='gallery-crop'){
+      await setHeroSlideshowVisibility(element.checked);return;
+    }
     if(element.name==='gallery-crop-fit'&&state.modal==='gallery-crop'&&state.cropDraft&&!state.cropBusy){
       if(element.value!=='cover'&&element.value!=='contain')return;
       state.cropDraft.fit=element.value;
