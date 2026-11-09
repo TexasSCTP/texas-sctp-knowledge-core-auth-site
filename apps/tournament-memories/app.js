@@ -449,7 +449,7 @@
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
     const comments=postComments(p.id),likes=postReactions(p.id),liked=state.guestLiked.has(p.id);
     const cardStyle=first?` style="${galleryPhotoStyle(galleryPhotoCrop(first))}"`:'';
-    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<div class="memory-action-container"><button type="button" class="memory-more" data-action="toggle-post-menu" data-id="${attr(p.id)}" title="More photo options" aria-label="More photo options for ${attr(t?.name||'Texas SCTP')}" aria-haspopup="true" aria-expanded="false">${icon('more')}</button><div class="memory-actions-dropdown" hidden role="group" aria-label="Photo actions"><button type="button" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share photo link</button>${state.moderator?`<button type="button" data-action="edit-published" data-id="${attr(p.id)}">${icon('edit','icon-sm')} Edit post details</button><button type="button" data-action="edit-gallery-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust photo placement</button><button type="button" class="danger" data-action="remove-published" data-id="${attr(p.id)}">Remove post from gallery</button>`:''}<button type="button" data-action="report" data-id="${attr(p.id)}">${icon('mail','icon-sm')} Report a photo concern</button></div></div></div>
+    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<div class="memory-action-container"><button type="button" class="memory-more" data-action="toggle-post-menu" data-id="${attr(p.id)}" title="More photo options" aria-label="More photo options for ${attr(t?.name||'Texas SCTP')}" aria-haspopup="true" aria-expanded="false">${icon('more')}</button><div class="memory-actions-dropdown" hidden role="group" aria-label="Photo actions"><button type="button" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share photo link</button>${state.moderator?`<button type="button" data-action="edit-published" data-id="${attr(p.id)}">${icon('edit','icon-sm')} Edit post details</button><button type="button" data-action="edit-gallery-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust photo placement</button><button type="button" data-action="edit-hero-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust hero banner</button><button type="button" class="danger" data-action="remove-published" data-id="${attr(p.id)}">Remove post from gallery</button>`:''}<button type="button" data-action="report" data-id="${attr(p.id)}">${icon('mail','icon-sm')} Report a photo concern</button></div></div></div>
     <button class="memory-photo" data-action="view" data-id="${attr(p.id)}" aria-label="View photos from ${attr(t?.name||'Texas SCTP')}">${src?`<img src="${cleanUrl(src)}" alt="Tournament memory shared by ${attr(t?.name||'Texas SCTP')}" loading="lazy"${cardStyle}>`:`<span class="no-photo">${icon('image')} Photo temporarily unavailable</span>`}${photos.length>1?`<span class="multi-photo">${icon('image','icon-sm')} ${photos.length} photos</span>`:''}</button>
     <div class="memory-body"><p class="memory-caption">${esc(p.caption||'Action from the range.')}</p>${p.photo_credit?`<p class="photo-by">Photo by ${esc(p.photo_credit)}</p>`:''}<div class="memory-gestures"><button class="memory-gesture ${liked?'is-liked':''}" data-action="like" data-id="${attr(p.id)}" aria-label="${liked?'Remove appreciation':'Appreciate'}">${icon('heart','icon-sm')} <span>${likes.length?likes.length:'Appreciate'}</span></button><button class="memory-gesture" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} <span>${comments.length?`${comments.length} comments`:'Comment'}</span></button><button class="memory-gesture" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share</button></div>
     <div class="comments-preview">${comments.slice(-2).map(c=>`<div class="inline-comment"><span class="comment-avatar">${esc(initials(c.display_name))}</span><p><strong>${esc(c.display_name)}</strong> ${esc(c.body)}</p></div>`).join('')}${comments.length>2?`<button class="view-comments" data-action="view" data-id="${attr(p.id)}">View all ${comments.length} comments</button>`:''}<button class="comment-invite" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} Write a comment...</button></div></div></article>`;
@@ -613,7 +613,7 @@
 }
   async function saveGalleryCrop(){
   const view=state.cropView||'card',draft=activeCropDraft(),photoId=state.cropPhotoId;
-  if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!draft||state.cropHeroLoading)return;
+  if(!state.moderator||!state.client||state.cropBusy||state.modal!=='gallery-crop'||!draft||(view!=='card'&&state.cropHeroLoading))return;
   state.cropBusy=true;
   const button=$('[data-action="save-gallery-crop"]',root);
   if(button){button.disabled=true;button.textContent='Saving placement...';}
@@ -1149,15 +1149,25 @@
     if(action==='backdrop'){if(e.target===target){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
     if(action==='close-modal'){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
     if(action==='edit-gallery-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null);return;}
+    if(action==='edit-hero-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null,null,'desktop');return;}
     if(action==='edit-photo-position'){openGalleryCropEditor(id,null,target.dataset.photoId);return;}
     if(action==='load-more-gallery-admin'){if(state.hasMore)await loadGallery(false);return;}
+    if(action==='crop-set-view'){
+      if(state.modal!=='gallery-crop'||state.cropBusy)return;
+      const next=target.dataset.view;
+      if(!['card','desktop','mobile'].includes(next))return;
+      state.cropView=next;
+      state.cropGesture=null;
+      renderModal();
+      return;
+    }
     if(action==='save-gallery-crop'){await saveGalleryCrop();return;}
     if(action==='cancel-gallery-crop'&&state.modal==='gallery-crop'&&!state.cropBusy){closeGalleryCropEditor();return;}
     if(['crop-reset','crop-top','crop-center','crop-bottom'].includes(action)){
-      if(state.modal!=='gallery-crop'||!state.cropDraft||state.cropBusy)return;
-      const draft=state.cropDraft;
-      if(action==='crop-reset')Object.assign(draft,{x:50,y:50,zoom:1,fit:'cover'});
-      else {draft.fit='cover';draft.y=action==='crop-top'?0:action==='crop-bottom'?100:50;}
+      const draft=activeCropDraft();
+      if(state.modal!=='gallery-crop'||!draft||state.cropBusy)return;
+      if(action==='crop-reset')Object.assign(draft,{x:50,y:50,zoom:1,...(state.cropView==='card'?{fit:'cover'}:{})});
+      else {if(state.cropView==='card')draft.fit='cover';draft.y=action==='crop-top'?0:action==='crop-bottom'?100:50;}
       refreshGalleryCropPreview();return;
     }
     if(action==='scroll-gallery'){$('#memories-gallery')?.scrollIntoView({behavior:'smooth'});return;}
@@ -1302,10 +1312,11 @@
   function onInput(e){
     if(socialAdmin?.onInput(e))return;
     const field=e.target.dataset.cropField;
-    if(field&&['x','y','zoom'].includes(field)&&state.modal==='gallery-crop'&&state.cropDraft&&!state.cropBusy){
+    const crop=activeCropDraft();
+    if(field&&['x','y','zoom'].includes(field)&&state.modal==='gallery-crop'&&crop&&!state.cropBusy){
       const value=Number(e.target.value);
       if(!Number.isFinite(value))return;
-      state.cropDraft[field]=field==='zoom'?Math.max(1,Math.min(1.45,Math.round(value*100)/100)):Math.max(0,Math.min(100,Math.round(value)));
+      crop[field]=field==='zoom'?Math.max(1,Math.min(1.45,Math.round(value*100)/100)):Math.max(0,Math.min(100,Math.round(value)));
       refreshGalleryCropPreview();return;
     }
     if(e.target.id==='team-logo-search'){
