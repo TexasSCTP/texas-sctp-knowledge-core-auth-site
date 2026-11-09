@@ -562,3 +562,24 @@ body{background:var(--paper)}
 .gallery-crop-note{margin-top:0}
 @media(max-width:740px){.gallery-crop-body{grid-template-columns:1fr;gap:22px}.gallery-crop-original img{max-height:200px}}
 @media(max-width:560px){.memory-head{flex-wrap:wrap}.memory-reposition{order:3;margin-left:51px}.gallery-position-modal{width:calc(100vw - 20px)}.gallery-position-modal .modal-scroll{padding:18px 17px}.gallery-crop-editor .gallery-crop-intro{padding-bottom:12px}.gallery-crop-actions .btn{flex:1 1 auto}}
+
+
+/* Approved gallery photograph manager within Community moderation */
+.gallery-position-admin{padding:24px 0 30px}
+.gallery-position-admin-heading{display:flex;gap:20px;justify-content:space-between;align-items:center;margin-bottom:24px}
+.gallery-position-admin-heading h3{font-family:var(--serif);font-size:29px;letter-spacing:-.025em;font-weight:400;color:var(--navy);margin:6px 0}
+.gallery-position-admin-heading p{color:#6d8091;line-height:1.6;font-size:12px;margin:0;max-width:650px}
+.gallery-position-admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.gallery-position-admin-card{background:#fff;border:1px solid #dfe7eb;box-shadow:0 5px 20px rgba(20,45,68,.045);border-radius:9px;overflow:hidden;min-width:0}
+.gallery-position-admin-media{width:100%;aspect-ratio:3/2;background:#273c4c;overflow:hidden}
+.gallery-position-admin-media img{display:block;width:100%;height:100%;object-fit:cover}
+.gallery-position-admin-media span{font-size:12px;color:#e1edf3;display:grid;place-items:center;height:100%}
+.gallery-position-admin-detail{padding:13px 15px}
+.gallery-position-admin-detail strong{font-size:12px;color:#183c55;font-weight:900;line-height:1.4}
+.gallery-position-admin-detail p{font-size:10.5px;line-height:1.55;color:#8295a2;margin:5px 0 12px}
+.gallery-position-admin-bottom{display:flex;gap:10px;justify-content:space-between;align-items:center}
+.gallery-position-admin-bottom span{font-size:9.5px;font-weight:750;color:#8d9da7}
+.gallery-position-admin-bottom .btn{font-size:10.2px;padding:9px 11px;white-space:nowrap}
+.gallery-position-admin-more{text-align:center;margin:26px 0}
+@media(max-width:1050px){.gallery-position-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.gallery-position-admin-grid{grid-template-columns:1fr}.gallery-position-admin-heading{align-items:flex-start;flex-direction:column}}
