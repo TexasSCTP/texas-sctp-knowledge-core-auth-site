@@ -12,3 +12,9 @@
 @media(max-width:750px){.wrap{width:min(100% - 32px,600px)}.top-stripe .stripe-content span:last-child{display:none}.header-inner{min-height:76px}.brand img{width:52px;height:52px}.brand-text strong{font-size:18px}.brand-text small{font-size:8px}.header-links a:not(.nav-current){display:none}.hero-inner{min-height:310px;padding:44px 0}.hero-side{display:none}.hero h1{font-size:clamp(39px,8vw,54px)}.hero-description{font-size:13px}.section-heading{align-items:flex-start;flex-direction:column}.directory-totals{gap:28px}.directory{padding:40px 0 55px}.tools{flex-direction:column}.select-control{min-width:0;min-height:45px}.filter-bar{align-items:flex-start;flex-direction:column}.team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card-logo-area{height:132px;min-height:132px}.card-body{padding:13px 12px}.card-name{font-size:12.5px;min-height:34px}.help-inner{grid-template-columns:1fr;gap:23px}.footer-inner{flex-wrap:wrap;padding:22px 0;gap:10px}.footer-inner span:nth-child(2){display:none}}
 @media(max-width:390px){.team-grid{grid-template-columns:1fr}.card-logo-area{height:155px}.card-name{min-height:auto}.dialog-header{padding:18px 17px}.dialog-body{padding:18px 17px}.dialog-actions{padding:14px 17px}.dialog-actions button{flex:1}.hero h1{font-size:38px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Team logo illustration: emblem collection is a separate, purpose-built visual. */
+.hero-side{width:410px;height:336px;display:flex;align-items:center;justify-content:center}
+.hero-illustration{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 22px rgba(0,0,0,.12))}
+@media(max-width:1000px){.hero-side{width:310px;height:300px}}
+@media(max-width:750px){.hero-side{display:none}}
