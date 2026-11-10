@@ -265,6 +265,23 @@
         }
       });
       await refreshAccount();
+      // Moderator Hub sign-in uses the SAME browser auth session as On the Range.
+      // A one-time, short-lived marker brings staff back here after the verified
+      // email-link redirect on the existing On the Range origin.
+      try {
+        const pending=Number(localStorage.getItem('txsctp-hub-login-pending')||0);
+        if(pending && Date.now()-pending>30*60*1000) localStorage.removeItem('txsctp-hub-login-pending');
+        else if(pending && state.moderator) {
+          localStorage.removeItem('txsctp-hub-login-pending');
+          window.location.replace('./moderator-hub/');
+          return;
+        }
+      } catch {}
+      // Open the already-existing photo moderation screen directly from the Hub.
+      if(state.moderator && new URLSearchParams(window.location.search).get('moderator')==='onrange'){
+        state.screen='admin';
+        await loadAdmin();
+      }
       state.ready=true;render();
       await openHashMemory();
     }catch(e){console.error('Gallery connection error',e);state.ready=true;state.galleryError='The gallery service is unavailable. Please try again later.';render();}
@@ -440,7 +457,7 @@
     ensureHeroTimer();
   }
 
-  function topBar(){return `<header class="topbar"><a class="brand" href="./" aria-label="Return to Texas SCTP On the Range gallery"><span class="brand-seal"><span class="seal-fallback">TX</span>${config.brandLogoUrl?`<img src="${cleanUrl(config.brandLogoUrl)}" alt="Texas SCTP logo">`:''}</span><span class="brand-copy"><strong>TEXAS SCTP</strong><small>ON THE RANGE</small></span></a><div class="head-right"><span class="header-context">THE ACTION ACROSS TEXAS</span>${state.moderator?`<button data-action="admin" class="staff-head" aria-label="Open moderation">${icon('shield','icon-sm')}</button>`:''}</div></header>`;}
+  function topBar(){return `<header class="topbar"><a class="brand" href="./" aria-label="Return to Texas SCTP On the Range gallery"><span class="brand-seal"><span class="seal-fallback">TX</span>${config.brandLogoUrl?`<img src="${cleanUrl(config.brandLogoUrl)}" alt="Texas SCTP logo">`:''}</span><span class="brand-copy"><strong>TEXAS SCTP</strong><small>ON THE RANGE</small></span></a><div class="head-right"><span class="header-context">THE ACTION ACROSS TEXAS</span>${state.moderator?`<a href="./moderator-hub/" class="staff-hub-link">Moderator Hub</a><button data-action="admin" class="staff-head" aria-label="Open On the Range moderation">${icon('shield','icon-sm')}</button>`:''}</div></header>`;}
   function hero(){return `<section class="hero hero-photo" aria-label="Texas SCTP tournament action photo gallery"><div class="hero-slideshow" aria-hidden="true">${HERO_SCENES.map((scene,i)=>`<div class="hero-slide ${i===currentHero?'is-active':''}" style="background-image:url('${scene.live?cleanUrl(scene.src):attr(scene.src)}');--desktop-focus:${scene.desktop.x}% ${scene.desktop.y}%;--mobile-focus:${scene.mobile.x}% ${scene.mobile.y}%;--zoom-desktop:${scene.desktop.zoom};--zoom-mobile:${scene.mobile.zoom}"></div>`).join('')}<div class="hero-slideshow-scrim"></div></div><div class="hero-inner"><div class="hero-text"><p class="hero-kicker"><span class="kicker-line"></span> TEXAS SCTP <span class="kicker-slash">/</span> TOURNAMENT ACTION</p><h1>THE ACTION <em>IS ON.</em></h1><p class="hero-lede">From the first call to the final target, follow the competition across Texas. See the teams in action. Share what's happening on your range.</p><div class="hero-cta-row"><button class="btn btn-primary hero-share" data-action="upload">${icon('camera')} Share Photos</button><button class="hero-see" data-action="scroll-gallery">See the Action ${icon('arrow','icon-sm')}</button></div><div class="hero-assurance">${icon('check','icon-sm')} No login required <span class="dot-sep">&bull;</span> Photos reviewed before posting</div></div></div><div class="hero-motion-controls"><button type="button" data-action="toggle-slideshow" aria-pressed="${heroPaused}" aria-label="${heroPaused?'Play background slideshow':'Pause background slideshow'}">${heroPaused?'Play motion':'Pause motion'}</button></div></section>`;}
     function renderGallery(){
     const all=shownPosts();const query=state.filter.query.toLowerCase().trim();
@@ -481,7 +498,7 @@
   }
     function emptyState(){const filtered=state.filter.team||state.filter.tournament||state.filter.query;
     return `<div class="empty-state"><span class="empty-icon">${icon('camera','icon-lg')}</span><h3>${filtered?'No photos match these filters.':'The next shoot starts here.'}</h3><p>${filtered?'Try another team or tournament, or clear your filters.':'Tournament photos will appear here once submissions are enabled. Get ready to share your team in action.'}</p><button class="btn btn-outline" data-action="${filtered?'clear-filters':'upload'}">${filtered?'Show all photos':'Share Photos'}</button></div>`;}
-    function footer(){return `<footer class="site-footer"><div class="footer-inner"><div class="footer-left"><strong>TEXAS SCTP <span class="footer-sep">/</span> ON THE RANGE</strong><span>Every target. Every team. Every tournament. Share the action across Texas.</span></div><div class="footer-links"><a href="${attr(config.organizationUrl||'https://www.texassctp.com/')}" target="_blank" rel="noopener noreferrer">Texas SCTP</a><button data-action="privacy">Photo guidelines</button><a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20removal">Photo removal</a><button data-action="open-full">Open full page</button><button data-action="${state.moderator?'admin':'login'}">${state.moderator?'Moderation':'Staff access'}</button></div></div></footer>`;}
+    function footer(){return `<footer class="site-footer"><div class="footer-inner"><div class="footer-left"><strong>TEXAS SCTP <span class="footer-sep">/</span> ON THE RANGE</strong><span>Every target. Every team. Every tournament. Share the action across Texas.</span></div><div class="footer-links"><a href="${attr(config.organizationUrl||'https://www.texassctp.com/')}" target="_blank" rel="noopener noreferrer">Texas SCTP</a><button data-action="privacy">Photo guidelines</button><a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20removal">Photo removal</a><button data-action="open-full">Open full page</button><button data-action="${state.moderator?'admin':'login'}">${state.moderator?'Moderation':'Staff access'}</button><a href="./moderator-hub/">Moderator Hub</a></div></div></footer>`;}
     function renderModal(){
     root.innerHTML='';if(!state.modal)return;
     let html='';let cls='';
@@ -1120,7 +1137,7 @@
     </section>`;
   }
   function renderAdmin(){const pendingP=state.adminPosts.length,pendingC=state.adminComments.length,pendingL=state.adminLogoRequests.length;
-    return `<div class="content-wrap admin-shell"><div class="admin-heading"><div><div class="eyebrow" style="color:#b78031">ADMINISTRATION</div><h2>Community moderation</h2><p>Review athlete photos and comments before they appear to the public.</p></div><div class="admin-heading-actions"><a class="btn btn-outline" href="./hero-studio.html">Adjust slideshow photos</a><button class="btn btn-outline" data-action="refresh-admin">Refresh queue</button></div></div>
+    return `<div class="content-wrap admin-shell"><div class="admin-heading"><div><div class="eyebrow" style="color:#b78031">ADMINISTRATION</div><h2>Community moderation</h2><p>Review athlete photos and comments before they appear to the public.</p></div><div class="admin-heading-actions"><a class="btn btn-outline" href="./moderator-hub/">Moderator Hub</a><a class="btn btn-outline" href="./hero-studio.html">Adjust slideshow photos</a><button class="btn btn-outline" data-action="refresh-admin">Refresh queue</button></div></div>
     <section class="staff-role-directory" aria-label="Texas SCTP staff permissions"><div class="staff-role-directory-heading">Texas SCTP Staff Access</div><div class="staff-role-directory-list">${state.staffDirectory.map(staff=>`<div class="staff-person"><strong>${esc(staff.display_name)}</strong><span class="staff-role-pill ${staff.role==='owner'?'role-owner':'role-admin'}">${staff.role==='owner'?'Owner':'Administrator'}</span>${staff.status==='pending'?'<small>Access pending first verified sign-in</small>':'<small>Active</small>'}</div>`).join('')}</div></section>
     <div class="admin-stats"><div class="admin-stat"><strong>${pendingP}</strong><small>Photo submissions waiting</small></div><div class="admin-stat"><strong>${pendingC}</strong><small>Comments waiting</small></div><div class="admin-stat"><strong>${shownPosts().length}</strong><small>Published photo posts loaded</small></div></div>
     <div class="admin-tabs"><button class="admin-tab ${state.adminTab==='photos'?'active':''}" data-action="admin-photos">Photo submissions (${pendingP})</button><button class="admin-tab ${state.adminTab==='comments'?'active':''}" data-action="admin-comments">Comments (${pendingC})</button><button class="admin-tab ${state.adminTab==='logos'?'active':''}" data-action="admin-logos">Team logos${pendingL?` (${pendingL} to review)`:""}</button><button class="admin-tab ${state.adminTab==='social'?'active':''}" data-action="admin-social">Social Publishing</button><button class="admin-tab ${state.adminTab==='positions'?'active':''}" data-action="admin-positions">Gallery Photo Placement</button></div>
