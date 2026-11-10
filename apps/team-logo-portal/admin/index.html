@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#0e2d4a">
+ <meta name="robots" content="noindex,nofollow">
+ <meta name="description" content="Staff-only visibility controls for the Texas SCTP Team Logo Portal.">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://raw.githubusercontent.com https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+ <title>Team Logo Moderation | Texas SCTP</title>
+ <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
+ <link rel="stylesheet" href="./styles.css?v=20261110-2">
+ <script defer src="../config.js"></script>
+ <script type="module" src="./app.js?v=20261110-2"></script>
+</head>
+<body>
+ <div class="topstripe"><div class="container"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>STAFF MANAGEMENT</span></div></div>
+ <header class="header">
+  <div class="container head-inner">
+   <a class="brand" href="../" aria-label="Visit Texas SCTP Team Logo Portal">
+    <img src="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png" width="53" height="53" alt="Texas SCTP official logo">
+    <span><strong>TEXAS SCTP</strong><small>TEAM LOGO MODERATION</small></span>
+   </a>
+   <nav class="navigation" aria-label="Staff navigation">
+    <a href="../">Public Team Directory</a><span class="staff-tag">STAFF ONLY</span>
+   </nav>
+  </div>
+ </header>
+ <main class="container main">
+  <div class="intro">
+   <p class="eyebrow">DIRECTORY MANAGEMENT</p>
+   <h1>Team visibility controls</h1>
+   <p>Decide which teams appear in the public Team Logo Portal. Turning a team off hides its directory card and blocks public logo submissions for that team, while keeping its logo and team record intact.</p>
+  </div>
+  <section id="login-panel" class="login-panel" aria-labelledby="login-heading">
+   <div class="login-copy"><p class="eyebrow">AUTHORIZED PERSONNEL</p><h2 id="login-heading">Sign in to manage teams</h2><p>Use your existing Texas SCTP moderator or administrator account. Access is checked against the official staff directory before any changes can be made.</p></div>
+   <form id="login-form" class="login-form">
+    <label for="login-email">Staff email address</label>
+    <input id="login-email" type="email" required autocomplete="email" placeholder="you@texassctp.com">
+    <button type="submit" id="login-submit" class="button button-gold">Email me a secure sign-in link</button>
+    <p class="login-help">Only authorized existing staff accounts can sign in. No new accounts are created.</p>
+    <p id="login-status" role="status" aria-live="polite"></p>
+   </form>
+  </section>
+  <section id="moderation-panel" hidden aria-labelledby="moderation-heading">
+   <div class="staffbar"><div><strong id="moderation-heading">Team directory moderation</strong><p id="staff-name">Signed in as Texas SCTP staff</p></div><div class="staff-actions"><button type="button" class="button button-light" id="refresh-button">Refresh directory</button><button type="button" class="button button-outline" id="logout-button">Sign out</button></div></div>
+   <div class="stats" role="group" aria-label="Team visibility summary">
+    <div class="stat"><strong id="stat-total">—</strong><span>Total teams</span></div>
+    <div class="stat"><strong id="stat-visible">—</strong><span>Visible to visitors</span></div>
+    <div class="stat"><strong id="stat-hidden">—</strong><span>Hidden from visitors</span></div>
+    <div class="stat"><strong id="stat-inactive">—</strong><span>Inactive in source</span></div>
+   </div>
+   <section class="team-manager" aria-labelledby="teams-heading">
+    <div class="manager-head"><div><h2 id="teams-heading">Manage team visibility</h2><p>Switch off a team to hide it immediately. Switch it back on whenever it should appear again.</p></div><span id="result-count">0 teams</span></div>
+    <div class="filters">
+     <label for="team-query" class="search-label">Find a team<input id="team-query" type="search" placeholder="Search by team name or SHOT ID" autocomplete="off"></label>
+     <label for="team-filter" class="select-label">View<select id="team-filter"><option value="all">All teams</option><option value="visible">Visible to visitors</option><option value="hidden">Hidden from visitors</option><option value="inactive">Inactive in source</option><option value="no-logo">Logo missing</option></select></label>
+    </div>
+    <div id="team-rows" class="team-rows"></div>
+    <div id="empty-results" class="empty" hidden>No teams match those filters.</div>
+   </section>
+   <div class="moderation-notes"><strong>How visibility works</strong><p>Portal visibility is separate from SHOT or team activity status. A source-inactive team remains off the public site even if its portal switch is on. Turning the portal switch off does not delete logos, change SHOT records, or affect other Texas SCTP tools.</p></div>
+  </section>
+  <p id="page-status" class="page-status" role="status" aria-live="polite">Checking staff access…</p>
+ </main>
+ <footer class="footer"><div class="container"><span>© <span id="current-year">2026</span> Texas SCTP, Inc.</span><a href="../">Return to Team Logo Portal</a></div></footer>
+</body>
+</html>
