@@ -9,9 +9,9 @@
   <meta property="og:description" content="Help Texas SCTP recognize your athletes and team with the right logo. Search the directory and upload or update your official artwork.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-directory-1">
+  <link rel="stylesheet" href="./styles.css?v=20261110-report-1">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261110-directory-1"></script>
+  <script defer src="./app.js?v=20261110-report-1"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -154,6 +154,40 @@
       <div class="dialog-actions">
         <button type="button" class="secondary-button" id="cancel-upload">Cancel</button>
         <button type="submit" class="submit-button" id="submit-upload" disabled>Save team logo</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="report-dialog" class="report-dialog" aria-labelledby="report-heading">
+    <form id="report-form" novalidate>
+      <div class="dialog-header">
+        <div>
+          <p class="section-kicker">DIRECTORY ACCURACY</p>
+          <h2 id="report-heading">Flag a team for review</h2>
+        </div>
+        <button class="icon-button" type="button" id="report-close" aria-label="Close report form">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="chosen-team">
+          <span>Team to review</span>
+          <strong id="reported-team-name">Selected team</strong>
+        </div>
+        <label class="report-field" for="report-team-reason">What should Texas SCTP review?
+          <select id="report-team-reason" required>
+            <option value="">Choose a reason</option>
+            <option value="inactive">I believe this team is inactive</option>
+            <option value="incorrect_details">This team's information may be incorrect</option>
+            <option value="other">Other directory concern</option>
+          </select>
+        </label>
+        <label class="report-field" for="report-details">Additional details <span>(optional)</span>
+          <textarea id="report-details" maxlength="500" rows="3" placeholder="What should our moderators check? Please avoid personal information."></textarea>
+        </label>
+        <p class="report-explanation">Submitting a flag sends the team to a private moderation queue. It does not automatically hide the team or its logo. Texas SCTP reviews reports before changing a listing.</p>
+        <p id="report-status" class="report-status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" id="report-cancel">Cancel</button>
+        <button class="submit-button" type="submit" id="report-submit">Send for moderator review</button>
       </div>
     </form>
   </dialog>
