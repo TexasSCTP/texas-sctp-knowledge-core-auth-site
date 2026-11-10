@@ -1097,6 +1097,149 @@
       render();
     }catch(e){toast('Could not save the reaction. '+e.message,true);}
   }
+  async function loadPhotoReports(){
+  if(!state.moderator||!state.client)return;
+  const {data,error}=await state.client.from('memory_photo_reports')
+    .select('id,photo_id,post_id,reason,comments,reporter_name,reporter_email,status,created_at,reviewed_at,reviewed_by,moderator_note')
+    .order('created_at',{ascending:false}).limit(200);
+  if(error){
+    console.warn('Photo report moderation queue unavailable:',error.message);
+    toast('Could not retrieve the photo report queue.',true);
+    return;
+  }
+  state.adminPhotoReports=data||[];
+  const postIds=[...new Set(state.adminPhotoReports.map(r=>r.post_id))];
+  const photoIds=[...new Set(state.adminPhotoReports.map(r=>r.photo_id))];
+  if(!postIds.length){state.adminReportItems=new Map();return;}
+  const [posts,photos]=await Promise.all([
+    state.client.from('memory_posts')
+      .select('id,team_id,tournament_id,other_tournament,caption,status')
+      .in('id',postIds),
+    state.client.from('memory_photos')
+      .select('id,post_id,storage_path,public_visible')
+      .in('id',photoIds)
+  ]);
+  if(posts.error||photos.error){
+    toast('Photo report details could not be loaded.',true);
+    return;
+  }
+  const byPost=new Map((posts.data||[]).map(p=>[p.id,p]));
+  const byPhoto=new Map((photos.data||[]).map(p=>[p.id,p]));
+  const items=new Map();
+  for(const report of state.adminPhotoReports){
+    const post=byPost.get(report.post_id)||null;
+    const photo=byPhoto.get(report.photo_id)||null;
+    let url=photo?state.imageUrls.get(photo.storage_path):null;
+    if(photo&&!url){
+      const signed=await state.client.storage.from(BUCKET)
+        .createSignedUrl(photo.storage_path,3600);
+      if(!signed.error&&signed.data?.signedUrl){
+        url=signed.data.signedUrl;
+        state.imageUrls.set(photo.storage_path,url);
+      }
+    }
+    items.set(report.id,{post,photo,url});
+  }
+  state.adminReportItems=items;
+}
+  function renderPhotoReportsAdmin(){
+  const open=state.adminPhotoReports.filter(r=>r.status==='pending'||r.status==='in_review');
+  const done=state.adminPhotoReports.filter(r=>!['pending','in_review'].includes(r.status));
+  const selected=state.reportQueueFilter==='history'?done:open;
+  const titles={
+    privacy_consent:'Privacy / consent',removal_request:'Removal requested',
+    safety:'Safety concern',inappropriate:'Inappropriate content',
+    copyright:'Copyright / permission',incorrect_information:'Correction requested',
+    other:'Other concern'
+  };
+  const statuses={
+    pending:'Awaiting review',in_review:'Under review',
+    retained:'Photo retained',dismissed:'Report dismissed',
+    removed:'Photo removed',restored:'Photo restored'
+  };
+  return `<section class="photo-report-admin" aria-label="Photo flags and moderator dispositions">
+    <header class="photo-report-heading">
+      <div><div class="eyebrow">PRIVATE MODERATOR QUEUE</div>
+        <h3>Photo flags and removal requests</h3>
+        <p>Reports are confidential and tied to individual photographs. Review the image, comments, and any contact information before choosing a disposition. A flag alone never takes a photo offline.</p>
+      </div>
+      <div class="photo-report-tabs">
+        <button type="button" class="${state.reportQueueFilter==='open'?'active':''}" data-action="show-report-open">Needs review (${open.length})</button>
+        <button type="button" class="${state.reportQueueFilter==='history'?'active':''}" data-action="show-report-history">Disposition history (${done.length})</button>
+      </div>
+    </header>
+    <div class="photo-report-list">${selected.map(report=>{
+      const details=state.adminReportItems.get(report.id)||{};
+      const post=details.post||null,photo=details.photo||null,url=details.url;
+      const teamName=team(post?.team_id)?.name||'Texas SCTP team';
+      const eventName=tournament(post?.tournament_id)?.title||post?.other_tournament||'Tournament';
+      const urgent=['privacy_consent','removal_request','safety'].includes(report.reason);
+      const isOpen=['pending','in_review'].includes(report.status);
+      const isHidden=photo?.public_visible===false;
+      return `<article class="photo-report-card ${urgent?'is-sensitive':''}" data-report-id="${attr(report.id)}">
+        <div class="photo-report-media">
+          ${url?`<img src="${cleanUrl(url)}" alt="Specific photograph flagged for review" loading="lazy">`:'<div class="photo-report-image-missing">Photo preview unavailable</div>'}
+          <span class="photo-report-media-status ${isHidden?'hidden-photo':''}">${isHidden?'Removed from public view':'Photo currently visible'}</span>
+        </div>
+        <div class="photo-report-details">
+          <div class="photo-report-top">
+            <span class="photo-report-reason ${urgent?'urgent':''}">${icon('flag','icon-xs')} ${esc(titles[report.reason]||'Reported photo')}</span>
+            <span class="photo-report-status">${esc(statuses[report.status]||report.status)}</span>
+          </div>
+          <strong class="photo-report-team">${esc(teamName)}</strong>
+          <div class="photo-report-meta">${esc(eventName)} · Submitted ${dateFmt(report.created_at)} · Case ${esc(report.id.slice(0,8).toUpperCase())}</div>
+          <p class="photo-report-comments">${esc(report.comments)}</p>
+          <div class="photo-report-reporter">
+            <span>From: ${esc(report.reporter_name||'Anonymous visitor')}</span>
+            ${report.reporter_email?`<a href="mailto:${attr(report.reporter_email)}">${esc(report.reporter_email)}</a>`:'<span>No contact email supplied</span>'}
+          </div>
+          ${report.moderator_note?`<p class="photo-report-previous"><strong>Previous disposition note:</strong> ${esc(report.moderator_note)}</p>`:''}
+          ${isOpen||report.status==='removed'&&isHidden?`
+            <div class="form-field"><label for="report-note-${attr(report.id)}">Moderator notes ${isOpen?'':'for restoration'}</label>
+              <textarea id="report-note-${attr(report.id)}" data-report-note maxlength="1500" rows="2" placeholder="Record your decision. A reason is required to remove or restore a photo."></textarea></div>
+            <div class="photo-report-actions">
+              ${isOpen?`${report.status==='pending'?`<button type="button" class="btn btn-outline btn-sm" data-action="review-report-start_review" data-id="${attr(report.id)}">Start review</button>`:''}
+                <button type="button" class="btn btn-outline btn-sm" data-action="review-report-retain" data-id="${attr(report.id)}">Keep photo</button>
+                <button type="button" class="btn btn-outline btn-sm" data-action="review-report-dismiss" data-id="${attr(report.id)}">Dismiss report</button>
+                <button type="button" class="btn btn-danger btn-sm" data-action="review-report-remove" data-id="${attr(report.id)}">Remove photo</button>`:''}
+              ${report.status==='removed'&&isHidden?`<button type="button" class="btn btn-outline btn-sm" data-action="review-report-restore" data-id="${attr(report.id)}">Restore to gallery</button>`:''}
+            </div>`:''}
+          <p class="photo-report-note">Removing a photo hides it from the public gallery and slideshow. The original stays stored for audit. Any Facebook or Instagram copy requires separate follow-up.</p>
+        </div>
+      </article>`;
+    }).join('')||`<div class="full-width-notice">${state.reportQueueFilter==='open'?'No photo reports need review.':'No completed photo reports yet.'}</div>`}</div>
+  </section>`;
+}
+  async function reviewPhotoReport(reportId,action,note){
+  if(!state.client||!state.moderator||state.adminReportBusy)return;
+  const report=state.adminPhotoReports.find(r=>r.id===reportId);
+  if(!report)return;
+  if(['remove','restore'].includes(action)&&String(note||'').trim().length<5){
+    toast('Enter a reason of at least 5 characters before removing or restoring this photo.',true);return;
+  }
+  if(action==='remove'&&!confirm('Remove only this photograph from the public gallery and hero slideshow? The original is retained for audit; published social copies need separate removal.'))return;
+  state.adminReportBusy=true;
+  try{
+    const {data,error}=await state.client.rpc('memory_staff_review_photo_report',{
+      p_report_id:reportId,p_action:action,p_note:String(note||'').trim()||null
+    });
+    if(error)throw Error(error.message);
+    if(!data?.saved||data?.report_id!==reportId)throw Error('Moderator disposition was not confirmed.');
+    if(['remove','restore'].includes(action)){
+      await loadGallery(true);
+      await loadHeroGallery();
+    }
+    await loadPhotoReports();
+    render();
+    toast(action==='remove'
+      ?'The reported photograph is no longer public. Any already published social copy is flagged for separate removal.'
+      :action==='restore'
+      ?'Photograph restored to the gallery. Hero and social publishing remain separately controlled.'
+      :'Disposition saved in the moderator review history.');
+  }catch(error){
+    toast('Could not save the moderator decision: '+(error.message||'Please try again.'),true);
+  }finally{state.adminReportBusy=false;}
+}
   async function loadAdmin(){
     if(!state.client||!state.moderator)return;
     const [p,c,l,scopes,authorizations,directory]=await Promise.all([
@@ -1352,6 +1495,17 @@
       const post=state.posts.find(p=>p.id===id);
       if(!post)return;
       state.selectedPost=post;state.modal='edit-published';renderModal();return;
+    }
+    if(action==='show-report-open'||action==='show-report-history'){
+      state.reportQueueFilter=action==='show-report-history'?'history':'open';render();return;
+    }
+    if(action.startsWith('review-report-')){
+      const selectedAction=action.slice('review-report-'.length);
+      if(!['start_review','retain','dismiss','remove','restore'].includes(selectedAction))return;
+      const row=target.closest('.photo-report-card');
+      const note=row?.querySelector('[data-report-note]')?.value||'';
+      await reviewPhotoReport(id,selectedAction,note);
+      return;
     }
     if(action==='toggle-slideshow'){
       heroPaused=!heroPaused;
