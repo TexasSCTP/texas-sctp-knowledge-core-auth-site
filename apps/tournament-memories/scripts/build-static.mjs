@@ -8,6 +8,8 @@ const dist=resolve(root,'dist');
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'team-logos/app.js')],{stdio:'inherit'});
+// Prevent regressions that reintroduce a photo or illustrative scene after a moderator disables it.
+execFileSync(process.execPath,[resolve(root,'scripts/test-hero-visibility.mjs')],{stdio:'inherit'});
 await rm(dist,{recursive:true,force:true});
 await mkdir(dist,{recursive:true});
 for(const name of ['index.html','styles.css','app.js','config.js','favicon.svg','preview-catalog.json','hero-config.json','hero-admin.html','hero-studio.html','hero-admin.css','hero-admin.js','social-publishing.js','social-publishing.css','photo-use-policy.html']){
