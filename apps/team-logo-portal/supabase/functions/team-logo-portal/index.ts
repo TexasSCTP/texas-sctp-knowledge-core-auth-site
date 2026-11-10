@@ -264,13 +264,22 @@ async function submitDirectoryReport(req:Request,body:Record<string,unknown>){
 async function staffDirectoryReports(req:Request){
  const staff=await verifyStaff(req);
  if(!staff)return fail('Authorized staff sign-in required.',401);
- const [{data:reports,error},{data:teams,error:te}]=await Promise.all([
-   admin.from('logo_portal_reports')
-     .select('id,team_id,reason,details,status,created_at,reviewed_at,review_note')
-     .order('created_at',{ascending:false}).limit(250),
+ const fields='id,team_id,reason,details,status,created_at,reviewed_at,review_note';
+ const [
+   {data:openReports,error:openError},
+   {data:recentlyClosed,error:closedError},
+   {data:teams,error:te}
+ ]=await Promise.all([
+   admin.from('logo_portal_reports').select(fields)
+     .eq('status','pending').order('created_at',{ascending:false}).limit(1000),
+   admin.from('logo_portal_reports').select(fields)
+     .neq('status','pending').order('created_at',{ascending:false}).limit(50),
    admin.from('memory_teams').select('id,name,active,portal_visible')
  ]);
- if(error||te)throw Error('Could not load the team reports queue.');
+ if(openError||closedError||te)throw Error('Could not load the team reports queue.');
+ const reports=[...(openReports||[]),...(recentlyClosed||[])].sort(
+   (a,b)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime()
+ );
  const byTeam=new Map((teams||[]).map(t=>[t.id,t]));
  return json({reports:(reports||[]).map(r=>{
    const team=byTeam.get(r.team_id);
