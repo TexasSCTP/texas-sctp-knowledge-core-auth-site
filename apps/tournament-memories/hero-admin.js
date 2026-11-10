@@ -14,7 +14,8 @@
   const DEFAULTS={};
   const $=id=>document.getElementById(id);
   let config=null,published=null,selectedId='scene-07',mode='desktop',playing=false,timer=null,drag=null;
-  let client=null,staffUser=null,liveSaving=false;const livePublished=new Map(),liveFeedback=new Map();
+  let client=null,staffUser=null,liveSaving=false,canManageReferences=false;
+  const livePublished=new Map(),referencePublished=new Map(),liveFeedback=new Map();
   const naturalSizes=new Map();
   const viewSpecs={desktop:{width:1680,height:430,name:'Desktop hero · exact widescreen ratio'},mobile:{width:390,height:548,name:'Phone hero · full mobile view'},card:{width:520,height:390,name:'Photo card · 4:3 crop'}};
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -24,7 +25,7 @@
   function getView(){return getSlide()?.[mode];}
   function setStatus(message,tone='normal'){$('save-status').textContent=message;$('save-status').style.color=tone==='error'?'#ac4034':tone==='good'?'#527866':'#7b8792';}
   function updateLiveSaveFeedback(){
-    const slide=getSlide(),entry=slide?.live?liveFeedback.get(slide.id):null;
+    const slide=getSlide(),entry=(slide?.live||slide?.reference)?liveFeedback.get(slide.id):null;
     const panel=$('live-save-feedback');
     if(panel){
       panel.hidden=!entry;
@@ -33,7 +34,7 @@
     }
     $('save-live').disabled=liveSaving;
     $('publish-open').disabled=liveSaving;
-    if(slide?.live){
+    if(slide?.live||slide?.reference){
       $('save-live').textContent=liveSaving?'Saving…':entry?.tone==='success'?'✓ Saved':'Save photo placement';
       $('publish-open').textContent=liveSaving?'Saving…':'Save photo placement';
     }else{
@@ -41,7 +42,7 @@
     }
   }
   function setLiveSaveFeedback(slide,tone,message){
-    if(slide?.live)liveFeedback.set(slide.id,{tone,message});
+    if(slide?.live||slide?.reference)liveFeedback.set(slide.id,{tone,message});
     updateLiveSaveFeedback();
   }
   function normalizePosition(raw,fallback){return {x:minmax(raw?.x??fallback.x,0,100),y:minmax(raw?.y??fallback.y,0,100),zoom:minmax(raw?.zoom??fallback.zoom,1,1.45)};}
@@ -69,7 +70,10 @@
         localStorage.setItem(LIVE_DRAFT_KEY,JSON.stringify(drafts));
         setStatus('Changes saved locally · click Save photo placement to publish');
         setLiveSaveFeedback(slide,'unsaved','Unsaved changes to the live slideshow. Click Save photo placement to publish them.');
-      }else setStatus('Saved on this device · sample changes not published');
+      }else if(slide?.reference){
+        setStatus('Unsaved original-photo adjustments · select Save photo placement');
+        setLiveSaveFeedback(slide,'unsaved','These original slideshow photo adjustments are not yet saved. Select Save photo placement.');
+      }else setStatus('Preview changes not saved');
     }catch{setStatus('Changes unsaved. Storage blocked.','error');}}
   function markChanged(){saveDraft();updateCanvas();updateSliders();}
   function preload(){for(const s of config.slides){const img=new Image();img.onload=()=>naturalSizes.set(s.src,{width:img.naturalWidth,height:img.naturalHeight});img.src=s.src;}}
@@ -77,7 +81,10 @@
     try{const r=await fetch('./hero-config.json',{cache:'no-cache'});if(!r.ok)throw Error('Cannot load the published slideshow settings.');
       const v=await r.json();published=normalize(v,v);const saved=(()=>{try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch{return null;}})();
       config=saved?normalize(saved,published):clone(published);
-      for(const s of published.slides)DEFAULTS[s.id]=clone(s);
+      // Static file flags are obsolete. Only authenticated backend settings
+      // can enable a legacy scene; before loading them, every scene is OFF.
+      for(const s of config.slides){s.reference=true;s.enabled=false;}
+      for(const s of published.slides)DEFAULTS[s.id]={...clone(s),reference:true,enabled:false};
       preload();renderList();selectSlide(selectedId);sizeStage();
       setStatus(saved?'Saved on this device · not published':'Showing published settings','good');
       await loadApprovedPhotos();
@@ -97,16 +104,33 @@
         $('live-status').innerHTML='To adjust real tournament photos, sign in using <a href="./index.html">Staff access</a> at the bottom of the gallery.';
         return;
       }
-      const {data:staff,error:staffError}=await client.from('memory_moderators')
-        .select('user_id').eq('user_id',auth.user.id).limit(1).maybeSingle();
-      if(staffError||!staff){
+      const {data:staffRows,error:staffError}=await client.from('memory_moderators')
+        .select('user_id,team_id,role').eq('user_id',auth.user.id).limit(20);
+      if(staffError||!staffRows?.length){
         $('live-status').textContent='This account is not assigned as a Texas SCTP photo moderator.';
         return;
       }
       staffUser=auth.user;
-      const {data:rows,error}=await client.rpc('memory_hero_editor_items',{p_limit:400});
-      if(error)throw error;
-      const photos=rows||[];
+      canManageReferences=staffRows.some(row=>row.team_id===null&&
+        ['owner','administrator'].includes(row.role));
+      const [photoResult,referenceResult]=await Promise.all([
+        client.rpc('memory_hero_editor_items',{p_limit:400}),
+        client.rpc('memory_hero_reference_choices')
+      ]);
+      if(photoResult.error)throw photoResult.error;
+      if(referenceResult.error)throw referenceResult.error;
+      const referenceRows=new Map((referenceResult.data||[]).map(row=>[row.scene_id,row]));
+      for(const slide of config.slides.filter(item=>item.reference)){
+        const row=referenceRows.get(slide.id);
+        if(!row){slide.enabled=false;continue;}
+        slide.enabled=row.enabled===true;
+        for(const type of ['desktop','mobile','card']){
+          slide[type]=normalizePosition(row[type],slide[type]);
+        }
+        referencePublished.set(slide.id,clone(slide));
+        DEFAULTS[slide.id]=clone(slide);
+      }
+      const photos=photoResult.data||[];
       const signed=new Map();
       const paths=[...new Set(photos.map(r=>r.storage_path))];
       for(let start=0;start<paths.length;start+=40){
@@ -137,15 +161,18 @@
         }
         live.push(value);
       }
-      // Approved live photos lead the editor. Legacy sample artwork stays
-      // below as clearly marked, non-published reference material.
+      // Approved gallery photos lead the editor, followed by legacy photos
+      // whose visibility is explicitly controlled by the statewide admins.
       config.slides.unshift(...live);
       preload();
       renderList();
       if(live.length)selectSlide(live[0].id);
-      $('live-status').textContent=live.length
-        ?live.length+' approved tournament photo'+(live.length===1?'':'s')+' available for manual positioning. Save changes directly to the gallery.'
-        :'No approved photos are available for editing yet.';
+      $('live-status').textContent=live.length+' approved tournament photo'+
+        (live.length===1?'':'s')+' and '+referenceRows.size+
+        ' original slideshow photographs available. '+
+        (canManageReferences
+          ?'As Owner or Administrator, you can turn each original photo ON or OFF and save its positioning. Enable only images authorized for public use.'
+          :'Only the Owner or a statewide Administrator can turn original images ON or OFF.');
       if(live.length)setStatus('Approved photographs loaded · select one to adjust','good');
     }catch(error){
       console.error('Could not load approved photos for editing',error);
