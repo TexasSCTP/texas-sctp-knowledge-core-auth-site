@@ -26,6 +26,7 @@
   // No sample artwork is rendered during load, on error or when all photos are OFF.
   let HERO_SCENES = [];
   let APPROVED_HERO_SCENES = [];
+  let REFERENCE_HERO_SCENES = [];
   let heroLastLoadedAt = 0;
   let logosLastLoadedAt = 0;
   let heroReloading = false;
@@ -34,6 +35,17 @@
   // The server's enabled flag remains authoritative for fresh views.
   const locallyHiddenHeroPhotos = new Map();
   const HERO_VISIBILITY_KEY = 'txsctp-hero-visibility-v1';
+  const REFERENCE_VISIBILITY_KEY = 'txsctp-reference-hero-visibility-v1';
+  const locallyHiddenReferenceScenes = new Map();
+  function referenceTemporarilyHidden(sceneId){
+    const blockedAt=locallyHiddenReferenceScenes.get(sceneId);
+    if(!blockedAt)return false;
+    if(Date.now()-blockedAt>120000){
+      locallyHiddenReferenceScenes.delete(sceneId);
+      return false;
+    }
+    return true;
+  }
   function heroTemporarilyHidden(photoId){
     const blockedAt=locallyHiddenHeroPhotos.get(photoId);
     if(!blockedAt)return false;
@@ -45,12 +57,18 @@
   }
   function rebuildHeroScenes(preferredPhotoId=null){
     const currentSceneId=HERO_SCENES[currentHero]?.id||null;
-    // This deliberately excludes ALL_SCENES/FALLBACK_SCENES. Those legacy
-    // illustrative images must never override a moderator's photo-level OFF switch.
-    // If there are no allowed photos, the homepage displays its branded background.
-    HERO_SCENES=APPROVED_HERO_SCENES.filter(scene=>
-      scene.live===true&&scene.enabled!==false&&
-      !heroTemporarilyHidden(scene.id.replace(/^approved-/,'')));
+    // Reference photos never enter the hero from hero-config.json or the original
+    // fallback array. A reference photo must be explicitly ON in Supabase.
+    // The public slideshow can contain both approved submissions and specifically
+    // authorized reference photos. When neither is enabled, show the brand backdrop.
+    HERO_SCENES=[
+      ...APPROVED_HERO_SCENES.filter(scene=>
+        scene.live===true&&scene.enabled!==false&&
+        !heroTemporarilyHidden(scene.id.replace(/^approved-/,''))),
+      ...REFERENCE_HERO_SCENES.filter(scene=>
+        scene.reference===true&&scene.enabled===true&&
+        !referenceTemporarilyHidden(scene.id))
+    ];
     heroSequence=shuffleIndices(HERO_SCENES.length);
     const chosenId=preferredPhotoId||currentSceneId;
     const chosenIndex=HERO_SCENES.findIndex(scene=>scene.id===chosenId);
@@ -349,11 +367,27 @@
     if(!state.client||heroReloading)return;
     heroReloading=true;
     try{
-      const {data,error}=await state.client.rpc('memory_hero_candidates',{p_limit:24});
-      if(error)throw error;
-      // This block also closes the race where an earlier request completes after
-      // a moderator disables a photo in another tab.
-      const rows=(data||[]).filter(row=>!heroTemporarilyHidden(row.photo_id));
+      const [liveResult,referenceResult]=await Promise.all([
+        state.client.rpc('memory_hero_candidates',{p_limit:24}),
+        state.client.rpc('memory_hero_reference_choices')
+      ]);
+      if(liveResult.error)throw liveResult.error;
+      if(referenceResult.error)throw referenceResult.error;
+      // Both sources are checked on every refresh. Local blocks close the race
+      // where an older network response arrives after an explicit OFF click.
+      const rows=(liveResult.data||[]).filter(row=>!heroTemporarilyHidden(row.photo_id));
+      const permittedReferenceIds=new Map(ALL_SCENES.map(scene=>[scene.id,scene]));
+      REFERENCE_HERO_SCENES=(referenceResult.data||[])
+        .filter(row=>row.enabled===true&&
+          permittedReferenceIds.has(row.scene_id)&&
+          !referenceTemporarilyHidden(row.scene_id))
+        .map(row=>{
+          const def=permittedReferenceIds.get(row.scene_id);
+          return {...def,enabled:true,live:false,reference:true,
+            desktop:cropMode(row.desktop,def.desktop),
+            mobile:cropMode(row.mobile,def.mobile),
+            card:cropMode(row.card,def.card)};
+        });
       const paths=[...new Set(rows.map(r=>r.storage_path))];
       const signed=new Map();
       for(let i=0;i<paths.length;i+=40){
@@ -384,6 +418,7 @@
       // old signed URL when the source-of-truth visibility check fails.
       console.warn('Slideshow visibility could not be verified. Retiring cached approved images.',error);
       APPROVED_HERO_SCENES=[];
+      REFERENCE_HERO_SCENES=[];
       rebuildHeroScenes();
       heroLastLoadedAt=Date.now()-20*1000;
     }finally{heroReloading=false;}
@@ -1491,9 +1526,24 @@
   document.addEventListener('pointercancel',endPhotoCropDrag);
   document.addEventListener('keydown',cropPreviewKeyboard);
   window.addEventListener('storage',event=>{
-    if(event.key!==HERO_VISIBILITY_KEY||!event.newValue)return;
+    if(![HERO_VISIBILITY_KEY,REFERENCE_VISIBILITY_KEY].includes(event.key)||!event.newValue)return;
     try{
       const update=JSON.parse(event.newValue);
+      if(event.key===REFERENCE_VISIBILITY_KEY){
+        if(!/^scene-0[1-7]$/.test(update.sceneId)||typeof update.enabled!=='boolean')return;
+        if(update.enabled)locallyHiddenReferenceScenes.delete(update.sceneId);
+        else{
+          locallyHiddenReferenceScenes.set(update.sceneId,Date.now());
+          REFERENCE_HERO_SCENES=REFERENCE_HERO_SCENES.filter(
+            scene=>scene.id!==update.sceneId);
+        }
+        rebuildHeroScenes();
+        if(state.ready&&state.screen==='gallery')render();
+        void loadHeroGallery().then(()=>{
+          if(state.ready&&state.screen==='gallery')render();
+        });
+        return;
+      }
       if(!/^[0-9a-f-]{36}$/i.test(update.photoId)||typeof update.enabled!=='boolean')return;
       if(update.enabled)locallyHiddenHeroPhotos.delete(update.photoId);
       else {
