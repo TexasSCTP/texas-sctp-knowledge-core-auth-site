@@ -65,3 +65,14 @@ dialog{border:1px solid #e2e7e9;border-radius:15px;width:min(560px,calc(100vw - 
 .scene-entry.reference-only .scene-inclusion-toggle{cursor:not-allowed}
 .scene-entry.reference-only .scene-inclusion-text{color:#738595}
 .scene-entry.reference-only .scene-actions{opacity:.45}
+
+
+/* The seven original hero photos are curated by Owner/Administrator.
+   ON/OFF remains available, but defaults to OFF until chosen on the server. */
+.scene-entry.original-scene{border:1px solid #dde8ec;border-left:3px solid #d0a354;background:#f9fbfc}
+.scene-entry.original-scene.selected{background:#fffaf0;border-color:#e4c88f}
+.scene-entry.original-scene.off img{filter:grayscale(.55);opacity:.72}
+.scene-entry.original-scene .scene-subtitle{color:#698092}
+.scene-entry.original-scene .scene-inclusion-toggle{cursor:pointer}
+.scene-entry.original-scene .scene-inclusion-text{font-weight:850}
+.scene-entry.original-scene .scene-inclusion-toggle:has(input:disabled){cursor:not-allowed}
