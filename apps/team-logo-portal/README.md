@@ -67,3 +67,23 @@ separate from school-vs-club classification.
 Outstanding: verify the 171 profiles with their teams; add missing
 practice ranges. No team is automatically approved from name patterns or
 private coach email databases.
+
+
+## Shared staff moderation (November 10, 2026)
+
+Team Logo public browsing and uploads remain hosted independently. All staff
+moderation now runs from the existing On the Range authentication origin:
+
+https://texas-sctp-tournament-memories-preview.onrender.com/moderator-hub/
+
+The hub uses the same Supabase project, moderator registry, and default
+browser session as the On the Range moderation interface. It presents both
+On the Range and Team Logo Directory management in one place. Team Logo
+settings remain independent and statewide access continues to require the
+global staff role on the server. The old /admin/ path is now a static
+redirect; the previous separate staff login client and its distinct storage
+key have been retired.
+
+Do not reintroduce a second staff login on the public Team Logo Portal.
+The canonical staff editor source is now in the On the Range repository
+subfolder apps/tournament-memories/moderator-hub/team-logos/.
