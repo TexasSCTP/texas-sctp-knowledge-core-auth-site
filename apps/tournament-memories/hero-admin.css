@@ -53,3 +53,15 @@ dialog{border:1px solid #e2e7e9;border-radius:15px;width:min(560px,calc(100vw - 
 .live-save-feedback.is-error{background:#fff1ef;border-color:#e5bab4;border-left-color:#c1493e;color:#9e332b}
 #save-live:disabled,#publish-open:disabled{cursor:progress;opacity:.7}
 @media(max-width:700px){.live-save-feedback{padding:12px 14px;font-size:12px;margin:12px 0 16px}}
+
+
+/* Legacy sample images are retained as references in Slideshow Studio,
+   but are never eligible for the public homepage hero. */
+.scene-entry.reference-only{background:#f7f8fa;border:1px dashed #dce4e8}
+.scene-entry.reference-only.selected{background:#f1f4f6;border-color:#aebec8}
+.scene-entry.reference-only img{filter:grayscale(.7);opacity:.65}
+.scene-entry.reference-only .scene-name{color:#687f8f}
+.scene-entry.reference-only .scene-subtitle{color:#718896;font-weight:650}
+.scene-entry.reference-only .scene-inclusion-toggle{cursor:not-allowed}
+.scene-entry.reference-only .scene-inclusion-text{color:#738595}
+.scene-entry.reference-only .scene-actions{opacity:.45}
