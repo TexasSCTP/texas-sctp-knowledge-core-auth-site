@@ -9,9 +9,9 @@
  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://raw.githubusercontent.com https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
  <title>Team Directory Moderation | Texas SCTP</title>
  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
- <link rel="stylesheet" href="./styles.css?v=20261110-logo-preview-1">
+ <link rel="stylesheet" href="./styles.css?v=20261110-flags-1">
  <script defer src="../../config.js"></script>
- <script type="module" src="./app.js?v=20261110-logo-preview-1"></script>
+ <script type="module" src="./app.js?v=20261110-flags-1"></script>
 </head>
 <body>
  <div class="topstripe"><div class="container"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>STAFF MANAGEMENT</span></div></div>
@@ -52,7 +52,28 @@
     <div class="stat"><strong id="stat-inactive">—</strong><span>Inactive in source</span></div>
     <div class="stat"><strong id="stat-logos">—</strong><span>Logos on file</span></div>
     <div class="stat"><strong id="stat-needs-review">—</strong><span>Listings awaiting review</span></div>
+    <div class="stat stat-flags"><strong id="stat-flags">—</strong><span>Unreviewed team flags</span></div>
    </div>
+   <section class="report-queue" id="report-queue" aria-labelledby="reports-heading">
+    <div class="reports-head">
+     <div>
+      <p class="eyebrow">COMMUNITY DIRECTORY REPORTS</p>
+      <h2 id="reports-heading">Team reports awaiting review</h2>
+      <p>Visitors may flag a team they believe is inactive or whose listing needs correction. A report never removes a team until a statewide moderator confirms it.</p>
+     </div>
+     <div class="reports-toolbar">
+      <span id="report-count" class="report-count">Loading reports…</span>
+      <label class="reports-filter-label" for="reports-filter">Show
+       <select id="reports-filter"><option value="pending">Awaiting review</option><option value="resolved">Reviewed</option><option value="all">All reports</option></select>
+      </label>
+      <button type="button" id="refresh-reports" class="button button-light">Refresh reports</button>
+     </div>
+    </div>
+    <p id="reports-status" class="reports-status" role="status" aria-live="polite">Loading team reports…</p>
+    <div id="reports-list" class="reports-list" aria-live="polite"></div>
+    <p id="reports-empty" class="reports-empty" hidden>No flags awaiting review.</p>
+    <p class="reports-footnote">Confirming inactivity hides the entire team listing and its logo from the public portal. The team record, logo files, report, and review history remain available to authorized staff. To restore a team, use its visibility switch below after verifying it is active.</p>
+   </section>
    <section class="team-manager" aria-labelledby="teams-heading">
     <div class="manager-head"><div><h2 id="teams-heading">Team details &amp; visibility</h2><p>View the actual team logo on file, click a logo to inspect it larger, and manage team classifications, contact details, and visibility.</p></div><span id="result-count">0 teams</span></div>
     <div class="filters">
