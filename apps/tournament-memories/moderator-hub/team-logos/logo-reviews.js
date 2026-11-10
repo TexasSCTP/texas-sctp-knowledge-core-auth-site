@@ -58,9 +58,11 @@ export function createLogoReviewQueue({request,onReviewSaved,apiRoot}) {
       const result = await request('staff_logo_review', {submissionId:item.id, approve});
       if (result?.ok !== true) throw Error('Review was not confirmed.');
       status(item.teamName + (approve ? ' approved and published.' : ' rejected. Existing published logo unchanged.'));
+      busy = false;
       if (typeof onReviewSaved === 'function') await onReviewSaved();
       else await load();
     } catch (error) {
+      busy = false;
       status('Could not save review: ' + error.message, true);
       await load();
     } finally {
@@ -76,6 +78,7 @@ export function createLogoReviewQueue({request,onReviewSaved,apiRoot}) {
     try {
       const result = await request('staff_logo_notify_retry', {submissionId:item.id});
       if (!result?.ok) throw Error('Server did not confirm retry.');
+      busy = false;
       await load();
       status((result.delivery?.sent || 0) + ' moderator email(s) sent. See the alert status on the card for any remaining problems.');
     } catch(error) {
