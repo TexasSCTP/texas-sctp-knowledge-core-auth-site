@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0F2C4C">
-  <meta name="description" content="Give your Texas SCTP team the recognition it deserves. Add your official logo to the statewide directory for accurate team representation and future promotions.">
+  <meta name="description" content="Browse official team logos and find participating Texas SCTP teams. View the artwork on file or add your team logo.">
   <meta property="og:title" content="Texas SCTP | Team Logo Portal">
-  <meta property="og:description" content="Help Texas SCTP recognize your athletes and team with the right logo. Search the directory and upload or update your official artwork.">
+  <meta property="og:description" content="Explore the Texas SCTP team logo directory, view official team logos and update your team listing.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-report-1">
+  <link rel="stylesheet" href="./styles.css?v=20261110-gallery-1">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261110-report-1"></script>
+  <script defer src="./app.js?v=20261110-gallery-1"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -29,78 +29,38 @@
     </div>
   </header>
   <main>
-    <section class="hero">
-      <div class="wrap hero-inner">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> LET'S RECOGNIZE YOUR TEAM</p>
-          <h1>Your team's logo.<br><em>Ready for the spotlight.</em></h1>
-          <p class="hero-description">Your athletes put in the work. Make sure Texas SCTP has the right logo to represent their team. Add your official artwork so it's on file for team features, tournament promotions, and future recognition.</p>
-          <a href="#directory" class="primary-link">Find your team &amp; upload a logo <span aria-hidden="true">↓</span></a>
-          <p class="hero-convenience">No account. No CAPTCHA. Update your logo when needed.</p>
-          <p class="hero-proof"><span class="hero-proof-rule" aria-hidden="true"></span><strong id="hero-team-count">—</strong> Texas SCTP teams, one directory</p>
-        </div>
-        <div class="hero-side">
-          <div class="logo-wall" aria-label="Featured official team logos from the live directory">
-            <div class="logo-wall-top">
-              <img src="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png" alt="Official Texas SCTP logo" width="44" height="44">
-              <div><span>THE OFFICIAL COLLECTION</span><strong>Texas SCTP Team Logos</strong></div>
-              <span class="logo-wall-top-accent" aria-hidden="true">✦</span>
-            </div>
-            <div class="logo-wall-caption">REAL TEAMS. REAL LOGOS.</div>
-            <div class="logo-wall-grid" id="hero-logo-grid">
-              <div class="logo-wall-loading" role="status">Loading team logos…</div>
-            </div>
-            <div class="logo-wall-footer">
-              <span class="logo-wall-live"><span aria-hidden="true"></span> LIVE TEAM DIRECTORY</span>
-              <span id="hero-logos-count">Logos on file</span>
-            </div>
-          </div>
-          <span class="logo-wall-stamp" aria-hidden="true">EVERY TEXAS SCTP TEAM. ONE DIRECTORY.</span>
-        </div>
+    <section class="directory-intro wrap" aria-labelledby="intro-heading">
+      <div class="directory-intro-copy">
+        <p class="section-kicker">TEXAS SCTP TEAM DIRECTORY</p>
+        <h1 id="intro-heading">Our teams. Their logos.</h1>
+        <p>Browse official team logos from across Texas. Find your team to see the artwork on file or submit an updated version.</p>
+      </div>
+      <div class="directory-totals" aria-label="Directory totals">
+        <span><strong id="total-teams">—</strong><small>Teams listed</small></span>
+        <span><strong id="total-logos">—</strong><small>Logos on file</small></span>
       </div>
     </section>
-    <section class="why-section" id="why-upload" aria-labelledby="why-heading">
-      <div class="wrap why-inner">
-        <div class="why-heading-row">
+    <section class="featured-section" aria-labelledby="featured-heading">
+      <div class="wrap">
+        <div class="featured-heading-row">
           <div>
-            <p class="section-kicker">WHY UPLOAD YOUR TEAM LOGO?</p>
-            <h2 id="why-heading">Make sure your team is represented the right way.</h2>
+            <p class="section-kicker">OFFICIAL ARTWORK ON FILE</p>
+            <h2 id="featured-heading">Team logos</h2>
+            <p class="featured-description">Actual logos uploaded by participating Texas SCTP teams.</p>
           </div>
-          <p class="why-lead">When Texas SCTP highlights a team or its athletes, we should have the right artwork ready. Here's what putting your official logo on file does for your program.</p>
+          <button id="show-logos" type="button" class="featured-text-link">See all teams with logos <span aria-hidden="true">→</span></button>
         </div>
-        <div class="why-grid">
-          <article class="why-card">
-            <span class="why-card-number" aria-hidden="true">01</span>
-            <h3>Put your team on the map</h3>
-            <p>Your logo appears in the statewide team directory, giving coaches, families, and other programs a recognizable identity to find.</p>
-          </article>
-          <article class="why-card">
-            <span class="why-card-number" aria-hidden="true">02</span>
-            <h3>Be ready for team recognition</h3>
-            <p>Having your official logo available helps Texas SCTP prepare tournament announcements, team spotlights, and athlete achievement graphics with the correct branding.</p>
-          </article>
-          <article class="why-card">
-            <span class="why-card-number" aria-hidden="true">03</span>
-            <h3>Keep the right version on file</h3>
-            <p>Submit your team's real artwork once, and replace it whenever it changes. Help avoid outdated versions, guessed designs, and repeated requests for the same file.</p>
-          </article>
-        </div>
-        <div class="why-next">
-          <div><strong>Already have a logo on file?</strong><span>Check that it's correct. If it is, you're all set.</span></div>
-          <a class="why-cta-link" href="#directory">Find your team <span aria-hidden="true">↓</span></a>
+        <div class="featured-logo-grid" id="featured-logo-grid" aria-live="polite">
+          <p class="featured-loading">Loading official team logos…</p>
         </div>
       </div>
     </section>
     <section class="directory wrap" id="directory" aria-labelledby="directory-heading">
       <div class="section-heading">
         <div>
-          <p class="section-kicker">TEAM DIRECTORY</p>
-          <h2 id="directory-heading">Find your team. Add your logo.</h2>
-          <p class="section-description">Find school and club programs by name, city, or SHOT ID. Verified listings include the school or primary practice range and approved organizational contact information.</p>
-        </div>
-        <div class="directory-totals" aria-label="Directory totals">
-          <span><strong id="total-teams">—</strong><small>Teams</small></span>
-          <span><strong id="total-logos">—</strong><small>Logos on file</small></span>
+          <p class="section-kicker">BROWSE BY TEAM</p>
+          <h2 id="directory-heading">Team directory</h2>
+          <p class="section-description">Search by name, SHOT ID, school or home range. Teams with logos on file appear first.</p>
         </div>
       </div>
       <div class="tools">
@@ -119,14 +79,13 @@
       <div id="directory-status" role="status" aria-live="polite" class="directory-status">Loading the team directory...</div>
       <div id="team-grid" class="team-grid" aria-live="off"></div>
     </section>
-    <section class="help-section">
-      <div class="wrap help-inner">
+    <section class="directory-help" aria-labelledby="help-heading">
+      <div class="wrap directory-help-inner">
         <div>
-          <p class="section-kicker">SUBMITTING A LOGO</p>
-          <h2>What happens after you upload?</h2>
-          <p>Your logo appears on your team's directory card, and Texas SCTP has the correct file available for future team features and promotional graphics. Upload a clear PNG, JPG, or WebP image. A transparent background works best. You can replace an outdated logo without losing the previous file.</p>
+          <h2 id="help-heading">Missing a logo or need to update one?</h2>
+          <p>Find your team in the directory, then select <strong>Upload team logo</strong> or <strong>Update team logo</strong>. PNG, JPG and WebP files are accepted.</p>
         </div>
-        <div class="help-note"><strong>Need assistance?</strong><span>Can't find your team or need help with its logo?</span><a href="mailto:info@texassctp.com?subject=Texas%20SCTP%20Team%20Logo%20Assistance">Contact Texas SCTP →</a></div>
+        <a href="mailto:info@texassctp.com?subject=Texas%20SCTP%20Team%20Logo%20Assistance">Contact Texas SCTP</a>
       </div>
     </section>
   </main>
