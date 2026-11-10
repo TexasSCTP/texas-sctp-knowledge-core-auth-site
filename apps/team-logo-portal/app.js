@@ -10,6 +10,8 @@
   const allTeams = [];
   let activeTeam = null, selectedBlob = null, selectedPreviewUrl = null, busy = false;
   let statusFilter = 'all';
+  let reportTeam = null, reportBusy = false;
+  const reportDialog = $('#report-dialog'), reportForm = $('#report-form');
   const grid = $('#team-grid'), statusMessage = $('#directory-status');
   const dialog = $('#upload-dialog'), form = $('#upload-form');
   $('#current-year').textContent = String(new Date().getFullYear());
@@ -180,6 +182,14 @@
     upload.textContent = team.logoUrl ? 'Update team logo' : 'Upload team logo';
     upload.addEventListener('click', () => openUpload(team.id));
     body.append(upload);
+    const reportLink = document.createElement('button');
+    reportLink.type = 'button';
+    reportLink.className = 'report-team-link';
+    reportLink.setAttribute('aria-label', 'Flag ' + team.name + ' for team directory review');
+    reportLink.title = 'Flag this team for review';
+    reportLink.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 5c4-3 7 3 12 0v11c-5 3-8-3-12 0"></path></svg><span>Report a listing concern</span>';
+    reportLink.addEventListener('click', () => openReport(team.id));
+    body.append(reportLink);
     card.append(artwork, body);
     return card;
   }
@@ -361,6 +371,76 @@
       setBusy(false, '');
     }
   }
+
+  function reportStatus(message, isError = false) {
+    const el = $('#report-status');
+    el.textContent = message || '';
+    el.className = 'report-status' + (isError ? ' error' : '');
+  }
+  function openReport(id) {
+    const team = allTeams.find(t => t.id === id);
+    if (!team || reportBusy) return;
+    reportTeam = team;
+    reportForm.reset();
+    $('#reported-team-name').textContent = team.name;
+    $('#report-team-reason').value = '';
+    reportStatus('');
+    reportDialog.showModal();
+    $('#report-team-reason').focus();
+  }
+  function closeReport() {
+    if (reportBusy) return;
+    if (reportDialog.open) reportDialog.close();
+    reportTeam = null;
+    reportForm.reset();
+    reportStatus('');
+  }
+  async function submitReport(event) {
+    event.preventDefault();
+    if (reportBusy || !reportTeam) return;
+    const reason = $('#report-team-reason').value;
+    const details = $('#report-details').value.trim();
+    if (!['inactive','incorrect_details','other'].includes(reason)) {
+      reportStatus('Choose the reason for this report.', true);
+      return;
+    }
+    if (details.length > 500) {
+      reportStatus('Please limit additional details to 500 characters.', true);
+      return;
+    }
+    reportBusy = true;
+    $('#report-submit').disabled = true;
+    $('#report-cancel').disabled = true;
+    $('#report-close').disabled = true;
+    $('#report-submit').textContent = 'Sending report…';
+    reportStatus('Sending this report to Texas SCTP moderators…');
+    try {
+      const response = await portalRequest('report_team',{teamId:reportTeam.id,reason,details});
+      if (response.ok !== true) throw Error('The report was not confirmed.');
+      reportBusy = false;
+      closeReport();
+      notify('Report received. A Texas SCTP moderator will review this team. Its listing remains visible unless staff confirms a change.');
+    } catch (error) {
+      reportStatus(errMessage(error), true);
+    } finally {
+      reportBusy = false;
+      $('#report-submit').disabled = false;
+      $('#report-cancel').disabled = false;
+      $('#report-close').disabled = false;
+      $('#report-submit').textContent = 'Send for moderator review';
+    }
+  }
+
+  reportForm.addEventListener('submit', submitReport);
+  $('#report-cancel').addEventListener('click', closeReport);
+  $('#report-close').addEventListener('click', closeReport);
+  reportDialog.addEventListener('cancel', e => {
+    if (reportBusy) e.preventDefault();
+    else reportTeam = null;
+  });
+  reportDialog.addEventListener('click', e => {
+    if (e.target === reportDialog && !reportBusy) closeReport();
+  });
   $('#team-search').addEventListener('input', render);
   $('#league-filter').addEventListener('change', render);
   $('#kind-filter').addEventListener('change', render);
