@@ -153,8 +153,8 @@
     logoUploadFile:null, logoBusy:false, logoManageTeam:'', logoSource:'moderator', logoSearch:'', logoView:'saved',
     totalFetched:0, hasMore:true, loading:false, fetching:false, galleryError:'',
     filter:{team:'', tournament:'', season:'', query:'', sort:'newest'},
-    feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],adminAuthorizations:new Map(),
-    modal:null, selectedPost:null, selectedImage:0, editPostBusy:false, uploadFiles:[],
+    feedTab:'latest', adminTab:'photos', adminPosts:[], adminComments:[],adminPhotoReports:[],adminReportItems:new Map(),adminReportBusy:false,adminAuthorizations:new Map(),
+    modal:null, selectedPost:null, selectedImage:0, editPostBusy:false, reportPhotoId:null,reportReturnModal:null,reportBusy:false,reportResultId:null,uploadFiles:[],
     uploadBusy:false, signingIn:false, pendingComments:{}, imageUrls:new Map(),
     guestPending:null, visitorId:null, guestLiked:new Set(),
     filtersExpanded:false, cardCrops:new Map(), cropPhotoId:null, cropDraft:null, cropReturnModal:null, cropBusy:false, cropGesture:null, cropView:'card', cropHeroDraft:null, cropHeroLoading:false, cropHeroError:'', cropHeroEnabled:true
@@ -187,6 +187,7 @@
     award:'<circle cx="12" cy="8" r="5"/><path d="m8 12-2 10 6-3 6 3-2-10"/>',
     image:'<rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m2 17 6-5 5 4 4-3 5 4"/>',
     more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    flag:'<path d="M5 3v18M5 4c6-4 9 4 15 0v11c-6 4-9-4-15 0"/>',
     chevrondown:'<path d="m6 9 6 6 6-6"/>'
   };
   function icon(name, clazz=''){return `<svg class="icon ${clazz}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">${svgPaths[name] || svgPaths.info}</svg>`;}
@@ -213,7 +214,7 @@
   function toast(msg,bad=false){const box=document.createElement('div');box.className='toast'+(bad?' toast-error':'');box.textContent=msg;document.getElementById('toast-root').appendChild(box);setTimeout(()=>box.remove(),5600);}
   const team=(id)=>state.teams.find(x=>x.id===id);
   const tournament=(id)=>state.tournaments.find(x=>x.id===id);
-  const assets=(id)=>state.photos.filter(x=>x.post_id===id).sort((a,b)=>a.position-b.position);
+  const assets=(id)=>state.photos.filter(x=>x.post_id===id&&x.public_visible!==false).sort((a,b)=>a.position-b.position);
   function galleryPhotoCrop(photo){
     const defaults={x:50,y:50,zoom:1,fit:'cover'};
     if(!photo)return defaults;
@@ -233,7 +234,7 @@
   }
   const postComments=(id)=>state.comments.filter(x=>x.post_id===id && x.status==='approved');
   const postReactions=(id)=>state.reactions.filter(x=>x.post_id===id);
-  const shownPosts=()=>state.posts.filter(x=>x.status==='approved');
+  const shownPosts=()=>state.posts.filter(x=>x.status==='approved'&&assets(x.id).length>0);
   const connected=()=>Boolean(state.client);
   const PHOTO_USE_VERSION='TXSCTP_ON_THE_RANGE_2026_11_09_V1';
   const guestReady=()=>connected() && config.guestUploadsEnabled === true;
@@ -466,7 +467,7 @@
     if(!posts.length)return;
     const ids=posts.map(x=>x.id);
     const [img,com,likes]=await Promise.all([
-      state.client.from('memory_photos').select('id,post_id,storage_path,position,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',ids).order('position'),
+      state.client.from('memory_photos').select('id,post_id,storage_path,position,public_visible,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',ids).order('position'),
       state.client.from('memory_comments').select('id,post_id,display_name,body,status,created_at').in('post_id',ids).eq('status','approved').order('created_at'),
       state.client.from('memory_reactions').select('post_id').in('post_id',ids)
     ]);
@@ -1043,7 +1044,7 @@
     const missing=state.adminPosts.filter(p=>!state.posts.some(x=>x.id===p.id));
     const allIds=state.adminPosts.map(x=>x.id);
     if(allIds.length){
-      const {data,error}=await state.client.from('memory_photos').select('id,post_id,position,storage_path,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',allIds);
+      const {data,error}=await state.client.from('memory_photos').select('id,post_id,position,storage_path,public_visible,card_crop_x,card_crop_y,card_crop_zoom,card_crop_fit').in('post_id',allIds);
       if(!error){state.photos=state.photos.filter(x=>!allIds.includes(x.post_id)).concat(data||[]);await Promise.all((data||[]).map(async x=>{if(!state.imageUrls.has(x.storage_path)){const signed=await state.client.storage.from(BUCKET).createSignedUrl(x.storage_path,3600);if(signed.data?.signedUrl)state.imageUrls.set(x.storage_path,signed.data.signedUrl);}}));}
     }
     render();
