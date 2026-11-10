@@ -76,3 +76,24 @@
 @media(max-width:800px){.hero-inner{gap:20px}.hero-side{width:320px;height:320px}.logo-wall{padding:11px}.logo-wall-top img{width:37px;height:37px}.logo-wall-tile{height:95px}.logo-wall-tile img{height:60px}.logo-wall-empty{height:45px;width:45px}.hero h1{font-size:45px}.hero-description{font-size:13px}}
 @media(max-width:750px){.hero-inner{display:flex;flex-direction:column;align-items:stretch;min-height:0;padding:46px 0 54px;gap:30px}.hero h1{font-size:clamp(49px,10vw,65px)}.hero-side{display:block;align-self:center;width:min(100%,400px);height:auto;margin:0 0 10px}.logo-wall{transform:rotate(1deg)}.logo-wall-tile{height:100px}.logo-wall-stamp{right:-2px;bottom:-19px}.logo-wall-top>div strong{font-size:14px}}
 @media(max-width:390px){.hero h1{font-size:46px}.logo-wall-top>div strong{font-size:12px}.logo-wall-top-accent{font-size:16px}.logo-wall-tile{height:94px}.logo-wall-grid{gap:7px}.logo-wall-tile strong{font-size:9px}.logo-wall-stamp{font-size:7.5px}}
+
+/* Why teams should submit logos: value proposition and clear conversion path. */
+.hero-convenience{margin:13px 0 0;color:#ccd8e2;font-size:11.5px;letter-spacing:.018em}
+.why-section{background:#fff;border-bottom:1px solid #e0e6e8}
+.why-inner{padding:50px 0 45px}
+.why-heading-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:40px;align-items:end}
+.why-heading-row h2{font-family:var(--serif);font-size:clamp(29px,3.35vw,43px);font-weight:400;line-height:1.2;letter-spacing:-.037em;color:var(--navy);margin:0}
+.why-lead{max-width:420px;line-height:1.8;color:#667986;font-size:13.5px;margin:0 0 3px}
+.why-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}
+.why-card{background:#f7f9f9;border:1px solid #e6ebed;border-radius:10px;padding:23px 25px 24px;min-width:0}
+.why-card-number{display:block;font-size:12px;font-weight:900;letter-spacing:.16em;color:#a77c37;margin-bottom:17px}
+.why-card h3{margin:0 0 11px;color:var(--navy);font-size:16px;font-weight:850;line-height:1.35;letter-spacing:-.012em}
+.why-card p{margin:0;color:#687a87;font-size:12.5px;line-height:1.75}
+.why-next{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:20px;border:1px solid #ebdfc8;background:#fffcf5;border-radius:9px;padding:17px 22px}
+.why-next>div{display:flex;flex-direction:column;gap:4px}
+.why-next strong{color:var(--navy);font-size:13px}
+.why-next span:not(.why-cta-link span){color:#687b8a;font-size:12px;line-height:1.5}
+.why-cta-link{display:inline-flex;align-items:center;gap:14px;background:var(--navy);border-radius:6px;padding:12px 17px;color:#fff;text-decoration:none;font-weight:850;font-size:12px;white-space:nowrap}
+.why-cta-link:hover{background:#234b6f}
+@media(max-width:940px){.why-heading-row{grid-template-columns:1fr;gap:12px}.why-lead{max-width:800px}.why-card{padding:21px}.why-card h3{font-size:15px}}
+@media(max-width:750px){.why-inner{padding:40px 0}.why-grid{grid-template-columns:1fr;gap:10px;margin-top:22px}.why-card{padding:20px 21px}.why-card-number{margin-bottom:9px}.why-next{align-items:stretch;flex-direction:column;gap:12px;padding:18px}.why-cta-link{justify-content:center}.hero-convenience{font-size:11px}}
