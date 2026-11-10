@@ -48,6 +48,29 @@ async function loadFlagSummary(){
     marker.hidden=false;
   }catch(error){console.warn('Unable to fetch pending report count:',error.message);}
 }
+async function loadPhotoFlagSummary(){
+  const marker=$('#photo-flags-alert');
+  marker.hidden=true;
+  if(!client)return;
+  try{
+    const {count,error}=await client.from('memory_photo_reports')
+      .select('id',{count:'exact',head:true})
+      .in('status',['pending','in_review']);
+    if(error)throw error;
+    const waiting=Number(count)||0;
+    marker.textContent=waiting>0
+      ?waiting+' photograph '+(waiting===1?'has been flagged':'reports have been flagged')+' for moderator review.'
+      :'No flagged photographs currently need review.';
+    marker.className='photo-flags-alert'+(waiting?' has-pending':'');
+    marker.hidden=false;
+    $('#photo-flags-tool').textContent=waiting
+      ?'Review flagged photographs ('+waiting+')'
+      :'Open photo report inbox';
+  }catch(error){
+    console.warn('Photo report count unavailable:',error.message);
+    marker.hidden=true;
+  }
+}
 async function checkStaff(){
   if(checking || !client)return;
   checking=true;
@@ -72,6 +95,7 @@ async function checkStaff(){
     $('#team-logos-tool').hidden=!global;
     $('#team-logos-restricted').hidden=global;
     view('staff-panel');
+    void loadPhotoFlagSummary();
     if(global)loadFlagSummary();
     else $('#team-flags-alert').hidden=true;
   }catch(error){
@@ -119,4 +143,6 @@ else {
     if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(checkStaff,0);
   });
   checkStaff();
+  // Refresh the private queue badge while a moderator keeps the Hub open.
+  window.setInterval(()=>{if(!document.hidden&&!$('#staff-panel').hidden)void loadPhotoFlagSummary();},60000);
 }
