@@ -109,9 +109,10 @@ export function createProfileEditor({getTeams,getRanges,request,onSaved}) {
    try{
      const result=await request('staff_profile_save',formData);
      if(result.ok!==true||result.teamId!==teamId)throw Error('The server did not confirm this save.');
+     const savedTeamName=getTeams().find(t=>t.id===teamId)?.name||'Team';
      dialog.close();
      teamId=null;
-     await onSaved();
+     await onSaved({teamName:savedTeamName,profileStatus});
    }catch(e){feedback('Save failed: '+(e.message||'Please try again.'),true);}
    finally{setBusy(false);}
  }
