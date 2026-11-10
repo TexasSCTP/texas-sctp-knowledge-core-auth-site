@@ -137,7 +137,9 @@
         }
         live.push(value);
       }
-      config.slides.push(...live);
+      // Approved live photos lead the editor. Legacy sample artwork stays
+      // below as clearly marked, non-published reference material.
+      config.slides.unshift(...live);
       preload();
       renderList();
       if(live.length)selectSlide(live[0].id);
@@ -227,7 +229,9 @@
         :'Legacy reference image · never displayed on the public homepage';
       const toggle=document.createElement('label');toggle.className='scene-inclusion-toggle';
       const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.setAttribute('role','switch');
-      checkbox.setAttribute('aria-label','Show '+s.label+' in the homepage hero slideshow');
+      checkbox.setAttribute('aria-label',s.live
+        ?'Show '+s.label+' in the homepage hero slideshow'
+        :'Reference illustration '+s.label+' is never shown on the public homepage');
       checkbox.checked=s.live&&s.enabled!==false;
       checkbox.disabled=liveSaving||!s.live;
       const track=document.createElement('span');track.className='scene-inclusion-track';track.setAttribute('aria-hidden','true');
@@ -301,7 +305,7 @@
   }
   function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null;$('preview-stage').classList.remove('dragging');saveDraft();}
   function stopPlayback(){if(timer)clearInterval(timer);timer=null;playing=false;$('play-toggle').textContent='▶ Preview movement';}
-  function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>s.enabled);if(!list.length)return;playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
+  function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>s.live&&s.enabled);if(!list.length){setStatus('No approved photos are enabled for the live hero slideshow.','error');return;}playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
   function resetSelected(){const s=getSlide(),def=DEFAULTS[s.id];if(!def||liveSaving)return;s[mode]=clone(def[mode]);markChanged();}
   function restorePublished(){if(!published)return;if(!confirm('Discard unsaved adjustments and restore last saved placements?'))return;config=clone(published);config.slides.push(...[...livePublished.values()].map(clone));localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LIVE_DRAFT_KEY);stopPlayback();renderList();selectSlide(config.slides.some(s=>s.id===selectedId)?selectedId:config.slides[0].id);setStatus('Showing saved placements','good');}
   function downloadConfig(){if(!config)return;const backup={...sampleSettings(),approvedPhotoPlacements:config.slides.filter(s=>s.live).map(s=>({photoId:s.photoId,enabled:s.enabled,desktop:s.desktop,mobile:s.mobile,card:s.card}))};const file=new Blob([JSON.stringify(backup,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
