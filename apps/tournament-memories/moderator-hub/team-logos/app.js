@@ -1,6 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm';
 import { createProfileEditor } from './profiles.js';
 import { createFlagQueue } from './flags.js';
+import { createLogoReviewQueue } from './logo-reviews.js';
 
 const settings = window.TEXAS_SCTP_CONFIG || {};
 const apiRoot = settings.supabaseUrl;
@@ -237,6 +238,7 @@ async function loadTeams() {
     })):[];
     showModeration();
     render();
+    await logoReviewQueue.load();
     await flagQueue.load();
     status('Current settings loaded.', 'success');
   } catch (error) {
@@ -279,6 +281,11 @@ async function saveVisibility(team, next, input, feedback) {
     input.disabled = false;
   }
 }
+const logoReviewQueue=createLogoReviewQueue({
+  request,
+  apiRoot,
+  onReviewSaved:async()=>{await loadTeams();status('Team logo review saved.','success');}
+});
 const flagQueue=createFlagQueue({
   getTeams:()=>state.teams,
   request,
