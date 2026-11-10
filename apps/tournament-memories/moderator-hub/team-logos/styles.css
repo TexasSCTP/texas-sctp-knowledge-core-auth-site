@@ -76,3 +76,53 @@
 .logo-preview-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 26px;border-top:1px solid var(--line);background:#fff}
 .logo-preview-actions a{text-decoration:none}
 @media(max-width:750px){.team-entry{align-items:flex-start;gap:13px}.team-logo-thumb,.team-logo-empty{flex-basis:72px;width:72px;height:72px;padding:7px}.team-logo-empty{font-size:10px}.logo-preview-header{padding:18px}.logo-preview-stage{height:47vh;min-height:250px;padding:18px}.logo-preview-actions{padding:15px;flex-direction:column}.logo-preview-actions>*{width:100%}}
+
+
+/* Community team-review queue: staff only; public flags never auto-hide teams. */
+.stat-flags strong{color:#ae6937}
+.report-queue{background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:23px;scroll-margin-top:25px}
+.reports-head{padding:26px 27px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.reports-head h2{font-size:24px;color:var(--navy);letter-spacing:-.035em;margin:0 0 9px;line-height:1.25}
+.reports-head p:not(.eyebrow){font-size:12px;color:#687c89;line-height:1.65;margin:0;max-width:600px}
+.reports-toolbar{display:flex;align-items:end;gap:11px;justify-content:flex-end;flex-wrap:wrap}
+.report-count{font-size:11px;color:#965b36;white-space:nowrap;background:#fff5e8;border:1px solid #f1e0c7;border-radius:5px;padding:9px 10px;font-weight:850}
+.reports-filter-label{font-size:11px;color:#5e7484;font-weight:850;display:flex;flex-direction:column;gap:4px}
+.reports-filter-label select{font-size:12px;max-width:180px;border-radius:6px;border:1px solid #ccd7de;background:#fff;color:var(--navy);padding:10px 13px}
+#refresh-reports{font-size:11px;min-height:38px}
+.reports-status{padding:0 27px;margin:0;font-size:12px;color:#638092;line-height:1.6}
+.reports-status:empty{display:none}
+.reports-status.error{color:#ac4138;padding-bottom:12px}
+.reports-list{padding:0 26px 17px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.report-card{border:1px solid #e1e8ed;background:#fdfefe;border-radius:9px;padding:19px;min-width:0}
+.report-card.report-resolved{background:#f8f9fa}
+.report-card-header{display:flex;justify-content:space-between;gap:13px;align-items:flex-start}
+.report-card-identity{display:flex;gap:11px;min-width:0;align-items:center}
+.report-logo-thumb{width:59px;height:59px;flex:0 0 59px;border:1px solid #d6e2e7;background:#fff;border-radius:7px;display:grid;place-items:center;overflow:hidden;padding:5px}
+.report-logo-thumb img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.report-logo-thumb span{font-size:9px;color:#80929b;text-align:center;line-height:1.35}
+.report-name{min-width:0}
+.report-name h3{font-size:14px;color:var(--navy);line-height:1.3;margin:0 0 6px;overflow-wrap:anywhere}
+.report-name small{font-size:10.5px;color:#8293a0}
+.report-review-state{color:#596e7d;background:#edf1f3;border-radius:4px;padding:6px 8px;font-size:10px;font-weight:800;white-space:nowrap}
+.report-review-state.pending{color:#995f30;background:#fff1db}
+.report-reason{font-size:12px;font-weight:900;color:#294960;margin:15px 0 8px}
+.report-details{font-size:11.5px;color:#506d7e;background:#f4f7f9;border-left:3px solid #c6d7e1;padding:10px 12px;margin:0 0 10px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.report-meta{font-size:10.5px;color:#768a96;margin:10px 0;line-height:1.5}
+.report-moderator-note{display:block;width:100%;border:1px solid #cddae1;border-radius:6px;background:#fff;padding:10px 12px;color:#24445b;font:12px var(--sans);resize:vertical;line-height:1.5;margin-top:12px}
+.report-moderator-note:focus-visible{outline:3px solid rgba(217,164,65,.24);border-color:#b78b42}
+.report-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.report-action{border:1px solid #cbd7dc;background:#fff;color:#28485f;border-radius:6px;padding:9px 11px;min-height:38px;font-size:11px;font-weight:830;line-height:1.4}
+.report-action:hover:not(:disabled){background:#edf4f7}
+.report-action.danger{border-color:#a36a52;background:#8c4b3c;color:white}
+.report-action.danger:hover:not(:disabled){background:#743b30}
+.report-feedback{font-size:11px;line-height:1.5;margin:10px 0 0;color:#557d65}
+.report-feedback:empty{display:none}
+.report-feedback.error{color:#b04138}
+.report-review-note{font-size:11px;color:#577085;line-height:1.55;overflow-wrap:anywhere;margin-top:10px}
+.report-reviewed-at{font-size:10px;color:#7b8d98}
+.reports-empty{padding:24px 27px;text-align:center;color:#698090;font-size:12.5px;margin:0}
+.reports-footnote{border-top:1px solid #e6ecef;background:#fafbfb;padding:14px 27px;margin:0;font-size:11px;line-height:1.7;color:#697f8c}
+.team-flagged-tag{display:inline-flex;align-items:center;text-decoration:none;background:#fff3df;color:#8e5a30;border:1px solid #edd5b2;border-radius:14px;font-size:10px;font-weight:850;padding:4px 9px}
+.team-flagged-tag:hover{text-decoration:underline}
+@media(max-width:980px){.reports-head{flex-direction:column;gap:14px}.reports-toolbar{width:100%;justify-content:flex-start}}
+@media(max-width:750px){.reports-head{padding:21px 18px}.reports-list{padding:0 16px 14px;grid-template-columns:1fr}.report-card{padding:16px}.report-card-header{flex-wrap:wrap}.reports-footnote{padding:16px 18px}.reports-status{padding:0 18px}.report-controls{flex-direction:column}.report-action{width:100%}}
