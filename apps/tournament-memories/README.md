@@ -141,3 +141,36 @@ The public gallery loads `hero-config.json`. Changes to this JSON control
 which photo appears, order, enabled status, cropping coordinates for desktop
 and mobile, zoom, and card crops. **All src paths are restricted to the seven
 approved local image files**, preventing remote-image injection.
+
+
+## Unified Texas SCTP Moderator Hub (November 10, 2026)
+
+The staff hub is hosted at /moderator-hub/ on the On the Range origin. Its
+On the Range tile opens /?moderator=onrange and the Team Logo Directory
+tile opens /moderator-hub/team-logos/. Both use the existing On the Range
+Supabase Auth project and the SDK's default per-origin session storage key,
+with the original email magic-link sign-in (no new accounts or additional
+provider). Hub login uses the already-authorized On the Range origin as the
+email redirect and a short-lived client-side marker to return the signed-in
+moderator to the hub. The marker does not authorize anything.
+
+The Team Logo moderator UI is now published ONLY from
+moderator-hub/team-logos/ and uses the same on-origin auth session, not its
+old separate team-logo-portal auth storage key. Team Logo mutations still
+require server-side global owner/administrator/moderator membership with a
+NULL team_id in memory_moderators, as enforced by the team-logo-portal
+Edge Function. Team-scoped On the Range moderators retain their original
+gallery rights without receiving statewide Team Logo Directory access.
+
+The publicly accessible Team Logo Portal remains independent at
+https://texas-sctp-team-logo-portal.onrender.com/ . Its old /admin/ route
+redirects to this hub. The legacy On the Range /team-logos/ route now redirects
+to the independent public portal instead of publishing a second logo site.
+No data was migrated or duplicated and none of the logos were changed.
+
+Production smoke-test requirements: authenticated On the Range moderator can
+open the hub with no second email login; Team Logos opens for a statewide
+moderator; team-scoped moderators do not get statewide controls; old Team
+Logo /admin/ redirects; logout applies to the shared session; magic-link
+return on the On the Range domain returns to hub; member without staff access
+is refused.
