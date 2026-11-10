@@ -99,3 +99,44 @@ The canonical staff queue is in the shared Moderator Hub at /moderator-hub/team-
 The existing active/SHOT state is unchanged. A previously issued signed storage URL can remain valid for its original one-hour lifetime even after hiding the public listing.
 
 Backend source: supabase/functions/team-logo-portal/index.ts. SQL transaction tests exercised the flow and rolled back the test changes. Real staff sign-in and visitor browser testing remain useful final checks.
+
+
+## Team logo submissions and moderator email notifications (November 10, 2026)
+
+New uploads and replacements are held in `public.logo_portal_submissions` with
+`status=pending`; they do not replace `public.memory_team_logos` until an
+authorized statewide moderator approves. Rejections leave the published logo
+unchanged. Prior logo versions remain in the existing version-history table.
+
+The shared Moderator Hub at
+https://texas-sctp-tournament-memories-preview.onrender.com/moderator-hub/team-logos/
+now has an **Submitted logos awaiting review** section, with previews, current
+published logo comparison, Approve/Reject, and a Retry email option when needed.
+Staff action endpoints are `staff_logo_queue`, `staff_logo_review`, and
+`staff_logo_notify_retry` in the `team-logo-portal` Edge Function. All require
+an authenticated, confirmed Supabase user with a statewide (`team_id IS NULL`)
+`memory_moderators` owner, administrator, or moderator record. The
+`logo_portal_review_submission` database RPC may only be executed by
+`service_role`, and is transactional.
+
+For **automatic moderator emails**, configure these Supabase Edge Function
+secrets in project `mlajcbnuponqyoehxydp`:
+
+- `RESEND_API_KEY`: an active transactional email API key from Resend
+- `TEAM_LOGO_EMAIL_FROM`: verified sender on a verified domain, e.g.
+  `Texas SCTP <logos@texassctp.com>` after verifying that mailbox/domain
+- Optional `TEAM_LOGO_MODERATOR_URL`: full URL of the shared Team Logo Moderator Hub
+
+When configured, the Edge Function sends one HTML/text email per registered
+statewide moderator, with the team, league, SHOT ID, temporary secured preview,
+and direct review link. Membership is resolved from `memory_moderators`;
+recipient email is looked up from Supabase Auth, not displayed publicly.
+Delivery attempts and error states are preserved in
+`public.logo_portal_notification_deliveries`. If the sender/API key are
+not configured or delivery fails, uploads remain pending and reviewable, and
+staff see the condition in the Moderator Hub. Use **Retry email** after fixing
+provider settings. Do not claim live email delivery until a real message has
+been received and verified by a moderator.
+
+Both new tables have RLS enabled and no direct public read/write privileges.
+No public moderator approval action or direct database permissions exist.
