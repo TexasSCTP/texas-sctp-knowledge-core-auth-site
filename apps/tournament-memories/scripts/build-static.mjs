@@ -11,6 +11,7 @@ execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app.js')],{
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/profiles.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/flags.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/logo-reviews.js')],{stdio:'inherit'});
 // Prevent regressions that reintroduce a photo or illustrative scene after a moderator disables it.
 execFileSync(process.execPath,[resolve(root,'scripts/test-hero-visibility.mjs')],{stdio:'inherit'});
 execFileSync(process.execPath,[resolve(root,'scripts/test-photo-reports.mjs')],{stdio:'inherit'});
