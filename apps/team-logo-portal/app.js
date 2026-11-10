@@ -173,7 +173,7 @@
   }
   function render() {
     const matched = filteredTeams().sort((a,b) =>
-      Number(!!b.logoUrl) - Number(!!a.logoUrl) || a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name, 'en', { sensitivity: 'base', numeric: true })
     );
     grid.replaceChildren();
     const frag = document.createDocumentFragment();
