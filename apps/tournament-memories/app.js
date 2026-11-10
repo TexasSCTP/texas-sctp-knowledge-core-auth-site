@@ -527,9 +527,9 @@
     const t=team(p.team_id),evt=tournament(p.tournament_id),photos=assets(p.id),first=photos[0],src=first&&state.imageUrls.get(first.storage_path);
     const comments=postComments(p.id),likes=postReactions(p.id),liked=state.guestLiked.has(p.id);
     const cardStyle=first?` style="${galleryPhotoStyle(galleryPhotoCrop(first))}"`:'';
-    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<div class="memory-action-container"><button type="button" class="memory-more" data-action="toggle-post-menu" data-id="${attr(p.id)}" title="More photo options" aria-label="More photo options for ${attr(t?.name||'Texas SCTP')}" aria-haspopup="true" aria-expanded="false">${icon('more')}</button><div class="memory-actions-dropdown" hidden role="group" aria-label="Photo actions"><button type="button" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share photo link</button>${state.moderator?`<button type="button" data-action="edit-published" data-id="${attr(p.id)}">${icon('edit','icon-sm')} Edit post details</button><button type="button" data-action="edit-gallery-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust photo placement</button><button type="button" data-action="edit-hero-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust hero banner</button><button type="button" class="danger" data-action="remove-published" data-id="${attr(p.id)}">Remove post from gallery</button>`:''}<button type="button" data-action="report" data-id="${attr(p.id)}">${icon('mail','icon-sm')} Report a photo concern</button></div></div></div>
+    return `<article class="memory-card"><div class="memory-head"><div class="memory-avatar">${logoForTeam(p.team_id,t?.name||'Texas SCTP team')}</div><div class="memory-byline"><strong>${esc(t?.name||'Texas SCTP team')}</strong><span>${esc(evt?.title||p.other_tournament||'Tournament')} &middot; ${dateFmt(p.photo_date)}</span><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(p.photo_date))}</span></div>${state.moderator&&first?`<button class="memory-reposition" data-action="edit-gallery-crop" data-id="${attr(p.id)}" title="Adjust photo placement in the gallery">${icon('camera','icon-sm')} Adjust photo</button>`:''}<div class="memory-action-container"><button type="button" class="memory-more" data-action="toggle-post-menu" data-id="${attr(p.id)}" title="More photo options" aria-label="More photo options for ${attr(t?.name||'Texas SCTP')}" aria-haspopup="true" aria-expanded="false">${icon('more')}</button><div class="memory-actions-dropdown" hidden role="group" aria-label="Photo actions"><button type="button" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share photo link</button>${state.moderator?`<button type="button" data-action="edit-published" data-id="${attr(p.id)}">${icon('edit','icon-sm')} Edit post details</button><button type="button" data-action="edit-gallery-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust photo placement</button><button type="button" data-action="edit-hero-crop" data-id="${attr(p.id)}">${icon('camera','icon-sm')} Adjust hero banner</button><button type="button" class="danger" data-action="remove-published" data-id="${attr(p.id)}">Remove post from gallery</button>`:''}<button type="button" data-action="report" data-id="${attr(p.id)}">${icon('flag','icon-sm')} Report a photo concern</button></div></div></div>
     <button class="memory-photo" data-action="view" data-id="${attr(p.id)}" aria-label="View photos from ${attr(t?.name||'Texas SCTP')}">${src?`<img src="${cleanUrl(src)}" alt="Tournament memory shared by ${attr(t?.name||'Texas SCTP')}" loading="lazy"${cardStyle}>`:`<span class="no-photo">${icon('image')} Photo temporarily unavailable</span>`}${photos.length>1?`<span class="multi-photo">${icon('image','icon-sm')} ${photos.length} photos</span>`:''}</button>
-    <div class="memory-body"><p class="memory-caption">${esc(p.caption||'Action from the range.')}</p>${p.photo_credit?`<p class="photo-by">Photo by ${esc(p.photo_credit)}</p>`:''}<div class="memory-gestures"><button class="memory-gesture ${liked?'is-liked':''}" data-action="like" data-id="${attr(p.id)}" aria-label="${liked?'Remove appreciation':'Appreciate'}">${icon('heart','icon-sm')} <span>${likes.length?likes.length:'Appreciate'}</span></button><button class="memory-gesture" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} <span>${comments.length?`${comments.length} comments`:'Comment'}</span></button><button class="memory-gesture" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share</button></div>
+    <div class="memory-body">${first?`<div class="photo-card-flag-row"><button type="button" class="photo-card-flag" data-action="report" data-id="${attr(p.id)}" data-photo-id="${attr(first.id)}" title="Privately flag this specific photo for moderator review">${icon('flag','icon-xs')} Flag photo for review</button></div>`:''}<p class="memory-caption">${esc(p.caption||'Action from the range.')}</p>${p.photo_credit?`<p class="photo-by">Photo by ${esc(p.photo_credit)}</p>`:''}<div class="memory-gestures"><button class="memory-gesture ${liked?'is-liked':''}" data-action="like" data-id="${attr(p.id)}" aria-label="${liked?'Remove appreciation':'Appreciate'}">${icon('heart','icon-sm')} <span>${likes.length?likes.length:'Appreciate'}</span></button><button class="memory-gesture" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} <span>${comments.length?`${comments.length} comments`:'Comment'}</span></button><button class="memory-gesture" data-action="share" data-id="${attr(p.id)}">${icon('share','icon-sm')} Share</button></div>
     <div class="comments-preview">${comments.slice(-2).map(c=>`<div class="inline-comment"><span class="comment-avatar">${esc(initials(c.display_name))}</span><p><strong>${esc(c.display_name)}</strong> ${esc(c.body)}</p></div>`).join('')}${comments.length>2?`<button class="view-comments" data-action="view" data-id="${attr(p.id)}">View all ${comments.length} comments</button>`:''}<button class="comment-invite" data-action="view" data-id="${attr(p.id)}">${icon('message','icon-sm')} Write a comment...</button></div></div></article>`;
   }
     function emptyState(){const filtered=state.filter.team||state.filter.tournament||state.filter.query;
@@ -544,6 +544,7 @@
     else if(state.modal==='view'){html=viewModal();cls='modal-post';}
     else if(state.modal==='gallery-crop'){html=galleryCropEditorModal();cls='modal-wide gallery-position-modal';}
     else if(state.modal==='edit-published'){html=editPublishedModal();cls='modal-wide';}
+    else if(state.modal==='photo-flag'||state.modal==='photo-flag-sent'){html=renderPhotoFlagModal();cls='modal-wide photo-flag-dialog';}
     else if(state.modal==='privacy'){html=privacyModal();}
     root.innerHTML=`<div class="modal-backdrop" data-action="backdrop"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${attr(state.modal==='upload'?'Share tournament photos':state.modal==='view'?'Tournament photo':'Texas SCTP')}">${html}</div></div>`;
     const close=$('.close-modal',root);if(close)close.focus();
@@ -874,9 +875,88 @@
   function accountModal(){return `${modalHead('Staff account','Texas SCTP moderation access')}<div class="modal-scroll"><p class="form-message">${icon('check','icon-xs')} Signed in as <strong>${esc(state.user?.email||'Texas SCTP staff')}</strong>${state.moderator?` <span class="staff-role-pill">${state.moderatorRole==='owner'?'Owner':state.moderatorRole==='administrator'?'Administrator':'Moderator'}</span>`:''}</p><div class="form-actions"><button class="btn btn-outline" type="button" data-action="logout">Sign out</button>${state.moderator?`<button class="btn btn-navy" data-action="admin">${icon('shield')} Review submissions</button>`:''}</div></div>`;}
 
   function viewModal(){const post=state.selectedPost;if(!post)return '';const arr=assets(post.id),photo=arr[state.selectedImage]||arr[0],url=photo&&state.imageUrls.get(photo.storage_path),t=team(post.team_id),ev=tournament(post.tournament_id);
-    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div>${state.moderator&&photo?`<button type="button" class="btn btn-outline btn-sm gallery-view-position-button" data-action="edit-gallery-crop" data-id="${attr(post.id)}">${icon('camera','icon-sm')} Adjust gallery photo placement</button>`:''}<div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button class="reset-link" data-action="report" data-id="${attr(post.id)}">Report or request photo removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
+    return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div>${state.moderator&&photo?`<button type="button" class="btn btn-outline btn-sm gallery-view-position-button" data-action="edit-gallery-crop" data-id="${attr(post.id)}">${icon('camera','icon-sm')} Adjust gallery photo placement</button>`:''}<div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button type="button" class="photo-view-report" data-action="report" data-id="${attr(post.id)}" data-photo-id="${attr(photo?.id||'')}">${icon('flag','icon-sm')} Flag this photo for review or removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
   }
-    function privacyModal(){return `${modalHead('Community photo guidelines','Keeping our athletes and families safe is our first priority.')}<div class="modal-scroll"><p>Only adults age 18 or older may submit. Upload photos you own or have the copyright owner's permission to share. You must have necessary permissions from identifiable people in each photo, including any required parent or guardian permission for minors. Being a coach does not itself establish that permission. Avoid disclosing private athlete information, home addresses, or personal contact details.</p><p>All photos and comments are reviewed before publication. Texas SCTP may decline, hide, or remove submissions. Comments should be positive, relevant, and respectful. We do not allow harassment or unsolicited advertising.</p><p>For correction, removal, or concerns, email <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20concern">${esc(config.contactEmail||'info@texassctp.com')}</a>.</p><p class="field-note">This page provides community guidelines and does not replace Texas SCTP's formal policies or required photography releases.</p></div>`;}
+    function renderPhotoFlagModal(){
+  if(state.modal==='photo-flag-sent')return `${modalHead('Photo report received','Your concern has been placed in the private Texas SCTP moderator review queue.')}
+    <div class="modal-scroll photo-flag-success" role="status">
+      <div class="flag-success-mark">${icon('check')}</div>
+      <h3>Submitted for moderator review</h3>
+      <p>Thank you for bringing this photograph to our attention. A moderator can examine the specific image, your comments, and any requested removal before making a decision.</p>
+      <p class="flag-reference">Reference: <strong>${esc((state.reportResultId||'').slice(0,8).toUpperCase())}</strong></p>
+      <p class="field-note">The report is private. Submitting it does not automatically remove the photograph. For urgent safety concerns, also contact Texas SCTP directly.</p>
+      <button type="button" class="btn btn-primary" data-action="close-modal">Close</button>
+    </div>`;
+  const photo=state.photos.find(x=>x.id===state.reportPhotoId);
+  const post=state.selectedPost;
+  if(!photo||!post)return modalHead('Photograph unavailable');
+  const source=state.imageUrls.get(photo.storage_path);
+  const teamName=team(post.team_id)?.name||'Texas SCTP team';
+  const position=assets(post.id).findIndex(x=>x.id===photo.id)+1;
+  return `${modalHead('Flag a photo for review','Send a confidential concern to the Texas SCTP moderation team.')}
+    <div class="modal-scroll photo-flag-modal">
+      <div class="photo-flag-context">
+        ${source?`<img src="${cleanUrl(source)}" alt="Photograph being flagged for review">`:'<span class="photo-flag-no-image">Photo preview unavailable</span>'}
+        <div><strong>${esc(teamName)}</strong><span>${esc(tournament(post.tournament_id)?.title||post.other_tournament||'Tournament')}</span><small>Reporting photograph ${position} of ${assets(post.id).length}</small></div>
+      </div>
+      <form id="photo-flag-form">
+        <div class="form-field"><label for="photo-flag-reason">Reason for this report <strong aria-hidden="true">*</strong></label>
+          <select id="photo-flag-reason" name="reason" required>
+            <option value="">Select a reason</option>
+            <option value="privacy_consent">Privacy, consent, or a minor's image</option>
+            <option value="removal_request">Request photo removal</option>
+            <option value="safety">Safety or athlete protection concern</option>
+            <option value="inappropriate">Inappropriate or offensive content</option>
+            <option value="copyright">Ownership, copyright, or permission</option>
+            <option value="incorrect_information">Incorrect team, event, or description</option>
+            <option value="other">Other concern</option>
+          </select>
+        </div>
+        <div class="form-field"><label for="photo-flag-comments">Reason and comments <strong aria-hidden="true">*</strong></label>
+          <textarea id="photo-flag-comments" name="comments" required minlength="12" maxlength="1200" rows="5" placeholder="Tell our moderators what needs review and why. Include any correction or removal request."></textarea>
+          <small>12 to 1,200 characters. Only authorized moderators can read these comments.</small>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label for="photo-flag-name">Your name <span>(optional)</span></label><input id="photo-flag-name" name="reporterName" maxlength="100" placeholder="Name"></div>
+          <div class="form-field"><label for="photo-flag-email">Email for follow-up <span>(optional)</span></label><input id="photo-flag-email" name="reporterEmail" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email"></div>
+        </div>
+        <div class="honeypot" aria-hidden="true"><label>Leave blank <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <p class="photo-flag-privacy">${icon('info','icon-sm')} No login required. Your report and optional contact information are not published. A moderator will review the photo and decide whether to retain or remove it.</p>
+        <div class="form-actions"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" ${state.reportBusy?'disabled':''}>${state.reportBusy?'Submitting report...':'Submit photo report'}</button>
+        </div>
+      </form>
+    </div>`;
+}
+  async function submitPhotoFlag(form){
+  if(state.reportBusy||!state.reportPhotoId||!state.client)return;
+  if(!form.reportValidity())return;
+  const fields=new FormData(form);
+  const comments=String(fields.get('comments')||'').trim();
+  if(comments.length<12||comments.length>1200){toast('Please enter at least 12 characters explaining the concern.',true);return;}
+  state.reportBusy=true;
+  const button=form.querySelector('[type="submit"]');
+  if(button){button.disabled=true;button.textContent='Submitting report...';}
+  try{
+    const result=await guestCall({
+      action:'report',photoId:state.reportPhotoId,
+      reason:String(fields.get('reason')||''),
+      comments,
+      reporterName:String(fields.get('reporterName')||'').trim(),
+      reporterEmail:String(fields.get('reporterEmail')||'').trim(),
+      website:String(fields.get('website')||'')
+    });
+    if(!result?.accepted||!result?.reportId)throw Error('Submission was not confirmed.');
+    state.reportResultId=result.reportId;
+    state.reportBusy=false;state.modal='photo-flag-sent';
+    renderModal();
+  }catch(error){
+    state.reportBusy=false;
+    toast('Photo report could not be submitted: '+(error.message||'Please try again.'),true);
+    if(button){button.disabled=false;button.textContent='Submit photo report';}
+  }
+}
+  function privacyModal(){return `${modalHead('Community photo guidelines','Keeping our athletes and families safe is our first priority.')}<div class="modal-scroll"><p>Only adults age 18 or older may submit. Upload photos you own or have the copyright owner's permission to share. You must have necessary permissions from identifiable people in each photo, including any required parent or guardian permission for minors. Being a coach does not itself establish that permission. Avoid disclosing private athlete information, home addresses, or personal contact details.</p><p>All photos and comments are reviewed before publication. Texas SCTP may decline, hide, or remove submissions. Comments should be positive, relevant, and respectful. We do not allow harassment or unsolicited advertising.</p><p>For correction, removal, or concerns, email <a href="mailto:${attr(config.contactEmail||'info@texassctp.com')}?subject=Texas%20SCTP%20photo%20concern">${esc(config.contactEmail||'info@texassctp.com')}</a>.</p><p class="field-note">This page provides community guidelines and does not replace Texas SCTP's formal policies or required photography releases.</p></div>`;}
 
   async function uploadPhotos(form){
     if(state.uploadBusy)return;
@@ -1337,7 +1417,18 @@
     if(action==='like'){await toggleLike(id);return;}
     if(action==='share'){sharePost(id);return;}
     if(action==='remove-published'&&state.moderator){if(!confirm('Remove this photo post from the public gallery and cancel queued social sharing?'))return;const {error}=await state.client.from('memory_posts').update({status:'removed',privacy_hold:true,moderated_at:new Date().toISOString(),moderated_by:state.user.id}).eq('id',id);if(error)toast('Removal failed: '+error.message,true);else{state.modal=null;state.selectedPost=null;await loadGallery(true);toast('Removed. Any photo already posted on Facebook or Instagram also needs removal from Meta.');}return;}
-    if(action==='report'){const url=`mailto:${config.contactEmail||'info@texassctp.com'}?subject=${encodeURIComponent('Texas SCTP photo concern')}&body=${encodeURIComponent('Please review the photo post: '+id+'\n\nReason for request: ')}`;window.location.href=url;return;}
+    if(action==='report'){
+      const post=state.posts.find(item=>item.id===id)||state.selectedPost;
+      const available=post?assets(post.id):[];
+      const selectedId=target.dataset.photoId||(state.modal==='view'?available[state.selectedImage]?.id:available[0]?.id);
+      if(!post||!selectedId||!available.some(photo=>photo.id===selectedId)){
+        toast('This photo is not available for reporting.',true);return;
+      }
+      state.selectedPost=post;state.reportPhotoId=selectedId;
+      state.reportReturnModal=state.modal==='view'?'view':null;
+      state.reportResultId=null;state.reportBusy=false;
+      state.modal='photo-flag';renderModal();return;
+    }
     if(action==='remove-logo-upload'){
       if(state.guestPending){toast('A secure upload is already in progress.',true);return;}
       if(state.logoUploadFile)URL.revokeObjectURL(state.logoUploadFile.preview);
@@ -1362,6 +1453,7 @@
     if(e.target.id==='upload-form'){e.preventDefault();await uploadPhotos(e.target);}
     if(e.target.id==='comment-form'){e.preventDefault();await submitComment(e.target);}
     if(e.target.id==='edit-published-form'){e.preventDefault();await savePublishedPost(e.target);}
+    if(e.target.id==='photo-flag-form'){e.preventDefault();await submitPhotoFlag(e.target);}
   }
   async function onChange(e){
     if(socialAdmin?.onChange(e))return;
