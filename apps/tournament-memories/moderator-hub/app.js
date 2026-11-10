@@ -22,6 +22,32 @@ function setError(message){
   $('#loading-state').textContent = message;
   view('loading-state');
 }
+async function loadFlagSummary(){
+  const marker=$('#team-flags-alert');
+  marker.hidden=true;
+  if(!client)return;
+  try{
+    const {data:{session},error:sessionError}=await client.auth.getSession();
+    if(sessionError||!session?.access_token)return;
+    const response=await fetch(cfg.supabaseUrl+'/functions/v1/team-logo-portal',{
+      method:'POST',cache:'no-store',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':cfg.supabasePublishableKey,
+        'authorization':'Bearer '+session.access_token
+      },
+      body:JSON.stringify({action:'staff_report_summary'})
+    });
+    if(!response.ok)throw Error('Report count unavailable');
+    const payload=await response.json();
+    if(!Number.isInteger(payload.pending)||payload.pending<0)throw Error('Invalid count');
+    marker.textContent=payload.pending===0
+      ? 'No team reports waiting for review.'
+      : payload.pending+' team '+(payload.pending===1?'report awaits':'reports await')+' moderator review.';
+    marker.className='team-flags-alert'+(payload.pending>0?' has-pending':'');
+    marker.hidden=false;
+  }catch(error){console.warn('Unable to fetch pending report count:',error.message);}
+}
 async function checkStaff(){
   if(checking || !client)return;
   checking=true;
@@ -46,6 +72,8 @@ async function checkStaff(){
     $('#team-logos-tool').hidden=!global;
     $('#team-logos-restricted').hidden=global;
     view('staff-panel');
+    if(global)loadFlagSummary();
+    else $('#team-flags-alert').hidden=true;
   }catch(error){
     setError('Moderator access could not be checked. '+(error?.message||'Please try again.'));
   }finally{checking=false;}
