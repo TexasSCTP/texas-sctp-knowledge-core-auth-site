@@ -8,6 +8,7 @@ const dist = resolve(root, 'dist');
 execFileSync(process.execPath, ['--check', resolve(root, 'app.js')], { stdio: 'inherit' });
 execFileSync(process.execPath, ['--check', resolve(root, 'config.js')], { stdio: 'inherit' });
 execFileSync(process.execPath, ['--check', resolve(root, 'admin/app.js')], { stdio: 'inherit' });
+execFileSync(process.execPath, ['--check', resolve(root, 'admin/profiles.js')], { stdio: 'inherit' });
 await rm(dist, {recursive: true, force: true});
 await mkdir(dist, {recursive: true});
 for (const asset of ['index.html', 'styles.css', 'app.js', 'config.js']) {
