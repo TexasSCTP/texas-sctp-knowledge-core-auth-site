@@ -878,7 +878,15 @@
   function viewModal(){const post=state.selectedPost;if(!post)return '';const arr=assets(post.id),photo=arr[state.selectedImage]||arr[0],url=photo&&state.imageUrls.get(photo.storage_path),t=team(post.team_id),ev=tournament(post.tournament_id);
     return `<div class="post-view"><div class="post-view-media">${url?`<img src="${cleanUrl(url)}" alt="Photo from ${attr(t?.name||'Texas SCTP')}"/>`:`<div class="no-photo">${icon('image')} Photo temporarily unavailable</div>`}${arr.length>1?`<div class="photo-pager"><button data-action="previous-photo" aria-label="Previous photo">${icon('chevron')}</button><span>${state.selectedImage+1} / ${arr.length}</span><button data-action="next-photo" aria-label="Next photo">${icon('chevron')}</button></div>`:''}</div><div class="post-view-side"><div class="post-view-top"><div class="post-team-identity"><span class="post-team-logo">${logoForTeam(post.team_id,t?.name||'Texas SCTP team')}</span><div><strong>${esc(t?.name||'Texas SCTP community')}</strong><small>${esc(ev?.title||post.other_tournament||'Tournament')} &middot; ${dateFmt(post.photo_date)}</small><span class="season-tag">Texas SCTP Season ${esc(seasonLabel(post.photo_date))}</span></div></div><button class="close-modal" data-action="close-modal" aria-label="Close">${icon('close')}</button></div>${state.moderator&&photo?`<button type="button" class="btn btn-outline btn-sm gallery-view-position-button" data-action="edit-gallery-crop" data-id="${attr(post.id)}">${icon('camera','icon-sm')} Adjust gallery photo placement</button>`:''}<div class="post-view-caption">${esc(post.caption||'Action from the range.')}${post.photo_credit?`<div class="field-note">Photo by ${esc(post.photo_credit)}</div>`:''}</div><div class="comments-head">Comments <span>(${postComments(post.id).length})</span></div><div class="comments-list">${postComments(post.id).length?postComments(post.id).map(c=>`<div class="comment"><strong>${esc(c.display_name)}</strong><small>${dateFmt(c.created_at)}</small><p>${esc(c.body)}</p></div>`).join(''):'<div class="comments-empty">No comments yet. Leave the first kind word.</div>'}</div><div class="comment-editor"><form id="comment-form"><input type="hidden" name="postId" value="${attr(post.id)}"><div class="form-field"><label for="comment-author">Your name</label><input id="comment-author" name="displayName" maxlength="60" required placeholder="Your first name"></div><label class="sr-only" for="comment-text">Your comment</label><textarea id="comment-text" name="body" maxlength="400" placeholder="Write an encouraging comment..." required></textarea><input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn btn-navy btn-sm" type="submit" ${!guestReady()?'disabled':''}>Post comment ${icon('arrow','icon-xs')}</button><small>No login required. Comments are reviewed before appearing.</small></form><button type="button" class="photo-view-report" data-action="report" data-id="${attr(post.id)}" data-photo-id="${attr(photo?.id||'')}">${icon('flag','icon-sm')} Flag this photo for review or removal</button>${state.moderator?`<button class='btn btn-danger btn-sm' data-action='remove-published' data-id='${attr(post.id)}'>Remove from gallery</button>`:''}</div></div></div>`;
   }
-    function renderPhotoFlagModal(){
+    function closePhotoFlag(){
+    if(state.reportBusy)return;
+    state.modal=state.reportReturnModal==='view'?'view':null;
+    state.reportPhotoId=null;
+    state.reportResultId=null;
+    state.reportReturnModal=null;
+    renderModal();
+  }
+  function renderPhotoFlagModal(){
   if(state.modal==='photo-flag-sent')return `${modalHead('Photo report received','Your concern has been placed in the private Texas SCTP moderator review queue.')}
     <div class="modal-scroll photo-flag-success" role="status">
       <div class="flag-success-mark">${icon('check')}</div>
@@ -1514,8 +1522,8 @@
       target.textContent=heroPaused?'Play motion':'Pause motion';
       return;
     }
-    if(action==='backdrop'){if(e.target===target){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
-    if(action==='close-modal'){if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
+    if(action==='backdrop'){if(e.target===target){if(state.modal==='photo-flag'||state.modal==='photo-flag-sent'){if(!state.reportBusy)closePhotoFlag();return;}if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();}return;}
+    if(action==='close-modal'){if(state.modal==='photo-flag'||state.modal==='photo-flag-sent'){if(!state.reportBusy)closePhotoFlag();return;}if(state.modal==='gallery-crop'){if(!state.cropBusy)closeGalleryCropEditor();return;}if(state.modal==='upload'){releaseUploads();state.guestPending=null;}state.modal=null;renderModal();return;}
     if(action==='edit-gallery-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null);return;}
     if(action==='edit-hero-crop'){openGalleryCropEditor(id,state.modal==='view'?'view':null,null,'desktop');return;}
     if(action==='edit-photo-position'){openGalleryCropEditor(id,null,target.dataset.photoId);return;}
