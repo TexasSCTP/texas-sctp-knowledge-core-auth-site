@@ -129,6 +129,14 @@ function createRow(team) {
   badges.className = 'team-state';
   badges.append(visibleToVisitors(team) ? tag('Shown in public directory') : tag('Hidden from public directory', 'muted'));
   if (!team.active) badges.append(tag('Inactive in team roster', 'warning'));
+  const openFlags=flagQueueHasPending(team.id);
+  if (openFlags) {
+    const link=document.createElement('a');
+    link.className='team-flagged-tag';
+    link.href='#report-queue';
+    link.textContent=openFlags+(openFlags===1?' pending team flag':' pending team flags');
+    badges.append(link);
+  }
   badges.append(tag(team.hasLogo ? 'Logo on file' : 'Logo needed', team.hasLogo ? 'muted' : 'warning'));
   const p = team.profile;
   const verified = p?.profile_status === 'approved';
@@ -274,6 +282,7 @@ async function saveVisibility(team, next, input, feedback) {
 const flagQueue=createFlagQueue({
   getTeams:()=>state.teams,
   request,
+  onLoaded:render,
   onReviewSaved:async ({teamName,decision})=>{
     await loadTeams();
     status(decision==='confirmed_inactive'
