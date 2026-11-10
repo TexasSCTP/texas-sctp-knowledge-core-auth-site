@@ -231,52 +231,106 @@
     }
   }
 
+
+  async function saveReferenceSlide(slide){
+    if(!slide?.reference||!canManageReferences||!client||!staffUser){
+      const message='Only the Owner or a statewide Administrator can publish original slideshow images.';
+      setStatus(message,'error');setLiveSaveFeedback(slide,'error',message);return false;
+    }
+    if(liveSaving)return false;
+    liveSaving=true;
+    setStatus('Saving original slideshow photo…');
+    setLiveSaveFeedback(slide,'saving','Saving this original photograph and its placement to the live slideshow…');
+    try{
+      const clean={};
+      for(const type of ['desktop','mobile','card'])
+        clean[type]=normalizePosition(slide[type],{x:50,y:50,zoom:1});
+      const {data,error}=await client.rpc('memory_staff_save_reference_hero_scene',{
+        p_scene_id:slide.id,p_enabled:slide.enabled===true,
+        p_desktop:clean.desktop,p_mobile:clean.mobile,p_card:clean.card
+      });
+      if(error||!data?.saved||data?.scene_id!==slide.id||
+          data.enabled!==(slide.enabled===true)){
+        throw Error(error?.message||'The slideshow image save was not confirmed.');
+      }
+      referencePublished.set(slide.id,clone(slide));
+      DEFAULTS[slide.id]=clone(slide);
+      try{
+        localStorage.setItem('txsctp-reference-hero-visibility-v1',JSON.stringify({
+          sceneId:slide.id,enabled:slide.enabled===true,at:Date.now()
+        }));
+      }catch{}
+      const at=new Date().toLocaleTimeString('en-US',{
+        hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'
+      });
+      setStatus('✓ Original slideshow photo saved','good');
+      setLiveSaveFeedback(slide,'success',
+        '✓ Saved successfully at '+at+' CT. This original photo is now '+
+        (slide.enabled?'ON':'OFF')+' in the homepage hero slideshow.');
+      return true;
+    }catch(error){
+      const message='Save failed: '+(error?.message||'Unable to confirm the change')+
+        '. The original setting remains unchanged. Try again.';
+      setStatus('Original slideshow photo save failed','error');
+      setLiveSaveFeedback(slide,'error',message);
+      return false;
+    }finally{
+      liveSaving=false;
+      updateLiveSaveFeedback();
+      renderList();
+    }
+  }
+  function saveSelectedSlide(slide=getSlide()){
+    if(slide?.live)return saveLiveSlide(slide);
+    if(slide?.reference)return saveReferenceSlide(slide);
+    setStatus('Select an approved photograph or original slideshow image.','error');
+    return Promise.resolve(false);
+  }
   function selectSlide(id){
     const found=config?.slides.find(s=>s.id===id);if(!found)return;
     selectedId=id;renderList();
-    $('selected-caption').textContent=found.label+(found.live?'':' · Reference only, not shown on public homepage');
-    $('save-live').hidden=!found.live;
-    // The former sample-image GitHub publishing workflow is no longer part
-    // of the public hero. Only approved live photos can be saved to the website.
-    $('publish-open').hidden=!found.live;
-    $('publish-open').textContent=found.live?'Save photo placement':'Reference only';
+    $('selected-caption').textContent=found.label+
+      (found.reference?' · Original slideshow photo, Owner/Administrator controlled':'');
+    const allowed=found.live||(found.reference&&canManageReferences);
+    $('save-live').hidden=!allowed;
+    $('publish-open').hidden=!allowed;
+    $('publish-open').textContent=allowed?'Save photo placement':'Owner/Admin access required';
     updateSliders();updateCanvas();updateLiveSaveFeedback();
   }
   function renderList(){
     if(!config)return;
-    $('scene-count').textContent=`${config.slides.filter(s=>s.live&&s.enabled).length} in hero / ${config.slides.filter(s=>s.live).length} approved photos`;
+    $('scene-count').textContent=`${config.slides.filter(s=>(s.live||s.reference)&&s.enabled).length} in hero / ${config.slides.length} available images`;
     const box=$('scene-list');box.replaceChildren();
     config.slides.forEach((s,i)=>{
-      const row=document.createElement('div');row.className='scene-entry'+(s.id===selectedId?' selected':'')+(s.live&&!s.enabled?' off':'')+(!s.live?' reference-only':'');
+      const row=document.createElement('div');row.className='scene-entry'+(s.id===selectedId?' selected':'')+(!s.enabled?' off':'')+(s.reference?' original-scene':'');
       const img=document.createElement('img');img.src=s.src;img.alt='';img.loading='lazy';img.style.objectPosition=`${s.card.x}% ${s.card.y}%`;
       const content=document.createElement('div');
       const name=document.createElement('button');name.type='button';name.className='scene-name';name.textContent=`${i+1}. ${s.label}`;name.addEventListener('click',()=>{stopPlayback();selectSlide(s.id)});
       const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.live
         ?'Approved gallery photo · '+(s.enabled?'Shown in hero':'Hidden from hero')
-        :'Legacy reference image · never displayed on the public homepage';
+        :'Original slideshow photo · '+(s.enabled?'Shown in hero':'Hidden from hero');
       const toggle=document.createElement('label');toggle.className='scene-inclusion-toggle';
       const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.setAttribute('role','switch');
-      checkbox.setAttribute('aria-label',s.live
-        ?'Show '+s.label+' in the homepage hero slideshow'
-        :'Reference illustration '+s.label+' is never shown on the public homepage');
-      checkbox.checked=s.live&&s.enabled!==false;
-      checkbox.disabled=liveSaving||!s.live;
+      checkbox.setAttribute('aria-label','Show '+s.label+' in the homepage hero slideshow');
+      checkbox.checked=s.enabled===true;
+      checkbox.disabled=liveSaving||(s.reference&&!canManageReferences);
       const track=document.createElement('span');track.className='scene-inclusion-track';track.setAttribute('aria-hidden','true');
       const label=document.createElement('span');label.className='scene-inclusion-text';
-      label.textContent=!s.live?'Reference only':s.enabled?'Shown in hero':'Hidden from hero';
+      label.textContent=s.enabled?'Shown in hero':'Hidden from hero';
       checkbox.addEventListener('change',async()=>{
-        if(liveSaving||!s.live){checkbox.checked=s.live&&s.enabled!==false;return;}
+        if(liveSaving||(s.reference&&!canManageReferences)){
+          checkbox.checked=s.enabled===true;return;
+        }
         const previous=s.enabled!==false;
         // All approved photos may be OFF. The public homepage then shows the
         // branded background instead of selecting an unapproved sample image.
         const targetEnabled=checkbox.checked;
         checkbox.disabled=true;
         s.enabled=targetEnabled;
-        if(s.live){
-          const saved=await saveLiveSlide(s);
-          if(!saved){s.enabled=previous;renderList();return;}
-          setStatus(targetEnabled?'Photo now appears in the homepage hero slideshow.':'Photo hidden from the homepage hero slideshow; gallery photo remains published.','good');
-        }
+        const saved=await saveSelectedSlide(s);
+        if(!saved){s.enabled=previous;renderList();return;}
+        setStatus(targetEnabled?'Photo now appears in the homepage hero slideshow.':
+          'Photo hidden from the homepage hero slideshow.','good');
         renderList();
       });
       toggle.append(checkbox,track,label);
@@ -332,11 +386,11 @@
   }
   function endDrag(e){if(!drag||e.pointerId!==drag.id)return;drag=null;$('preview-stage').classList.remove('dragging');saveDraft();}
   function stopPlayback(){if(timer)clearInterval(timer);timer=null;playing=false;$('play-toggle').textContent='▶ Preview movement';}
-  function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>s.live&&s.enabled);if(!list.length){setStatus('No approved photos are enabled for the live hero slideshow.','error');return;}playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
+  function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>(s.live||s.reference)&&s.enabled);if(!list.length){setStatus('No photos are currently enabled in the hero slideshow.','error');return;}playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
   function resetSelected(){const s=getSlide(),def=DEFAULTS[s.id];if(!def||liveSaving)return;s[mode]=clone(def[mode]);markChanged();}
   function restorePublished(){if(!published)return;if(!confirm('Discard unsaved adjustments and restore last saved placements?'))return;config=clone(published);config.slides.push(...[...livePublished.values()].map(clone));localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LIVE_DRAFT_KEY);stopPlayback();renderList();selectSlide(config.slides.some(s=>s.id===selectedId)?selectedId:config.slides[0].id);setStatus('Showing saved placements','good');}
   function downloadConfig(){if(!config)return;const backup={...sampleSettings(),approvedPhotoPlacements:config.slides.filter(s=>s.live).map(s=>({photoId:s.photoId,enabled:s.enabled,desktop:s.desktop,mobile:s.mobile,card:s.card}))};const file=new Blob([JSON.stringify(backup,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-  function showPublishModal(){if(getSlide()?.live){saveLiveSlide(getSlide());return;}saveDraft();const dlg=$('publish-dialog');$('publish-result').textContent='';$('publish-result').className='';$('github-token').value='';dlg.showModal();}
+  function showPublishModal(){void saveSelectedSlide(getSlide());}
   function b64(str){return btoa(unescape(encodeURIComponent(str)));}
   async function publish(){
     const token=$('github-token').value.trim(),button=$('publish-confirm'),status=$('publish-result');
@@ -371,7 +425,7 @@
   $('restore-published').addEventListener('click',restorePublished);
   $('download-json').addEventListener('click',downloadConfig);
   $('publish-open').addEventListener('click',showPublishModal);
-  $('save-live').addEventListener('click',()=>saveLiveSlide(getSlide()));
+  $('save-live').addEventListener('click',()=>{void saveSelectedSlide(getSlide());});
   $('publish-cancel').addEventListener('click',()=>$('publish-dialog').close());
   $('publish-close').addEventListener('click',()=>$('publish-dialog').close());
   $('publish-confirm').addEventListener('click',publish);
