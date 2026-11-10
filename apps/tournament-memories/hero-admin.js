@@ -204,37 +204,40 @@
 
   function selectSlide(id){
     const found=config?.slides.find(s=>s.id===id);if(!found)return;
-    selectedId=id;renderList();$('selected-caption').textContent=found.label;
+    selectedId=id;renderList();
+    $('selected-caption').textContent=found.label+(found.live?'':' · Reference only, not shown on public homepage');
     $('save-live').hidden=!found.live;
-    $('publish-open').textContent=found.live?'Save photo placement':'Publish settings';
+    // The former sample-image GitHub publishing workflow is no longer part
+    // of the public hero. Only approved live photos can be saved to the website.
+    $('publish-open').hidden=!found.live;
+    $('publish-open').textContent=found.live?'Save photo placement':'Reference only';
     updateSliders();updateCanvas();updateLiveSaveFeedback();
   }
   function renderList(){
     if(!config)return;
-    $('scene-count').textContent=`${config.slides.filter(s=>s.enabled).length} active / ${config.slides.length} total`;
+    $('scene-count').textContent=`${config.slides.filter(s=>s.live&&s.enabled).length} in hero / ${config.slides.filter(s=>s.live).length} approved photos`;
     const box=$('scene-list');box.replaceChildren();
     config.slides.forEach((s,i)=>{
-      const row=document.createElement('div');row.className='scene-entry'+(s.id===selectedId?' selected':'')+(!s.enabled?' off':'');
+      const row=document.createElement('div');row.className='scene-entry'+(s.id===selectedId?' selected':'')+(s.live&&!s.enabled?' off':'')+(!s.live?' reference-only':'');
       const img=document.createElement('img');img.src=s.src;img.alt='';img.loading='lazy';img.style.objectPosition=`${s.card.x}% ${s.card.y}%`;
       const content=document.createElement('div');
       const name=document.createElement('button');name.type='button';name.className='scene-name';name.textContent=`${i+1}. ${s.label}`;name.addEventListener('click',()=>{stopPlayback();selectSlide(s.id)});
-      const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.id.replace('scene-','Scene ')+' · '+(s.enabled?'Included':'Hidden');
+      const order=document.createElement('small');order.className='scene-subtitle';order.textContent=s.live
+        ?'Approved gallery photo · '+(s.enabled?'Shown in hero':'Hidden from hero')
+        :'Legacy reference image · never displayed on the public homepage';
       const toggle=document.createElement('label');toggle.className='scene-inclusion-toggle';
       const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.setAttribute('role','switch');
       checkbox.setAttribute('aria-label','Show '+s.label+' in the homepage hero slideshow');
-      checkbox.checked=s.enabled!==false;
-      checkbox.disabled=liveSaving;
+      checkbox.checked=s.live&&s.enabled!==false;
+      checkbox.disabled=liveSaving||!s.live;
       const track=document.createElement('span');track.className='scene-inclusion-track';track.setAttribute('aria-hidden','true');
       const label=document.createElement('span');label.className='scene-inclusion-text';
-      label.textContent=s.enabled?'Shown in hero':'Hidden from hero';
+      label.textContent=!s.live?'Reference only':s.enabled?'Shown in hero':'Hidden from hero';
       checkbox.addEventListener('change',async()=>{
-        if(liveSaving){checkbox.checked=s.enabled!==false;return;}
+        if(liveSaving||!s.live){checkbox.checked=s.live&&s.enabled!==false;return;}
         const previous=s.enabled!==false;
-        if(previous&&config.slides.filter(item=>item.enabled).length===1){
-          checkbox.checked=true;
-          setStatus('At least one slide must remain visible in the slideshow.','error');
-          return;
-        }
+        // All approved photos may be OFF. The public homepage then shows the
+        // branded background instead of selecting an unapproved sample image.
         const targetEnabled=checkbox.checked;
         checkbox.disabled=true;
         s.enabled=targetEnabled;
@@ -242,9 +245,6 @@
           const saved=await saveLiveSlide(s);
           if(!saved){s.enabled=previous;renderList();return;}
           setStatus(targetEnabled?'Photo now appears in the homepage hero slideshow.':'Photo hidden from the homepage hero slideshow; gallery photo remains published.','good');
-        }else{
-          saveDraft();
-          setStatus('Sample scene choice saved locally. Click Publish settings to apply it to the live website.');
         }
         renderList();
       });
