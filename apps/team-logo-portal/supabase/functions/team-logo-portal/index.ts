@@ -282,6 +282,14 @@ async function staffDirectoryReports(req:Request){
    };
  })});
 }
+async function staffReportSummary(req:Request){
+ const staff=await verifyStaff(req);
+ if(!staff)return fail('Authorized staff sign-in required.',401);
+ const {count,error}=await admin.from('logo_portal_reports')
+   .select('id',{count:'exact',head:true}).eq('status','pending');
+ if(error)throw Error('Team reports count unavailable.');
+ return json({pending:count||0});
+}
 async function reviewDirectoryReport(req:Request,body:Record<string,unknown>){
  const staff=await verifyStaff(req);
  if(!staff)return fail('Authorized staff sign-in required.',401);
@@ -314,6 +322,7 @@ Deno.serve(async(req)=>{
   if(!body||typeof body!=='object')return fail('Invalid request.');
   if(body.action==='report_team')return await submitDirectoryReport(req,body);
   if(body.action==='staff_reports')return await staffDirectoryReports(req);
+  if(body.action==='staff_report_summary')return await staffReportSummary(req);
   if(body.action==='staff_report_review')return await reviewDirectoryReport(req,body);
   if(body.action==='staff_list')return await staffList(req);
   if(body.action==='staff_visibility')return await staffVisibility(req,body);
