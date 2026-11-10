@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm';
 import { createProfileEditor } from './profiles.js';
+import { createFlagQueue } from './flags.js';
 
 const settings = window.TEXAS_SCTP_CONFIG || {};
 const apiRoot = settings.supabaseUrl;
@@ -176,12 +177,14 @@ function createRow(team) {
   input.addEventListener('change', () => saveVisibility(team, input.checked, input, feedback));
   return row;
 }
+function flagQueueHasPending(id) { return flagQueue.pendingForTeam(id) > 0; }
 function matches(team) {
   const filter = $('#team-filter').value;
   if (filter === 'visible' && !visibleToVisitors(team)) return false;
   if (filter === 'hidden' && visibleToVisitors(team)) return false;
   if (filter === 'inactive' && team.active) return false;
   if (filter === 'no-logo' && team.hasLogo) return false;
+  if (filter === 'flagged' && !flagQueueHasPending(team.id)) return false;
   if (filter === 'has-logo' && !team.hasLogo) return false;
   if (filter === 'needs-review' && team.profile?.profile_status === 'approved') return false;
   if (filter === 'school' && team.profile?.team_kind !== 'school') return false;
@@ -226,6 +229,7 @@ async function loadTeams() {
     })):[];
     showModeration();
     render();
+    await flagQueue.load();
     status('Current settings loaded.', 'success');
   } catch (error) {
     status(error.message, 'error');
@@ -267,6 +271,16 @@ async function saveVisibility(team, next, input, feedback) {
     input.disabled = false;
   }
 }
+const flagQueue=createFlagQueue({
+  getTeams:()=>state.teams,
+  request,
+  onReviewSaved:async ({teamName,decision})=>{
+    await loadTeams();
+    status(decision==='confirmed_inactive'
+      ? 'Confirmed inactive: '+teamName+' and its logo are now hidden from the public directory. Records are preserved.'
+      : 'Report for '+teamName+' dismissed. The team visibility setting has not changed.','success');
+  }
+});
 const profileEditor=createProfileEditor({
   getTeams:()=>state.teams,
   getRanges:()=>state.ranges,
