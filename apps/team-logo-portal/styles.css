@@ -92,8 +92,12 @@
 .why-next{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:20px;border:1px solid #ebdfc8;background:#fffcf5;border-radius:9px;padding:17px 22px}
 .why-next>div{display:flex;flex-direction:column;gap:4px}
 .why-next strong{color:var(--navy);font-size:13px}
-.why-next span:not(.why-cta-link span){color:#687b8a;font-size:12px;line-height:1.5}
+.why-next>div span{color:#687b8a;font-size:12px;line-height:1.5}
 .why-cta-link{display:inline-flex;align-items:center;gap:14px;background:var(--navy);border-radius:6px;padding:12px 17px;color:#fff;text-decoration:none;font-weight:850;font-size:12px;white-space:nowrap}
 .why-cta-link:hover{background:#234b6f}
 @media(max-width:940px){.why-heading-row{grid-template-columns:1fr;gap:12px}.why-lead{max-width:800px}.why-card{padding:21px}.why-card h3{font-size:15px}}
 @media(max-width:750px){.why-inner{padding:40px 0}.why-grid{grid-template-columns:1fr;gap:10px;margin-top:22px}.why-card{padding:20px 21px}.why-card-number{margin-bottom:9px}.why-next{align-items:stretch;flex-direction:column;gap:12px;padding:18px}.why-cta-link{justify-content:center}.hero-convenience{font-size:11px}}
+
+/* Keep the value-led headline legible beside the live team-logo showcase. */
+.hero-copy h1{font-size:clamp(45px,4.55vw,62px)}
+@media(max-width:750px){.hero-copy h1{font-size:clamp(43px,8.7vw,59px)}}
