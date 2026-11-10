@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#0e2d4a">
+ <meta name="robots" content="noindex,nofollow">
+ <meta name="description" content="Staff-only team visibility and verified team profile management for the Texas SCTP Team Logo Portal.">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://raw.githubusercontent.com https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+ <title>Team Directory Moderation | Texas SCTP</title>
+ <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
+ <link rel="stylesheet" href="./styles.css?v=20261110-unified-1">
+ <script defer src="../../config.js"></script>
+ <script type="module" src="./app.js?v=20261110-unified-1"></script>
+</head>
+<body>
+ <div class="topstripe"><div class="container"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>STAFF MANAGEMENT</span></div></div>
+ <header class="header">
+  <div class="container head-inner">
+   <a class="brand" href="../" aria-label="Go to Texas SCTP Moderator Hub">
+    <img src="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png" width="53" height="53" alt="Texas SCTP official logo">
+    <span><strong>TEXAS SCTP</strong><small>MODERATOR HUB / TEAM LOGOS</small></span>
+   </a>
+   <nav class="navigation" aria-label="Staff navigation">
+    <a href="../">Moderator Hub</a><a href="../../?moderator=onrange">On the Range</a><a href="https://texas-sctp-team-logo-portal.onrender.com/">Public Team Logos</a><span class="staff-tag">STAFF ONLY</span>
+   </nav>
+  </div>
+ </header>
+ <main class="container main">
+  <div class="intro">
+   <p class="eyebrow">DIRECTORY MANAGEMENT</p>
+   <h1>Manage team listings</h1>
+   <p>Set whether each team appears publicly, then verify its type, school or practice-range location, and approved organizational contact details. Changes to this directory do not modify SHOT records.</p>
+  </div>
+  <section id="login-panel" class="login-panel" aria-labelledby="login-heading">
+   <div class="login-copy">
+    <p class="eyebrow">SHARED STAFF SIGN-IN</p>
+    <h2 id="login-heading">Access through Moderator Hub</h2>
+    <p>Texas SCTP staff use one login for On the Range and the Team Logo Directory. Sign in at the Moderator Hub, then select Team Logos to return here.</p>
+   </div>
+   <div class="hub-login-direction">
+    <a class="button button-gold" href="../">Open Texas SCTP Moderator Hub</a>
+    <p>Statewide Team Logo Directory editing is available only to authorized Texas SCTP staff.</p>
+   </div>
+  </section>
+  <section id="moderation-panel" hidden aria-labelledby="moderation-heading">
+   <div class="staffbar"><div><strong id="moderation-heading">Team directory moderation</strong><p id="staff-name">Signed in as Texas SCTP staff</p></div><div class="staff-actions"><button type="button" class="button button-light" id="refresh-button">Refresh directory</button><button type="button" class="button button-outline" id="logout-button">Sign out</button></div></div>
+   <div class="stats" role="group" aria-label="Team visibility summary">
+    <div class="stat"><strong id="stat-total">—</strong><span>Total teams</span></div>
+    <div class="stat"><strong id="stat-visible">—</strong><span>Visible to visitors</span></div>
+    <div class="stat"><strong id="stat-hidden">—</strong><span>Hidden from visitors</span></div>
+    <div class="stat"><strong id="stat-inactive">—</strong><span>Inactive in source</span></div>
+    <div class="stat"><strong id="stat-needs-review">—</strong><span>Listings awaiting review</span></div>
+   </div>
+   <section class="team-manager" aria-labelledby="teams-heading">
+    <div class="manager-head"><div><h2 id="teams-heading">Team details &amp; visibility</h2><p>Edit each listing to identify school or club, set its correct city and contact, and approve public details. Use the switch to hide inactive teams.</p></div><span id="result-count">0 teams</span></div>
+    <div class="filters">
+     <label for="team-query" class="search-label">Find a team<input id="team-query" type="search" placeholder="Search by team name or SHOT ID" autocomplete="off"></label>
+     <label for="team-filter" class="select-label">View<select id="team-filter"><option value="all">All teams</option><option value="visible">Visible to visitors</option><option value="hidden">Hidden from visitors</option><option value="inactive">Inactive in source</option><option value="no-logo">Logo missing</option><option value="needs-review">Listing needs review</option><option value="school">School teams</option><option value="club">Club teams</option></select></label>
+    </div>
+    <div id="team-rows" class="team-rows"></div>
+    <div id="empty-results" class="empty" hidden>No teams match those filters.</div>
+   </section>
+   <div class="moderation-notes"><strong>Listing rules</strong><p>School teams use their verified school's city. Club teams select a primary practice range and inherit that range's city. No practice range is inferred from tournament schedules. Contact information is kept private until a staff reviewer explicitly authorizes public listing. The visibility switch remains separate from SHOT or team activity status.</p></div>
+  </section>
+  <dialog id="profile-dialog" class="profile-dialog" aria-labelledby="profile-dialog-heading">
+    <form id="profile-form" novalidate>
+     <div class="profile-dialog-head">
+      <div><p class="eyebrow">VERIFIED TEAM DIRECTORY</p><h2 id="profile-dialog-heading">Edit team listing</h2><p id="profile-team-description"></p></div>
+      <button type="button" id="profile-close" class="profile-close" aria-label="Close listing editor">×</button>
+     </div>
+     <div class="profile-dialog-body">
+      <label class="profile-field" for="profile-team-kind">Team classification
+        <select id="profile-team-kind" name="teamKind"><option value="">Needs classification</option><option value="school">School team</option><option value="club">Club team</option></select>
+      </label>
+      <p class="profile-help">School means officially operated or sponsored by an educational institution. All other independent organizations, including 4-H and community clubs, use Club unless formally school-run. Collegiate teams retain their collegiate division independently.</p>
+      <div id="school-fields" class="profile-conditional" hidden>
+       <label class="profile-field" for="profile-school-name">Official school or college name
+         <input id="profile-school-name" name="schoolName" maxlength="150" placeholder="Verified institution name">
+       </label>
+       <label class="profile-field" for="profile-school-city">City where the school is located
+         <input id="profile-school-city" name="schoolCity" maxlength="100" placeholder="School's city, not the team's range city">
+       </label>
+      </div>
+      <div id="club-fields" class="profile-conditional" hidden>
+       <label class="profile-field" for="profile-home-range">Primary home practice range
+        <select id="profile-home-range" name="homeRangeId"><option value="">Choose a verified practice range</option></select>
+       </label>
+       <p class="profile-help">The city's listing is calculated from the chosen range. Do not use a tournament venue unless the club actually practices there.</p>
+       <details id="new-range-toggle" class="new-range-details">
+        <summary>Practice range missing? Add a range</summary>
+        <div class="new-range-grid">
+         <label class="profile-field" for="new-range-name">Range name<input id="new-range-name" maxlength="160" placeholder="Official range name"></label>
+         <label class="profile-field" for="new-range-city">Range city<input id="new-range-city" maxlength="100" placeholder="City"></label>
+         <label class="profile-field" for="new-range-state">State (2 letters)<input id="new-range-state" maxlength="2" value="TX" placeholder="TX"></label>
+        </div>
+        <button type="button" id="add-range" class="button button-light">Add range to directory</button>
+        <p class="profile-help">Verify the location first. New ranges are retained for other team listings.</p>
+       </details>
+      </div>
+      <div class="profile-divider"></div>
+      <p class="profile-group-title">Organizational contact</p>
+      <div class="profile-two-col">
+       <label class="profile-field" for="profile-contact-role">Contact role
+        <select id="profile-contact-role" name="contactRole"><option value="">Not selected</option><option value="head_coach">Head coach</option><option value="organization">Organizational contact</option></select>
+       </label>
+       <label class="profile-field" for="profile-contact-name">Contact name
+        <input id="profile-contact-name" name="contactName" maxlength="120" placeholder="Approved adult contact name">
+       </label>
+      </div>
+      <label class="profile-field" for="profile-email">Organizational email address
+       <input id="profile-email" name="organizationEmail" type="email" maxlength="254" placeholder="team@organization.org" autocomplete="off">
+      </label>
+      <label class="profile-check"><input type="checkbox" id="profile-contact-public"><span>Authorized for public listing. I have confirmed the contact name and email may be displayed on the website.</span></label>
+      <p class="profile-help">Do not publish a private SHOT, coach, or parent email merely because it appears in an internal roster. Obtain an approved organization address or explicit permission first.</p>
+      <div class="profile-divider"></div>
+      <label class="profile-field" for="profile-source-note">Verification notes (staff only)
+       <textarea id="profile-source-note" maxlength="400" rows="2" placeholder="Source, contact who confirmed, and date verified"></textarea>
+      </label>
+      <label class="profile-check"><input type="checkbox" id="profile-approved"><span>Approve this listing for publication. I verified the team type and school-city or home-range information.</span></label>
+      <p class="profile-help">You can save incomplete details as a draft. Only approved classification and location fields appear publicly. Contact details require separate approval above.</p>
+      <p id="profile-form-status" class="profile-form-status" aria-live="polite" role="status"></p>
+     </div>
+     <div class="profile-actions"><button type="button" id="profile-cancel" class="button button-outline">Cancel</button><button type="submit" id="profile-save" class="button button-gold">Save team listing</button></div>
+    </form>
+  </dialog>
+  <p id="page-status" class="page-status" role="status" aria-live="polite">Checking shared moderator access…</p>
+ </main>
+ <footer class="footer"><div class="container"><span>© <span id="current-year">2026</span> Texas SCTP, Inc.</span><a href="../">Moderator Hub</a></div></footer>
+</body>
+</html>
