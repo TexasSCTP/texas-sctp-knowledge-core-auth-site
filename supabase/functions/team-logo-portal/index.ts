@@ -210,7 +210,7 @@ async function notifyLogoModerators(submission:{id:string,team_id:string,storage
        method:'POST',
        headers:{'Authorization':'Bearer '+Deno.env.get('RESEND_API_KEY'),
          'Content-Type':'application/json',
-         'Idempotency-Key':'texas-sctp-logo-'+submission.id+'-'+member.user_id},
+         'Idempotency-Key':'texas-sctp-logo-'+submission.id+'-'+member.user_id+'-'+String(delivery.attempts+1)},
        body:JSON.stringify({
          from:Deno.env.get('TEAM_LOGO_EMAIL_FROM'),
          to:[recipient],
