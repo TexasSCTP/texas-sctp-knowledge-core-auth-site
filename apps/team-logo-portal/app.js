@@ -52,70 +52,9 @@
       btn.setAttribute('aria-pressed', String(active));
     });
   }
-  function showTeamInDirectory(team) {
-    $('#team-search').value = team.name;
-    $('#league-filter').value = 'all';
-    $('#kind-filter').value = 'all';
-    setStatusFilter('all');
-    render();
-    const target = Array.from(grid.children).find(card => card.dataset.teamId === team.id);
-    if (target) {
-      target.scrollIntoView({behavior:'smooth',block:'center'});
-      target.focus({preventScroll:true});
-    } else {
-      $('#directory').scrollIntoView({behavior:'smooth',block:'start'});
-    }
-  }
-  function renderFeaturedLogos() {
-    // Older HTML can remain briefly cached across a deploy. Keep that markup
-    // functional instead of throwing before the directory can be shown.
-    const gallery = $('#featured-logo-grid') || $('#hero-logo-grid');
-    if (!gallery) return;
-    const legacyWall = gallery.id === 'hero-logo-grid';
-    gallery.replaceChildren();
-    const featured = allTeams.filter(team => !!team.logoUrl)
-      .sort((a,b) => a.name.localeCompare(b.name)).slice(0,5);
-    if (!featured.length) {
-      const empty = document.createElement('div');
-      empty.className = 'featured-empty';
-      empty.textContent = 'No team logos are on file yet. Find your team in the directory below to add one.';
-      gallery.append(empty);
-      return;
-    }
-    for (const team of featured) {
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = legacyWall ? 'logo-wall-tile has-logo' : 'featured-logo-card';
-      tile.setAttribute('aria-label', 'Find ' + team.name + ' in the team directory');
-      const art = document.createElement('span');
-      art.className = legacyWall ? 'legacy-team-logo-art' : 'featured-logo-art';
-      const img = document.createElement('img');
-      img.src = team.logoUrl;
-      img.alt = team.name + ' official team logo';
-      img.loading = 'eager';
-      img.decoding = 'async';
-      img.addEventListener('error', () => {
-        art.replaceChildren();
-        const unavailable = document.createElement('span');
-        unavailable.className = 'featured-unavailable';
-        unavailable.textContent = 'Logo preview unavailable';
-        art.append(unavailable);
-      });
-      art.append(img);
-      const caption = document.createElement('span');
-      caption.className = legacyWall ? 'legacy-team-logo-caption' : 'featured-logo-caption';
-      const name = document.createElement('strong');
-      name.textContent = team.name;
-      const league = document.createElement('small');
-      league.textContent = legacyWall ? 'On file · View team' : (team.league || 'Texas SCTP');
-      caption.append(name,league);
-      tile.append(art,caption);
-      tile.addEventListener('click', () => showTeamInDirectory(team));
-      gallery.append(tile);
-    }
-    const legacyLogoCount = $('#hero-logos-count');
-    if (legacyLogoCount) legacyLogoCount.textContent = countLogo() + ' logos on file';
-  }
+  // Older cached page markup can contain the removed duplicate gallery.
+  // Keep just the single searchable directory even during cache transitions.
+  document.querySelector('.featured-section')?.remove();
   function logoPlaceholder() {
     const wrap = document.createElement('div');
     wrap.className = 'missing-art';
@@ -265,7 +204,6 @@
         leagueSelect.add(new Option(league, league));
       if ([...leagueSelect.options].some(o => o.value === previous)) leagueSelect.value = previous;
       updateCounts();
-      renderFeaturedLogos();
       render();
     } catch (e) {
       statusMessage.hidden = false;
@@ -479,14 +417,6 @@
     setStatusFilter(btn.dataset.status);
     render();
   }));
-  $('#show-logos')?.addEventListener('click', () => {
-    $('#team-search').value = '';
-    $('#league-filter').value = 'all';
-    $('#kind-filter').value = 'all';
-    setStatusFilter('present');
-    render();
-    $('#directory').scrollIntoView({behavior:'smooth',block:'start'});
-  });
   $('#close-dialog').addEventListener('click', closeUpload);
   $('#cancel-upload').addEventListener('click', closeUpload);
   dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); else closeUpload(); });
