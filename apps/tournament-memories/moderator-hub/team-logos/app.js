@@ -15,6 +15,55 @@ function status(message, tone = '', element = $('#page-status')) {
   element.className = (element === $('#page-status') ? 'page-status' : 'login-status') + (tone ? ' ' + tone : '');
 }
 function visibleToVisitors(team) { return team.active && team.portalVisible; }
+/* Image URLs come from the authenticated staff API. Permit only signed object
+   URLs on our own Supabase project, never user-authored or third-party links. */
+function approvedLogoUrl(value) {
+  if (typeof value !== 'string' || !value) return null;
+  try {
+    const url = new URL(value,apiRoot);
+    if (url.origin !== new URL(apiRoot).origin ||
+        !url.pathname.startsWith('/storage/v1/object/sign/memories-team-logos/')) return null;
+    return url.href;
+  } catch { return null; }
+}
+function unavailableLogo(label) {
+  const tile = document.createElement('div');
+  tile.className = 'team-logo-empty';
+  tile.textContent = label;
+  return tile;
+}
+function openLogoPreview(teamId) {
+  const team = state.teams.find(t => t.id === teamId);
+  if (!team?.logoUrl) return;
+  const dialog = $('#logo-preview-dialog');
+  $('#logo-preview-title').textContent = team.name;
+  $('#logo-preview-caption').textContent = 'Actual team logo currently on file';
+  $('#logo-preview-image').src = team.logoUrl;
+  $('#logo-preview-image').alt = 'Current logo on file for ' + team.name;
+  $('#logo-preview-image').onerror = () => {
+    $('#logo-preview-caption').textContent = 'Logo could not load. Refresh the directory to renew its secure image link.';
+  };
+  $('#logo-preview-original').href = team.logoUrl;
+  $('#logo-preview-edit').onclick = () => { dialog.close(); profileEditor.open(team.id); };
+  dialog.showModal();
+}
+function createLogoThumbnail(team) {
+  if (!team.logoUrl) return unavailableLogo(team.hasLogo ? 'Preview unavailable' : 'No logo');
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'team-logo-thumb';
+  button.setAttribute('aria-label', 'View larger logo for ' + team.name);
+  button.title = 'View ' + team.name + ' logo';
+  const img = document.createElement('img');
+  img.src = team.logoUrl;
+  img.alt = team.name + ' current team logo';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.addEventListener('error', () => button.replaceWith(unavailableLogo('Preview unavailable')));
+  button.append(img);
+  button.addEventListener('click', () => openLogoPreview(team.id));
+  return button;
+}
 function showLogin() {
   state.staff = null;
   $('#login-panel').hidden = false;
@@ -91,6 +140,9 @@ function createRow(team) {
   edit.textContent=verified ? 'Edit verified listing' : 'Review team listing';
   edit.addEventListener('click',()=>profileEditor.open(team.id));
   info.append(name, metadata, badges, edit);
+  const entry = document.createElement('div');
+  entry.className = 'team-entry';
+  entry.append(createLogoThumbnail(team), info);
 
   const control = document.createElement('div');
   control.className = 'visibility-control';
@@ -120,7 +172,7 @@ function createRow(team) {
   feedback.setAttribute('aria-live','polite');
   feedback.textContent = state.busyIds.has(team.id) ? 'Saving…' : ' ';
   control.append(right,feedback);
-  row.append(info,control);
+  row.append(entry,control);
   input.addEventListener('change', () => saveVisibility(team, input.checked, input, feedback));
   return row;
 }
@@ -130,6 +182,7 @@ function matches(team) {
   if (filter === 'hidden' && visibleToVisitors(team)) return false;
   if (filter === 'inactive' && team.active) return false;
   if (filter === 'no-logo' && team.hasLogo) return false;
+  if (filter === 'has-logo' && !team.hasLogo) return false;
   if (filter === 'needs-review' && team.profile?.profile_status === 'approved') return false;
   if (filter === 'school' && team.profile?.team_kind !== 'school') return false;
   if (filter === 'club' && team.profile?.team_kind !== 'club') return false;
@@ -142,6 +195,7 @@ function render() {
   $('#stat-visible').textContent = String(all.filter(visibleToVisitors).length);
   $('#stat-hidden').textContent = String(all.filter(t => !visibleToVisitors(t)).length);
   $('#stat-inactive').textContent = String(all.filter(t => !t.active).length);
+  $('#stat-logos').textContent = String(all.filter(t => t.hasLogo).length);
   $('#stat-needs-review').textContent = String(all.filter(t => t.profile?.profile_status !== 'approved').length);
   const filtered = all.filter(matches);
   $('#result-count').textContent = filtered.length + ' of ' + all.length + ' teams';
@@ -163,6 +217,7 @@ async function loadTeams() {
       id: String(t.id),name:String(t.name),league:String(t.league||'Assignment Pending'),
       shotTeamId:String(t.shotTeamId||''),active:t.active===true,
       portalVisible:t.portalVisible===true,hasLogo:t.hasLogo===true,
+      logoUrl:approvedLogoUrl(t.logoUrl),
       profile:t.profile||null
     }));
     state.ranges=Array.isArray(response.ranges)?response.ranges.map(v=>({
@@ -220,6 +275,16 @@ const profileEditor=createProfileEditor({
     await loadTeams();
     status('✓ '+teamName+(profileStatus==='approved'?' verified and published to the directory.':' saved as a staff-only draft.'),'success');
   }
+});
+$('#logo-preview-close').addEventListener('click', () => $('#logo-preview-dialog').close());
+$('#logo-preview-dialog').addEventListener('click', event => {
+  if (event.target === $('#logo-preview-dialog')) $('#logo-preview-dialog').close();
+});
+$('#logo-preview-dialog').addEventListener('close', () => {
+  $('#logo-preview-image').removeAttribute('src');
+  $('#logo-preview-image').onerror = null;
+  $('#logo-preview-edit').onclick = null;
+  $('#logo-preview-original').removeAttribute('href');
 });
 $('#team-query').addEventListener('input', render);
 $('#team-filter').addEventListener('change', render);
