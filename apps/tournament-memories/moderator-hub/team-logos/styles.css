@@ -55,3 +55,24 @@
 .navigation{flex-wrap:wrap;justify-content:flex-end;gap:18px}.navigation a{white-space:nowrap}
 .hub-login-direction{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px}.hub-login-direction .button{text-decoration:none}.hub-login-direction p{font-size:12px;color:#647b89;line-height:1.6;margin:0}
 @media(max-width:750px){.navigation{gap:10px}.navigation a{font-size:10px}.head-inner{align-items:flex-start;flex-direction:column;padding:15px 0}.brand img{height:43px;width:43px}}
+
+
+/* Show the REAL current logo in each staff team listing; no fabricated initials or artwork. */
+.team-entry{display:flex;gap:18px;align-items:center;min-width:0}
+.team-entry>.team-info{flex:1;min-width:0}
+.team-logo-thumb,.team-logo-empty{box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:0 0 92px;width:92px;height:92px;border-radius:9px}
+.team-logo-thumb{background:#fff;border:1px solid #d2dee4;padding:9px;box-shadow:0 2px 7px rgba(12,38,57,.05);cursor:zoom-in}
+.team-logo-thumb:hover{border-color:#ad833b;box-shadow:0 4px 12px rgba(12,38,57,.13)}
+.team-logo-thumb img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.team-logo-empty{padding:11px;text-align:center;font-size:10.5px;font-weight:780;line-height:1.45;color:#7e919e;background:#f2f5f6;border:1px dashed #cdd9df}
+.logo-preview-dialog{border:0;border-radius:14px;padding:0;width:min(760px,calc(100vw - 28px));max-height:calc(100vh - 35px);overflow:auto;color:var(--ink);box-shadow:0 25px 95px rgba(4,23,43,.43);background:#fff}
+.logo-preview-dialog::backdrop{background:rgba(6,22,38,.72);backdrop-filter:blur(3px)}
+.logo-preview-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:22px 27px;border-bottom:1px solid var(--line)}
+.logo-preview-header h2{font-size:23px;line-height:1.25;color:var(--navy);margin:0 0 7px;letter-spacing:-.03em}
+.logo-preview-header p:last-child{margin:0;color:#718797;font-size:12px;line-height:1.5}
+.logo-preview-close{display:flex;align-items:center;justify-content:center;flex:0 0 35px;width:35px;height:35px;border:0;background:#edf2f4;color:var(--navy);font-size:25px;line-height:1;border-radius:50%;cursor:pointer}
+.logo-preview-stage{min-height:300px;height:min(59vh,565px);padding:26px;display:flex;align-items:center;justify-content:center;background:#f9fafb;background-image:linear-gradient(45deg,#f3f5f6 25%,transparent 25%),linear-gradient(-45deg,#f3f5f6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f3f5f6 75%),linear-gradient(-45deg,transparent 75%,#f3f5f6 75%);background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0}
+.logo-preview-stage img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(16,30,45,.1))}
+.logo-preview-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 26px;border-top:1px solid var(--line);background:#fff}
+.logo-preview-actions a{text-decoration:none}
+@media(max-width:750px){.team-entry{align-items:flex-start;gap:13px}.team-logo-thumb,.team-logo-empty{flex-basis:72px;width:72px;height:72px;padding:7px}.team-logo-empty{font-size:10px}.logo-preview-header{padding:18px}.logo-preview-stage{height:47vh;min-height:250px;padding:18px}.logo-preview-actions{padding:15px;flex-direction:column}.logo-preview-actions>*{width:100%}}
