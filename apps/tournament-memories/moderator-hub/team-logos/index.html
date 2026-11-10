@@ -9,9 +9,9 @@
  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://raw.githubusercontent.com https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
  <title>Team Directory Moderation | Texas SCTP</title>
  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
- <link rel="stylesheet" href="./styles.css?v=20261110-flags-1">
+ <link rel="stylesheet" href="./styles.css?v=20261110-logo-notify-1">
  <script defer src="../../config.js"></script>
- <script type="module" src="./app.js?v=20261110-flags-1"></script>
+ <script type="module" src="./app.js?v=20261110-logo-notify-1"></script>
 </head>
 <body>
  <div class="topstripe"><div class="container"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>STAFF MANAGEMENT</span></div></div>
@@ -52,8 +52,26 @@
     <div class="stat"><strong id="stat-inactive">—</strong><span>Inactive in source</span></div>
     <div class="stat"><strong id="stat-logos">—</strong><span>Logos on file</span></div>
     <div class="stat"><strong id="stat-needs-review">—</strong><span>Listings awaiting review</span></div>
+    <div class="stat"><strong id="stat-pending-logos">—</strong><span>Logos awaiting approval</span></div>
     <div class="stat stat-flags"><strong id="stat-flags">—</strong><span>Unreviewed team flags</span></div>
    </div>
+      <section class="logo-review-queue" id="logo-review-queue" aria-labelledby="logo-review-heading">
+    <div class="logo-review-heading">
+      <div>
+        <p class="eyebrow">TEAM LOGO APPROVALS</p>
+        <h2 id="logo-review-heading">Submitted logos awaiting review</h2>
+        <p>New and replacement team logos stay pending until a statewide moderator approves them. The existing published logo remains unchanged during review.</p>
+      </div>
+      <div class="logo-review-tools">
+        <strong id="logo-review-count">Loading…</strong>
+        <label for="logo-review-filter">Show <select id="logo-review-filter"><option value="pending">Awaiting review</option><option value="all">All submissions</option></select></label>
+        <button type="button" class="button button-light" id="logo-review-refresh">Refresh logos</button>
+      </div>
+    </div>
+    <p class="logo-email-status" id="logo-email-status" role="status">Checking email notification configuration…</p>
+    <p class="logo-review-status" id="logo-review-status" aria-live="polite" role="status"></p>
+    <div class="logo-review-items" id="logo-review-items"></div>
+   </section>
    <section class="report-queue" id="report-queue" aria-labelledby="reports-heading">
     <div class="reports-head">
      <div>
