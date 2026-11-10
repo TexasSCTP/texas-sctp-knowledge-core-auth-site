@@ -1,11 +1,12 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm';
+import { createProfileEditor } from './profiles.js';
 
 const settings = window.TEXAS_SCTP_CONFIG || {};
 const apiRoot = settings.supabaseUrl;
 const apiKey = settings.supabasePublishableKey;
 const endpoint = apiRoot ? apiRoot + '/functions/v1/team-logo-portal' : '';
 const $ = selector => document.querySelector(selector);
-const state = { client: null, teams: [], staff: null, loading: false, busyIds: new Set(), initialized: false };
+const state = { client: null, teams: [], ranges: [], staff: null, loading: false, busyIds: new Set(), initialized: false };
 $('#current-year').textContent = String(new Date().getFullYear());
 
 function status(message, tone = '', element = $('#page-status')) {
@@ -79,7 +80,17 @@ function createRow(team) {
   badges.append(visibleToVisitors(team) ? tag('Shown in public directory') : tag('Hidden from public directory', 'muted'));
   if (!team.active) badges.append(tag('Inactive in team roster', 'warning'));
   badges.append(tag(team.hasLogo ? 'Logo on file' : 'Logo needed', team.hasLogo ? 'muted' : 'warning'));
-  info.append(name, metadata, badges);
+  const p = team.profile;
+  const verified = p?.profile_status === 'approved';
+  badges.append(verified
+    ? tag(p.team_kind === 'school' ? 'School team verified' : 'Club team verified')
+    : tag('Listing needs verification','warning'));
+  const edit = document.createElement('button');
+  edit.type='button';
+  edit.className='edit-listing-button';
+  edit.textContent=verified ? 'Edit verified listing' : 'Review team listing';
+  edit.addEventListener('click',()=>profileEditor.open(team.id));
+  info.append(name, metadata, badges, edit);
 
   const control = document.createElement('div');
   control.className = 'visibility-control';
@@ -119,6 +130,9 @@ function matches(team) {
   if (filter === 'hidden' && visibleToVisitors(team)) return false;
   if (filter === 'inactive' && team.active) return false;
   if (filter === 'no-logo' && team.hasLogo) return false;
+  if (filter === 'needs-review' && team.profile?.profile_status === 'approved') return false;
+  if (filter === 'school' && team.profile?.team_kind !== 'school') return false;
+  if (filter === 'club' && team.profile?.team_kind !== 'club') return false;
   const q = $('#team-query').value.trim().toLowerCase();
   return !q || team.name.toLowerCase().includes(q) || team.shotTeamId.toLowerCase().includes(q);
 }
@@ -128,6 +142,7 @@ function render() {
   $('#stat-visible').textContent = String(all.filter(visibleToVisitors).length);
   $('#stat-hidden').textContent = String(all.filter(t => !visibleToVisitors(t)).length);
   $('#stat-inactive').textContent = String(all.filter(t => !t.active).length);
+  $('#stat-needs-review').textContent = String(all.filter(t => t.profile?.profile_status !== 'approved').length);
   const filtered = all.filter(matches);
   $('#result-count').textContent = filtered.length + ' of ' + all.length + ' teams';
   const fragment = document.createDocumentFragment();
@@ -147,8 +162,13 @@ async function loadTeams() {
     state.teams = response.teams.map(t => ({
       id: String(t.id),name:String(t.name),league:String(t.league||'Assignment Pending'),
       shotTeamId:String(t.shotTeamId||''),active:t.active===true,
-      portalVisible:t.portalVisible===true,hasLogo:t.hasLogo===true
+      portalVisible:t.portalVisible===true,hasLogo:t.hasLogo===true,
+      profile:t.profile||null
     }));
+    state.ranges=Array.isArray(response.ranges)?response.ranges.map(v=>({
+      id:String(v.id),name:String(v.name),city:String(v.city),state:String(v.state),
+      active:v.active===true,source_system:String(v.source_system||'')
+    })):[];
     showModeration();
     render();
     status('Current settings loaded.', 'success');
@@ -192,6 +212,12 @@ async function saveVisibility(team, next, input, feedback) {
     input.disabled = false;
   }
 }
+const profileEditor=createProfileEditor({
+  getTeams:()=>state.teams,
+  getRanges:()=>state.ranges,
+  request,
+  onSaved:loadTeams
+});
 $('#team-query').addEventListener('input', render);
 $('#team-filter').addEventListener('change', render);
 $('#refresh-button').addEventListener('click', loadTeams);
