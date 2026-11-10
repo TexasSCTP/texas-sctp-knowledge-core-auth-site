@@ -155,6 +155,11 @@
           mail.setAttribute('aria-label','Email '+team.name);
           details.append(mail);
         }
+      } else {
+        const awaiting = document.createElement('p');
+        awaiting.className = 'card-pending';
+        awaiting.textContent = 'Organizational contact not yet approved for public display';
+        details.append(awaiting);
       }
     } else {
       const pending = document.createElement('p');
@@ -181,8 +186,10 @@
   function filteredTeams() {
     const q = $('#team-search').value.trim().toLocaleLowerCase();
     const league = $('#league-filter').value;
+    const kind = $('#kind-filter').value;
     return allTeams.filter(t =>
       (league === 'all' || t.league === league) &&
+      (kind === 'all' || (kind === 'pending' && !t.profileVerified) || (t.profileVerified && t.teamKind === kind)) &&
       (statusFilter === 'all' || (statusFilter === 'present') === !!t.logoUrl) &&
       (!q || clean(t.name).toLocaleLowerCase().includes(q) || clean(t.shotTeamId).toLocaleLowerCase().includes(q) ||
        clean(t.city).toLocaleLowerCase().includes(q) || clean(t.schoolName).toLocaleLowerCase().includes(q) ||
@@ -356,6 +363,7 @@
   }
   $('#team-search').addEventListener('input', render);
   $('#league-filter').addEventListener('change', render);
+  $('#kind-filter').addEventListener('change', render);
   document.querySelectorAll('[data-status]').forEach(btn => btn.addEventListener('click', () => {
     statusFilter = btn.dataset.status;
     document.querySelectorAll('[data-status]').forEach(other => {
