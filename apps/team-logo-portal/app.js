@@ -124,6 +124,45 @@
     league.className = 'card-league';
     league.textContent = clean(team.league || 'Assignment Pending');
     body.append(status, name, league);
+    const details = document.createElement('div');
+    details.className = 'card-details';
+    if (team.profileVerified && team.teamKind) {
+      const kind = document.createElement('span');
+      kind.className = 'team-kind';
+      kind.textContent = team.teamKind === 'school' ? 'School Team' : 'Club Team';
+      details.append(kind);
+      function detail(label,value) {
+        if (!value) return;
+        const line = document.createElement('p');
+        line.className = 'card-detail';
+        const key = document.createElement('span');
+        key.textContent = label;
+        const text = document.createElement('strong');
+        text.textContent = value;
+        line.append(key,text);
+        details.append(line);
+      }
+      if (team.teamKind === 'school') detail('School',team.schoolName);
+      else detail('Home range',team.homeRange);
+      detail('City',team.city);
+      if (team.contact) {
+        detail(team.contact.role || 'Contact',team.contact.name);
+        if (team.contact.email) {
+          const mail = document.createElement('a');
+          mail.className = 'card-email';
+          mail.href = 'mailto:' + team.contact.email;
+          mail.textContent = team.contact.email;
+          mail.setAttribute('aria-label','Email '+team.name);
+          details.append(mail);
+        }
+      }
+    } else {
+      const pending = document.createElement('p');
+      pending.className = 'card-pending';
+      pending.textContent = 'Team type, home location and contact pending verification';
+      details.append(pending);
+    }
+    body.append(details);
     if (team.shotTeamId) {
       const shot = document.createElement('small');
       shot.className = 'card-shot';
@@ -145,7 +184,9 @@
     return allTeams.filter(t =>
       (league === 'all' || t.league === league) &&
       (statusFilter === 'all' || (statusFilter === 'present') === !!t.logoUrl) &&
-      (!q || clean(t.name).toLocaleLowerCase().includes(q) || clean(t.shotTeamId).toLocaleLowerCase().includes(q))
+      (!q || clean(t.name).toLocaleLowerCase().includes(q) || clean(t.shotTeamId).toLocaleLowerCase().includes(q) ||
+       clean(t.city).toLocaleLowerCase().includes(q) || clean(t.schoolName).toLocaleLowerCase().includes(q) ||
+       clean(t.homeRange).toLocaleLowerCase().includes(q))
     );
   }
   function render() {
@@ -166,7 +207,12 @@
       if (!Array.isArray(payload.teams)) throw Error('The directory response was incomplete.');
       allTeams.splice(0, allTeams.length, ...payload.teams.map(t => ({
         id: clean(t.id), name: clean(t.name), league: clean(t.league || 'Assignment Pending'),
-        shotTeamId: clean(t.shotTeamId), logoUrl: t.logoUrl || null
+        shotTeamId: clean(t.shotTeamId), logoUrl: t.logoUrl || null,
+        teamKind: t.teamKind === 'school' || t.teamKind === 'club' ? t.teamKind : null,
+        profileVerified: t.profileVerified === true,
+        schoolName: clean(t.schoolName), homeRange: clean(t.homeRange),
+        city: clean(t.city), contact: t.contact && typeof t.contact === 'object'
+          ? {name:clean(t.contact.name),role:clean(t.contact.role),email:clean(t.contact.email)} : null
       })));
       const leagueSelect = $('#league-filter'), previous = leagueSelect.value;
       leagueSelect.replaceChildren(new Option('All leagues', 'all'));
