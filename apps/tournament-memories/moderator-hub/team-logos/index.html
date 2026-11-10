@@ -9,9 +9,9 @@
  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https://raw.githubusercontent.com https://mlajcbnuponqyoehxydp.supabase.co; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
  <title>Team Directory Moderation | Texas SCTP</title>
  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
- <link rel="stylesheet" href="./styles.css?v=20261110-unified-1">
+ <link rel="stylesheet" href="./styles.css?v=20261110-logo-preview-1">
  <script defer src="../../config.js"></script>
- <script type="module" src="./app.js?v=20261110-unified-1"></script>
+ <script type="module" src="./app.js?v=20261110-logo-preview-1"></script>
 </head>
 <body>
  <div class="topstripe"><div class="container"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>STAFF MANAGEMENT</span></div></div>
@@ -50,19 +50,37 @@
     <div class="stat"><strong id="stat-visible">—</strong><span>Visible to visitors</span></div>
     <div class="stat"><strong id="stat-hidden">—</strong><span>Hidden from visitors</span></div>
     <div class="stat"><strong id="stat-inactive">—</strong><span>Inactive in source</span></div>
+    <div class="stat"><strong id="stat-logos">—</strong><span>Logos on file</span></div>
     <div class="stat"><strong id="stat-needs-review">—</strong><span>Listings awaiting review</span></div>
    </div>
    <section class="team-manager" aria-labelledby="teams-heading">
-    <div class="manager-head"><div><h2 id="teams-heading">Team details &amp; visibility</h2><p>Edit each listing to identify school or club, set its correct city and contact, and approve public details. Use the switch to hide inactive teams.</p></div><span id="result-count">0 teams</span></div>
+    <div class="manager-head"><div><h2 id="teams-heading">Team details &amp; visibility</h2><p>View the actual team logo on file, click a logo to inspect it larger, and manage team classifications, contact details, and visibility.</p></div><span id="result-count">0 teams</span></div>
     <div class="filters">
      <label for="team-query" class="search-label">Find a team<input id="team-query" type="search" placeholder="Search by team name or SHOT ID" autocomplete="off"></label>
-     <label for="team-filter" class="select-label">View<select id="team-filter"><option value="all">All teams</option><option value="visible">Visible to visitors</option><option value="hidden">Hidden from visitors</option><option value="inactive">Inactive in source</option><option value="no-logo">Logo missing</option><option value="needs-review">Listing needs review</option><option value="school">School teams</option><option value="club">Club teams</option></select></label>
+     <label for="team-filter" class="select-label">View<select id="team-filter"><option value="all">All teams</option><option value="visible">Visible to visitors</option><option value="hidden">Hidden from visitors</option><option value="inactive">Inactive in source</option><option value="no-logo">Logo missing</option><option value="has-logo">Logo on file</option><option value="needs-review">Listing needs review</option><option value="school">School teams</option><option value="club">Club teams</option></select></label>
     </div>
     <div id="team-rows" class="team-rows"></div>
     <div id="empty-results" class="empty" hidden>No teams match those filters.</div>
    </section>
    <div class="moderation-notes"><strong>Listing rules</strong><p>School teams use their verified school's city. Club teams select a primary practice range and inherit that range's city. No practice range is inferred from tournament schedules. Contact information is kept private until a staff reviewer explicitly authorizes public listing. The visibility switch remains separate from SHOT or team activity status.</p></div>
   </section>
+  <dialog id="logo-preview-dialog" class="logo-preview-dialog" aria-labelledby="logo-preview-title">
+   <div class="logo-preview-header">
+    <div>
+     <p class="eyebrow">OFFICIAL TEAM LOGO ON FILE</p>
+     <h2 id="logo-preview-title">Team logo</h2>
+     <p id="logo-preview-caption">Actual uploaded team artwork</p>
+    </div>
+    <button type="button" id="logo-preview-close" class="logo-preview-close" aria-label="Close logo preview">×</button>
+   </div>
+   <div class="logo-preview-stage">
+    <img id="logo-preview-image" alt="Current team logo" />
+   </div>
+   <div class="logo-preview-actions">
+    <a id="logo-preview-original" class="button button-light" href="#" target="_blank" rel="noopener noreferrer">Open original image</a>
+    <button type="button" id="logo-preview-edit" class="button button-outline">Edit team listing</button>
+   </div>
+  </dialog>
   <dialog id="profile-dialog" class="profile-dialog" aria-labelledby="profile-dialog-heading">
     <form id="profile-form" novalidate>
      <div class="profile-dialog-head">
