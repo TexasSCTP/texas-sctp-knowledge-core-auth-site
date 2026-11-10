@@ -216,7 +216,10 @@ const profileEditor=createProfileEditor({
   getTeams:()=>state.teams,
   getRanges:()=>state.ranges,
   request,
-  onSaved:loadTeams
+  onSaved:async ({teamName,profileStatus})=>{
+    await loadTeams();
+    status('✓ '+teamName+(profileStatus==='approved'?' verified and published to the directory.':' saved as a staff-only draft.'),'success');
+  }
 });
 $('#team-query').addEventListener('input', render);
 $('#team-filter').addEventListener('change', render);
