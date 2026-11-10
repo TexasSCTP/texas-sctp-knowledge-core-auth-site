@@ -22,7 +22,9 @@
     {id:'scene-07',src:'./public/images/scene-07.webp',label:'After the final target',enabled:true,desktop:{x:31,y:11,zoom:1},mobile:{x:25,y:14,zoom:1},card:{x:30,y:22,zoom:1}}
   ]);
   let ALL_SCENES = FALLBACK_SCENES.map(s=>({...s}));
-  let HERO_SCENES = ALL_SCENES;
+  // Public hero rotation is gallery-approved, explicitly enabled photos only.
+  // No sample artwork is rendered during load, on error or when all photos are OFF.
+  let HERO_SCENES = [];
   let APPROVED_HERO_SCENES = [];
   let heroLastLoadedAt = 0;
   let logosLastLoadedAt = 0;
@@ -43,14 +45,12 @@
   }
   function rebuildHeroScenes(preferredPhotoId=null){
     const currentSceneId=HERO_SCENES[currentHero]?.id||null;
-    const base=ALL_SCENES.filter(scene=>scene.enabled);
-    // Never reintroduce disabled photos. Once real approved photos are available,
-    // don't mix in staging illustrations that can be mistaken for real submissions.
-    // If no approved hero photos are available, use only sample scenes explicitly
-    // enabled in the published slideshow config. Zero scenes means branded gradient.
-    const allowedLive=APPROVED_HERO_SCENES.filter(scene=>
+    // This deliberately excludes ALL_SCENES/FALLBACK_SCENES. Those legacy
+    // illustrative images must never override a moderator's photo-level OFF switch.
+    // If there are no allowed photos, the homepage displays its branded background.
+    HERO_SCENES=APPROVED_HERO_SCENES.filter(scene=>
+      scene.live===true&&scene.enabled!==false&&
       !heroTemporarilyHidden(scene.id.replace(/^approved-/,'')));
-    HERO_SCENES=allowedLive.length?allowedLive:base;
     heroSequence=shuffleIndices(HERO_SCENES.length);
     const chosenId=preferredPhotoId||currentSceneId;
     const chosenIndex=HERO_SCENES.findIndex(scene=>scene.id===chosenId);
@@ -99,7 +99,7 @@
   }
   let heroSequence = shuffleIndices(HERO_SCENES.length);
   let heroSequencePosition = 0;
-  let currentHero = heroSequence[0];
+  let currentHero = heroSequence[0]??0;
   let heroPaused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let heroTimer = null;
   function nextHeroScene() {
