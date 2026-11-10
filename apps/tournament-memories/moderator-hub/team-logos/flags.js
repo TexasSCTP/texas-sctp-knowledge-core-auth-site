@@ -1,7 +1,7 @@
 /* Shared Moderator Hub: private visitor reports and staff-only decisions.
  * No public flag may alter team visibility without verified moderator approval.
  */
-export function createFlagQueue({getTeams,request,onReviewSaved}) {
+export function createFlagQueue({getTeams,request,onReviewSaved,onLoaded}) {
   const $ = id => document.getElementById(id);
   const state = {reports:[],loading:false,busy:new Set()};
   const reasonText = {
@@ -159,6 +159,7 @@ export function createFlagQueue({getTeams,request,onReviewSaved}) {
         portalVisible:r.portalVisible===true,sourceActive:r.sourceActive===true
       }));
       render();
+      onLoaded?.();
       setStatus('');
     }catch(error){
       $('stat-flags').textContent='—';
@@ -168,5 +169,8 @@ export function createFlagQueue({getTeams,request,onReviewSaved}) {
   }
   $('reports-filter').addEventListener('change',render);
   $('refresh-reports').addEventListener('click',load);
-  return {load,render};
+  return {
+    load,render,
+    pendingForTeam:(teamId)=>state.reports.filter(r=>r.status==='pending'&&r.teamId===teamId).length
+  };
 }
