@@ -174,3 +174,11 @@ moderator; team-scoped moderators do not get statewide controls; old Team
 Logo /admin/ redirects; logout applies to the shared session; magic-link
 return on the On the Range domain returns to hub; member without staff access
 is refused.
+
+## Team reports in the unified Moderator Hub (November 10, 2026)
+
+The shared hub /moderator-hub/ now shows statewide moderators the count of pending team flags. The staff-only team directory at /moderator-hub/team-logos/ contains the private review queue, including report reason, details, timestamp, actual logo, and current team status. Staff can dismiss reports or confirm inactivity with a written verification reason.
+
+Only an authenticated statewide moderator can confirm inactivity. This toggles the Team Logo Portal's portal_visible setting off without changing SHOT or source team status and without deleting the team's logo. The server-side function logs the review and visibility change. Staff can later restore visibility after verifying the team is active. The On the Range gallery remains an independent public project.
+
+Report UI source: moderator-hub/team-logos/flags.js.
