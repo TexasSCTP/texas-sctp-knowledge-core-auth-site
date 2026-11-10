@@ -42,55 +42,72 @@
   function updateCounts() {
     $('#total-teams').textContent = String(allTeams.length);
     $('#total-logos').textContent = String(countLogo());
-    const heroTotal = $('#hero-team-count');
-    if (heroTotal) heroTotal.textContent = String(allTeams.length);
   }
-  function renderHeroLogos() {
-    const wall = $('#hero-logo-grid');
-    if (!wall) return;
-    wall.replaceChildren();
-    const featured = [
-      ...allTeams.filter(t => t.logoUrl).sort((a,b) => a.name.localeCompare(b.name)).slice(0, 3),
-    ];
-    const openSpaces = allTeams.filter(t => !t.logoUrl).sort((a,b) => a.name.localeCompare(b.name));
-    featured.push(...openSpaces.slice(0, Math.max(0, 4 - featured.length)));
-    for (const team of featured.slice(0, 4)) {
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'logo-wall-tile' + (team.logoUrl ? ' has-logo' : '');
-      tile.setAttribute('aria-label', (team.logoUrl ? 'Update ' : 'Upload ') + team.name + ' team logo');
-      tile.addEventListener('click', () => openUpload(team.id));
-      if (team.logoUrl) {
-        const img = document.createElement('img');
-        img.src = team.logoUrl;
-        img.alt = team.name + ' logo';
-        img.loading = 'eager';
-        img.onerror = () => { img.replaceWith(makeEmptyMark()); tile.classList.remove('has-logo'); };
-        tile.append(img);
-      } else {
-        tile.append(makeEmptyMark());
-      }
-      const name = document.createElement('strong');
-      name.textContent = team.name;
-      const small = document.createElement('small');
-      small.textContent = team.logoUrl ? 'On file • Update' : 'Add team logo';
-      tile.append(name, small);
-      wall.append(tile);
+  function setStatusFilter(next) {
+    statusFilter = next;
+    document.querySelectorAll('[data-status]').forEach(btn => {
+      const active = btn.dataset.status === next;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+  }
+  function showTeamInDirectory(team) {
+    $('#team-search').value = team.name;
+    $('#league-filter').value = 'all';
+    $('#kind-filter').value = 'all';
+    setStatusFilter('all');
+    render();
+    const target = Array.from(grid.children).find(card => card.dataset.teamId === team.id);
+    if (target) {
+      target.scrollIntoView({behavior:'smooth',block:'center'});
+      target.focus({preventScroll:true});
+    } else {
+      $('#directory').scrollIntoView({behavior:'smooth',block:'start'});
     }
+  }
+  function renderFeaturedLogos() {
+    const gallery = $('#featured-logo-grid');
+    gallery.replaceChildren();
+    const featured = allTeams.filter(team => !!team.logoUrl)
+      .sort((a,b) => a.name.localeCompare(b.name)).slice(0,5);
     if (!featured.length) {
       const empty = document.createElement('div');
-      empty.className = 'logo-wall-loading';
-      empty.textContent = 'Team logos will appear here as they are submitted.';
-      wall.append(empty);
+      empty.className = 'featured-empty';
+      empty.textContent = 'No team logos are on file yet. Find your team in the directory below to add one.';
+      gallery.append(empty);
+      return;
     }
-    $('#hero-logos-count').textContent = countLogo() + ' logos on file';
-  }
-  function makeEmptyMark() {
-    const empty = document.createElement('span');
-    empty.className = 'logo-wall-empty';
-    empty.setAttribute('aria-hidden', 'true');
-    empty.textContent = '+';
-    return empty;
+    for (const team of featured) {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'featured-logo-card';
+      tile.setAttribute('aria-label', 'Find ' + team.name + ' in the team directory');
+      const art = document.createElement('span');
+      art.className = 'featured-logo-art';
+      const img = document.createElement('img');
+      img.src = team.logoUrl;
+      img.alt = team.name + ' official team logo';
+      img.loading = 'eager';
+      img.decoding = 'async';
+      img.addEventListener('error', () => {
+        art.replaceChildren();
+        const unavailable = document.createElement('span');
+        unavailable.className = 'featured-unavailable';
+        unavailable.textContent = 'Logo preview unavailable';
+        art.append(unavailable);
+      });
+      art.append(img);
+      const caption = document.createElement('span');
+      caption.className = 'featured-logo-caption';
+      const name = document.createElement('strong');
+      name.textContent = team.name;
+      const league = document.createElement('small');
+      league.textContent = team.league || 'Texas SCTP';
+      caption.append(name,league);
+      tile.append(art,caption);
+      tile.addEventListener('click', () => showTeamInDirectory(team));
+      gallery.append(tile);
+    }
   }
   function logoPlaceholder() {
     const wrap = document.createElement('div');
@@ -101,6 +118,8 @@
   function createCard(team) {
     const card = document.createElement('article');
     card.className = 'team-card';
+    card.dataset.teamId = team.id;
+    card.tabIndex = -1;
     const artwork = document.createElement('div');
     artwork.className = 'card-logo-area' + (team.logoUrl ? ' has-logo' : '');
     if (team.logoUrl) {
@@ -160,13 +179,13 @@
       } else {
         const awaiting = document.createElement('p');
         awaiting.className = 'card-pending';
-        awaiting.textContent = 'Organizational contact not yet approved for public display';
+        awaiting.textContent = 'Contact not yet approved';
         details.append(awaiting);
       }
     } else {
       const pending = document.createElement('p');
       pending.className = 'card-pending';
-      pending.textContent = 'Team type, home location and contact pending verification';
+      pending.textContent = 'Team details pending verification';
       details.append(pending);
     }
     body.append(details);
@@ -207,7 +226,9 @@
     );
   }
   function render() {
-    const matched = filteredTeams();
+    const matched = filteredTeams().sort((a,b) =>
+      Number(!!b.logoUrl) - Number(!!a.logoUrl) || a.name.localeCompare(b.name)
+    );
     grid.replaceChildren();
     const frag = document.createDocumentFragment();
     for (const team of matched) frag.append(createCard(team));
@@ -237,7 +258,7 @@
         leagueSelect.add(new Option(league, league));
       if ([...leagueSelect.options].some(o => o.value === previous)) leagueSelect.value = previous;
       updateCounts();
-      renderHeroLogos();
+      renderFeaturedLogos();
       render();
     } catch (e) {
       statusMessage.hidden = false;
@@ -445,14 +466,17 @@
   $('#league-filter').addEventListener('change', render);
   $('#kind-filter').addEventListener('change', render);
   document.querySelectorAll('[data-status]').forEach(btn => btn.addEventListener('click', () => {
-    statusFilter = btn.dataset.status;
-    document.querySelectorAll('[data-status]').forEach(other => {
-      const active = other === btn;
-      other.classList.toggle('active', active);
-      other.setAttribute('aria-pressed', String(active));
-    });
+    setStatusFilter(btn.dataset.status);
     render();
   }));
+  $('#show-logos').addEventListener('click', () => {
+    $('#team-search').value = '';
+    $('#league-filter').value = 'all';
+    $('#kind-filter').value = 'all';
+    setStatusFilter('present');
+    render();
+    $('#directory').scrollIntoView({behavior:'smooth',block:'start'});
+  });
   $('#close-dialog').addEventListener('click', closeUpload);
   $('#cancel-upload').addEventListener('click', closeUpload);
   dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); else closeUpload(); });
