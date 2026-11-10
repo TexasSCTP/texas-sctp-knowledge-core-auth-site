@@ -7,7 +7,6 @@ const dist=resolve(root,'dist');
 // Stop a broken script from reaching the public preview.
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
-execFileSync(process.execPath,['--check',resolve(root,'team-logos/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/profiles.js')],{stdio:'inherit'});
@@ -59,7 +58,8 @@ for(const [source,release] of [
   ['hero-admin.css','hero-admin-reference-only-v5-20261109.css']
 ])await copyFile(resolve(root,source),resolve(dist,release));
 await cp(resolve(root,'public'),resolve(dist,'public'),{recursive:true});
-await cp(resolve(root,'team-logos'),resolve(dist,'team-logos'),{recursive:true});
+await mkdir(resolve(dist,'team-logos'),{recursive:true});
+await copyFile(resolve(root,'team-logo-redirect.html'),resolve(dist,'team-logos/index.html'));
 await cp(resolve(root,'moderator-hub'),resolve(dist,'moderator-hub'),{recursive:true});
 await copyFile(resolve(root,'../../texas-sctp-logo.png'),resolve(dist,'texas-sctp-logo.png'));
 console.log('Published shared /moderator-hub/ and /moderator-hub/team-logos/ staff tools on the same authentication origin.');
