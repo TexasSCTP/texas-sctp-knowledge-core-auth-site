@@ -410,6 +410,10 @@
   reportDialog.addEventListener('click', e => {
     if (e.target === reportDialog && !reportBusy) closeReport();
   });
+  $('#find-team-upload').addEventListener('click', () => {
+    $('#team-search').scrollIntoView({behavior:'smooth',block:'center'});
+    $('#team-search').focus({preventScroll:true});
+  });
   $('#team-search').addEventListener('input', render);
   $('#league-filter').addEventListener('change', render);
   $('#kind-filter').addEventListener('change', render);
