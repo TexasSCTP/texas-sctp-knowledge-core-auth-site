@@ -328,12 +328,12 @@
         try { details = await uploaded.json(); } catch {}
         throw Error(details.message || details.error || 'Unable to upload logo. Please retry.');
       }
-      setBusy(true, 'Saving team logo...');
+      setBusy(true, 'Submitting logo for moderator review...');
       const complete = await portalRequest('complete', {teamId, path: reservation.path});
-      if (!complete.ok) throw Error('The logo was uploaded but could not be saved to the directory.');
+      if (!complete.ok) throw Error('The logo was uploaded but could not be queued for moderator review.');
       setBusy(false);
       closeUpload();
-      notify('Team logo saved successfully.');
+      notify(complete.status === 'pending' ? 'Logo submitted for moderator review. Your existing public logo remains in place until approval.' : 'Logo submission already reviewed.');
       await loadTeams();
     } catch (e) {
       setError(errMessage(e));
