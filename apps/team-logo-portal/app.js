@@ -34,7 +34,8 @@
       method: action ? 'POST' : 'GET',
       headers: {'apikey': publicKey, ...(action ? {'Content-Type': 'application/json'} : {})},
       ...(action ? {body: JSON.stringify({action, ...payload})} : {}),
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: AbortSignal.timeout(20000)
     });
     return parseResponse(response);
   }
@@ -66,7 +67,11 @@
     }
   }
   function renderFeaturedLogos() {
-    const gallery = $('#featured-logo-grid');
+    // Older HTML can remain briefly cached across a deploy. Keep that markup
+    // functional instead of throwing before the directory can be shown.
+    const gallery = $('#featured-logo-grid') || $('#hero-logo-grid');
+    if (!gallery) return;
+    const legacyWall = gallery.id === 'hero-logo-grid';
     gallery.replaceChildren();
     const featured = allTeams.filter(team => !!team.logoUrl)
       .sort((a,b) => a.name.localeCompare(b.name)).slice(0,5);
@@ -80,10 +85,10 @@
     for (const team of featured) {
       const tile = document.createElement('button');
       tile.type = 'button';
-      tile.className = 'featured-logo-card';
+      tile.className = legacyWall ? 'logo-wall-tile has-logo' : 'featured-logo-card';
       tile.setAttribute('aria-label', 'Find ' + team.name + ' in the team directory');
       const art = document.createElement('span');
-      art.className = 'featured-logo-art';
+      art.className = legacyWall ? 'legacy-team-logo-art' : 'featured-logo-art';
       const img = document.createElement('img');
       img.src = team.logoUrl;
       img.alt = team.name + ' official team logo';
@@ -98,16 +103,18 @@
       });
       art.append(img);
       const caption = document.createElement('span');
-      caption.className = 'featured-logo-caption';
+      caption.className = legacyWall ? 'legacy-team-logo-caption' : 'featured-logo-caption';
       const name = document.createElement('strong');
       name.textContent = team.name;
       const league = document.createElement('small');
-      league.textContent = team.league || 'Texas SCTP';
+      league.textContent = legacyWall ? 'On file · View team' : (team.league || 'Texas SCTP');
       caption.append(name,league);
       tile.append(art,caption);
       tile.addEventListener('click', () => showTeamInDirectory(team));
       gallery.append(tile);
     }
+    const legacyLogoCount = $('#hero-logos-count');
+    if (legacyLogoCount) legacyLogoCount.textContent = countLogo() + ' logos on file';
   }
   function logoPlaceholder() {
     const wrap = document.createElement('div');
@@ -262,7 +269,10 @@
       render();
     } catch (e) {
       statusMessage.hidden = false;
-      statusMessage.textContent = 'Team directory could not load. ' + errMessage(e);
+      const recover = e?.name === 'TimeoutError' || e?.name === 'AbortError'
+        ? 'The directory request timed out. Refresh the page to try again.'
+        : 'Team directory could not load. ' + errMessage(e);
+      statusMessage.textContent = recover;
       $('#results-count').textContent = 'Unavailable';
     }
   }
@@ -469,7 +479,7 @@
     setStatusFilter(btn.dataset.status);
     render();
   }));
-  $('#show-logos').addEventListener('click', () => {
+  $('#show-logos')?.addEventListener('click', () => {
     $('#team-search').value = '';
     $('#league-filter').value = 'all';
     $('#kind-filter').value = 'all';
