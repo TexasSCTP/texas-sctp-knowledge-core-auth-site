@@ -9,9 +9,9 @@
   <meta property="og:description" content="Help Texas SCTP recognize your athletes and team with the right logo. Search the directory and upload or update your official artwork.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-mod-1">
+  <link rel="stylesheet" href="./styles.css?v=20261110-directory-1">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261109-3"></script>
+  <script defer src="./app.js?v=20261110-directory-1"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -96,7 +96,7 @@
         <div>
           <p class="section-kicker">TEAM DIRECTORY</p>
           <h2 id="directory-heading">Find your team. Add your logo.</h2>
-          <p class="section-description">Search by team name or SHOT ID. If your logo is already on file, verify it's the right one. If not, upload it below.</p>
+          <p class="section-description">Find school and club programs by name, city, or SHOT ID. Verified listings include the school or primary practice range and approved organizational contact information.</p>
         </div>
         <div class="directory-totals" aria-label="Directory totals">
           <span><strong id="total-teams">—</strong><small>Teams</small></span>
@@ -106,6 +106,7 @@
       <div class="tools">
         <label class="search-control" for="team-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 5 5"></path></svg><input id="team-search" type="search" placeholder="Search team name or SHOT ID" autocomplete="off"></label>
         <label class="select-control"><span>League</span><select id="league-filter"><option value="all">All leagues</option></select></label>
+        <label class="select-control" for="kind-filter"><span>Type</span><select id="kind-filter"><option value="all">All teams</option><option value="school">School teams</option><option value="club">Club teams</option><option value="pending">Details pending</option></select></label>
       </div>
       <div class="filter-bar">
         <div class="filter-buttons" role="group" aria-label="Logo status">
