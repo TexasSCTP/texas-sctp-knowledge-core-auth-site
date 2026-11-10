@@ -8,6 +8,9 @@ const dist=resolve(root,'dist');
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'team-logos/app.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/app.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/profiles.js')],{stdio:'inherit'});
 // Prevent regressions that reintroduce a photo or illustrative scene after a moderator disables it.
 execFileSync(process.execPath,[resolve(root,'scripts/test-hero-visibility.mjs')],{stdio:'inherit'});
 await rm(dist,{recursive:true,force:true});
@@ -57,6 +60,7 @@ for(const [source,release] of [
 ])await copyFile(resolve(root,source),resolve(dist,release));
 await cp(resolve(root,'public'),resolve(dist,'public'),{recursive:true});
 await cp(resolve(root,'team-logos'),resolve(dist,'team-logos'),{recursive:true});
+await cp(resolve(root,'moderator-hub'),resolve(dist,'moderator-hub'),{recursive:true});
 await copyFile(resolve(root,'../../texas-sctp-logo.png'),resolve(dist,'texas-sctp-logo.png'));
-console.log('Published dedicated /team-logos/ portal and official Texas SCTP logo asset.');
+console.log('Published shared /moderator-hub/ and /moderator-hub/team-logos/ staff tools on the same authentication origin.');
 console.log('Created a minimal public gallery build in dist/. Backend source, SQL and reference rosters were not published.');
