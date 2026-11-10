@@ -226,7 +226,7 @@
     $('#logo-file').disabled = busy;
     $('#upload-confirmation').disabled = busy;
     $('#dialog-progress').textContent = message;
-    $('#submit-upload').textContent = busy ? 'Saving…' : 'Save team logo';
+    $('#submit-upload').textContent = busy ? 'Submitting…' : 'Submit for review';
   }
   function closeUpload() {
     if (busy) return;
@@ -333,7 +333,7 @@
       if (!complete.ok) throw Error('The logo was uploaded but could not be queued for moderator review.');
       setBusy(false);
       closeUpload();
-      notify(complete.status === 'pending' ? 'Logo submitted for moderator review. Your existing public logo remains in place until approval.' : 'Logo submission already reviewed.');
+      notify(complete.status === 'pending' ? 'Logo submitted for moderator review. It will appear publicly after approval.' : 'Logo submission already reviewed.');
       await loadTeams();
     } catch (e) {
       setError(errMessage(e));
