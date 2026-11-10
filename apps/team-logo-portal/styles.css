@@ -214,3 +214,14 @@ body{background:#f8f9f8}
 @media(max-width:750px){.directory-intro{padding:27px 0 23px;flex-direction:column;gap:18px}.directory-intro h1{font-size:37px}.directory-intro .directory-totals{gap:23px}.featured-section{padding:25px 0 30px}.featured-heading-row{align-items:flex-start;flex-direction:column;gap:10px}.featured-logo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.featured-logo-art{height:137px;padding:12px}.featured-logo-art img{max-height:121px}.featured-logo-caption{padding:10px 12px;min-height:68px}.featured-logo-caption strong{font-size:11.5px}.featured-logo-caption small{font-size:9.5px}.directory{padding:28px 0 54px}.directory-help-inner{padding:21px 0;align-items:flex-start;flex-direction:column;gap:12px}.card-logo-area{height:169px;min-height:169px}}
 @media(max-width:450px){.featured-logo-grid{gap:9px}.featured-logo-art{height:118px;padding:9px}.featured-logo-art img{max-height:107px}.featured-logo-caption strong{font-size:11px}.directory-intro-copy>p:last-child{font-size:12.5px}}
 @media(prefers-reduced-motion:reduce){.featured-logo-card{transition:none}}
+
+/* Subtle guidance within the one alphabetical directory, not a second hero. */
+.logo-upload-note{display:flex;align-items:center;justify-content:space-between;gap:24px;background:#fff;border:1px solid #dfe7e9;border-left:3px solid #b68b43;border-radius:7px;padding:17px 20px;margin:0 0 18px}
+.logo-upload-note-copy{min-width:0;max-width:850px}
+.logo-upload-note h2{font-family:var(--sans);font-size:14px;font-weight:850;letter-spacing:0;color:var(--navy);line-height:1.35;margin:0 0 6px}
+.logo-upload-note p{font-size:12px;line-height:1.65;color:#677b89;margin:0}
+.logo-upload-note p strong{color:#314f65;font-weight:800}
+.logo-upload-note-action{flex:0 0 auto;white-space:nowrap;display:inline-flex;align-items:center;gap:14px;justify-content:space-between;padding:11px 14px;font-family:var(--sans);font-size:11.5px;font-weight:850;border:1px solid #c2d0da;background:#f5f8f9;color:var(--navy);border-radius:6px;cursor:pointer}
+.logo-upload-note-action:hover{background:#eaf1f4;border-color:#92abbc}
+.logo-upload-note-action span{font-size:16px;color:#6a8293}
+@media(max-width:800px){.logo-upload-note{align-items:stretch;flex-direction:column;gap:13px;padding:16px;margin-bottom:14px}.logo-upload-note-action{align-self:flex-start}.logo-upload-note p{font-size:11.75px}}
