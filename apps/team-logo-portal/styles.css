@@ -101,3 +101,28 @@
 /* Keep the value-led headline legible beside the live team-logo showcase. */
 .hero-copy h1{font-size:clamp(45px,4.55vw,62px)}
 @media(max-width:750px){.hero-copy h1{font-size:clamp(43px,8.7vw,59px)}}
+
+/* Compact, centered banner: less horizontal sprawl and a shorter desktop hero. */
+.hero{max-width:1260px;width:calc(100% - 36px);margin:18px auto 0;border-radius:12px}
+.hero-inner{min-height:0;padding:26px 25px 28px;gap:28px}
+.hero-copy{max-width:530px}
+.hero-copy h1{font-size:clamp(38px,3.7vw,52px);line-height:1.04;margin-bottom:13px}
+.hero-description{max-width:500px;font-size:12.8px;line-height:1.65;margin-bottom:15px}
+.hero-proof{margin-top:13px}
+.hero-convenience{margin-top:9px}
+.primary-link{padding:12px 17px;font-size:12px}
+.hero-side{width:345px;height:auto;align-self:center}
+.logo-wall{padding:10px 12px 10px;transform:rotate(1deg)}
+.logo-wall-top{padding:2px 4px 8px}
+.logo-wall-top img{width:34px;height:34px}
+.logo-wall-top>div strong{font-size:13px}
+.logo-wall-caption{padding:8px 2px 6px}
+.logo-wall-grid{gap:6px}
+.logo-wall-tile{height:78px;padding:6px 7px 5px}
+.logo-wall-tile img{height:50px}
+.logo-wall-empty{width:39px;height:39px;font-size:20px;margin:0 auto 4px}
+.logo-wall-footer{padding:9px 3px 1px}
+.logo-wall-stamp{bottom:-7px;right:-9px;font-size:7.5px;padding:7px 10px}
+.footer-links{display:flex;align-items:center;gap:18px}
+@media(max-width:1040px){.hero-inner{gap:20px}.hero-side{width:300px}.hero-copy h1{font-size:clamp(35px,4.8vw,47px)}}
+@media(max-width:750px){.hero{width:calc(100% - 18px);margin:10px auto 0;border-radius:10px}.hero-inner{padding:29px 18px 35px;gap:25px}.hero-copy h1{font-size:clamp(37px,8vw,48px)}.hero-side{width:min(100%,340px);align-self:center}.logo-wall-tile{height:78px}.footer-links{gap:11px}}
