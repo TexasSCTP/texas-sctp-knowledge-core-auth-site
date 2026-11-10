@@ -388,7 +388,20 @@
   function stopPlayback(){if(timer)clearInterval(timer);timer=null;playing=false;$('play-toggle').textContent='▶ Preview movement';}
   function playToggle(){if(playing){stopPlayback();return;}const list=config.slides.filter(s=>(s.live||s.reference)&&s.enabled);if(!list.length){setStatus('No photos are currently enabled in the hero slideshow.','error');return;}playing=true;$('play-toggle').textContent='Ⅱ Pause preview';timer=setInterval(()=>{const current=list.findIndex(s=>s.id===selectedId);const next=list[(current+1)%list.length];selectSlide(next.id)},(Number(config.intervalSeconds)||10)*1000);}
   function resetSelected(){const s=getSlide(),def=DEFAULTS[s.id];if(!def||liveSaving)return;s[mode]=clone(def[mode]);markChanged();}
-  function restorePublished(){if(!published)return;if(!confirm('Discard unsaved adjustments and restore last saved placements?'))return;config=clone(published);config.slides.push(...[...livePublished.values()].map(clone));localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LIVE_DRAFT_KEY);stopPlayback();renderList();selectSlide(config.slides.some(s=>s.id===selectedId)?selectedId:config.slides[0].id);setStatus('Showing saved placements','good');}
+  function restorePublished(){
+    if(!published||!confirm('Discard unsaved adjustments and restore last saved placements?'))return;
+    config=clone(published);
+    config.slides=config.slides.map(slide=>{
+      const saved=referencePublished.get(slide.id);
+      return saved?clone(saved):{...slide,reference:true,enabled:false};
+    });
+    config.slides.unshift(...[...livePublished.values()].map(clone));
+    liveFeedback.clear();
+    try{localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LIVE_DRAFT_KEY);}catch{}
+    stopPlayback();renderList();
+    selectSlide(config.slides.some(s=>s.id===selectedId)?selectedId:config.slides[0].id);
+    setStatus('Restored server-confirmed slideshow settings','good');
+  }
   function downloadConfig(){if(!config)return;const backup={...sampleSettings(),approvedPhotoPlacements:config.slides.filter(s=>s.live).map(s=>({photoId:s.photoId,enabled:s.enabled,desktop:s.desktop,mobile:s.mobile,card:s.card}))};const file=new Blob([JSON.stringify(backup,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download='texas-sctp-slideshow-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
   function showPublishModal(){void saveSelectedSlide(getSlide());}
   function b64(str){return btoa(unescape(encodeURIComponent(str)));}
