@@ -654,3 +654,8 @@ body{background:var(--paper)}
 .hero-visibility-loading,.hero-visibility-error{font-size:11px;font-weight:850;color:#657f8a}
 .hero-visibility-error{color:#a94b3e}
 @media(max-width:600px){.hero-visibility-setting{align-items:flex-start;flex-direction:column;gap:10px;padding:14px 15px}.hero-visibility-toggle{align-self:flex-end}}
+
+/* Unified Moderator Hub access on the On the Range header. */
+.staff-hub-link{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#153b59;border:1px solid #dde6eb;border-radius:7px;padding:9px 13px;margin-right:10px;text-decoration:none;font-size:12px;font-weight:850;white-space:nowrap}
+.staff-hub-link:hover{background:#f6f2e9;border-color:#d9a441}
+@media(max-width:760px){.staff-hub-link{padding:8px 10px;font-size:10px;margin-right:3px}}
