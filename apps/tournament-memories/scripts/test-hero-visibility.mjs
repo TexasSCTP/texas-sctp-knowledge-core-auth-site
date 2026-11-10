@@ -9,52 +9,61 @@ const studio = await readFile(resolve(root, 'hero-admin.js'), 'utf8');
 
 const start = app.indexOf('  function rebuildHeroScenes(');
 const end = app.indexOf('  function clampCrop(', start);
-assert.ok(start >= 0 && end > start, 'Locate actual homepage rotation selection logic');
+assert.ok(start >= 0 && end > start, 'Locate the actual homepage hero selection logic');
 const rotationSource = app.slice(start, end);
 
-const evaluate = ({ approved = [], reference = [], hidden = [] } = {}) => {
-  const logic = new Function('approved','reference','hidden', `
-    let APPROVED_HERO_SCENES=approved,ALL_SCENES=reference,HERO_SCENES=[],
+const evaluate = ({
+  approved = [], reference = [], hiddenApproved = [], hiddenReferences = []
+} = {}) => {
+  const logic = new Function('approved','reference','hiddenApproved','hiddenReferences',`
+    let APPROVED_HERO_SCENES=approved,REFERENCE_HERO_SCENES=reference,HERO_SCENES=[],
         currentHero=0,heroSequence=[0],heroSequencePosition=0;
-    const blocked=new Set(hidden);
-    const heroTemporarilyHidden=id=>blocked.has(id);
+    const hiddenLive=new Set(hiddenApproved),hiddenRef=new Set(hiddenReferences);
+    const heroTemporarilyHidden=id=>hiddenLive.has(id);
+    const referenceTemporarilyHidden=id=>hiddenRef.has(id);
     const shuffleIndices=n=>Array.from({length:n},(_,i)=>i);
     ${rotationSource}
     rebuildHeroScenes();
     return HERO_SCENES.map(scene=>scene.id);
   `);
-  return logic(approved, reference, hidden);
+  return logic(approved, reference, hiddenApproved, hiddenReferences);
 };
 
-const reference = [
-  { id:'scene-01',enabled:true },
-  { id:'scene-02',enabled:true },
-  { id:'scene-03',enabled:false }
-];
 const approved = [
   { id:'approved-a',live:true,enabled:true },
   { id:'approved-b',live:true,enabled:true }
 ];
+const referenceOn = [
+  { id:'scene-01',reference:true,enabled:true },
+  { id:'scene-02',reference:true,enabled:false }
+];
 
-assert.deepEqual(evaluate({reference}), [],
-  'Legacy samples never appear when no approved hero photos are enabled');
-assert.deepEqual(evaluate({reference,approved}), ['approved-a','approved-b'],
-  'Only approved real photos appear even when legacy samples remain enabled');
-assert.deepEqual(evaluate({reference,approved,hidden:['a']}), ['approved-b'],
-  'A hidden approved photo cannot re-enter the rotation');
-assert.deepEqual(evaluate({reference,approved,hidden:['a','b']}), [],
-  'Hiding the last approved photo shows the branded background, not samples');
-assert.deepEqual(evaluate({reference,approved:[{id:'approved-a',live:true,enabled:false}]}), [],
-  'A disabled approved photo cannot enter the rotation');
-assert.deepEqual(evaluate({reference,approved:[{id:'scene-01',enabled:true}]}), [],
-  'An illustrative image without live approval cannot masquerade as a photo');
+assert.deepEqual(evaluate(), [], 'No samples should appear without explicit approval');
+assert.deepEqual(evaluate({approved}), ['approved-a','approved-b'],
+  'Approved enabled gallery photos are displayed');
+assert.deepEqual(evaluate({reference:referenceOn}), ['scene-01'],
+  'An explicitly enabled original slideshow image is displayed');
+assert.deepEqual(evaluate({approved,reference:referenceOn}),
+  ['approved-a','approved-b','scene-01'],
+  'Approved submissions and manually enabled original images coexist');
+assert.deepEqual(evaluate({approved,reference:referenceOn,hiddenReferences:['scene-01']}),
+  ['approved-a','approved-b'], 'Disabling an original scene removes it immediately');
+assert.deepEqual(evaluate({approved,reference:referenceOn,hiddenApproved:['a']}),
+  ['approved-b','scene-01'], 'Disabling one gallery photo preserves the other scenes');
+assert.deepEqual(evaluate({reference:[{id:'scene-02',reference:true,enabled:false}]}), [],
+  'An original photograph marked OFF never appears as automatic fallback');
+assert.deepEqual(evaluate({reference:[{id:'scene-02',enabled:true}]}), [],
+  'An original image cannot appear without a verified reference setting');
+assert.deepEqual(evaluate({approved:[{id:'approved-a',live:true,enabled:false}]}), [],
+  'Gallery photos marked OFF are excluded');
 assert.match(app, /let HERO_SCENES\s*=\s*\[\]/,
-  'Never render an unapproved sample image on initial page load');
-assert.match(app, /HERO_SCENES\.length<2/,
-  'Protect zero/single-slide playback');
-assert.match(studio, /checkbox\.disabled=liveSaving\|\|!s\.live/,
-  'Studio reference sample inclusion switches must be disabled');
-assert.match(studio, /config\.slides\.filter\(s=>s\.live&&s\.enabled\)/,
-  'Studio preview/playback only includes approved live photographs');
-
-console.log('PASS: Approved-only hero playback, disabled-photo exclusion, and no legacy sample fallback.');
+  'The hero starts empty until server choices load');
+assert.match(app, /memory_hero_reference_choices/,
+  'The public hero reads authoritative reference choices from Supabase');
+assert.match(studio, /memory_staff_save_reference_hero_scene/,
+  'Original photos are saved through a server-authorized function');
+assert.match(studio, /checkbox\.disabled=liveSaving\|\|\(s\.reference&&\!canManageReferences\)/,
+  'Only authorized statewide staff can toggle original images');
+assert.match(studio, /config\.slides\.filter\(s=>\(s\.live\|\|s\.reference\)&&s\.enabled\)/,
+  'Studio playback reflects both explicitly enabled types');
+console.log('PASS: Approved and original slideshow images require explicit ON settings; OFF is respected.');
