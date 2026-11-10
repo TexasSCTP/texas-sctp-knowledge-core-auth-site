@@ -9,9 +9,9 @@
   <meta property="og:description" content="Explore the Texas SCTP team logo directory, view official team logos and update your team listing.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-gallery-compat-2">
+  <link rel="stylesheet" href="./styles.css?v=20261110-single-directory-1">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261110-gallery-compat-2"></script>
+  <script defer src="./app.js?v=20261110-single-directory-1"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -29,38 +29,16 @@
     </div>
   </header>
   <main>
-    <section class="directory-intro wrap" aria-labelledby="intro-heading">
-      <div class="directory-intro-copy">
-        <p class="section-kicker">TEXAS SCTP TEAM DIRECTORY</p>
-        <h1 id="intro-heading">Our teams. Their logos.</h1>
-        <p>Browse official team logos from across Texas. Find your team to see the artwork on file or submit an updated version.</p>
-      </div>
-      <div class="directory-totals" aria-label="Directory totals">
-        <span><strong id="total-teams">—</strong><small>Teams listed</small></span>
-        <span><strong id="total-logos">—</strong><small>Logos on file</small></span>
-      </div>
-    </section>
-    <section class="featured-section" aria-labelledby="featured-heading">
-      <div class="wrap">
-        <div class="featured-heading-row">
-          <div>
-            <p class="section-kicker">OFFICIAL ARTWORK ON FILE</p>
-            <h2 id="featured-heading">Team logos</h2>
-            <p class="featured-description">Actual logos uploaded by participating Texas SCTP teams.</p>
-          </div>
-          <button id="show-logos" type="button" class="featured-text-link">See all teams with logos <span aria-hidden="true">→</span></button>
-        </div>
-        <div class="featured-logo-grid" id="featured-logo-grid" aria-live="polite">
-          <p class="featured-loading">Loading official team logos…</p>
-        </div>
-      </div>
-    </section>
     <section class="directory wrap" id="directory" aria-labelledby="directory-heading">
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">BROWSE BY TEAM</p>
-          <h2 id="directory-heading">Team directory</h2>
-          <p class="section-description">Search by name, SHOT ID, school or home range. Teams with logos on file appear first.</p>
+      <div class="directory-intro">
+        <div class="directory-intro-copy">
+          <p class="section-kicker">TEXAS SCTP TEAM DIRECTORY</p>
+          <h1 id="directory-heading">Our teams. Their logos.</h1>
+          <p>Browse the actual logos on file and find your team. Teams with uploaded logos appear first. Search below to upload or update yours.</p>
+        </div>
+        <div class="directory-totals" aria-label="Directory totals">
+          <span><strong id="total-teams">—</strong><small>Teams listed</small></span>
+          <span><strong id="total-logos">—</strong><small>Logos on file</small></span>
         </div>
       </div>
       <div class="tools">
@@ -71,8 +49,8 @@
       <div class="filter-bar">
         <div class="filter-buttons" role="group" aria-label="Logo status">
           <button type="button" class="filter-pill active" data-status="all" aria-pressed="true">All teams</button>
-          <button type="button" class="filter-pill" data-status="missing" aria-pressed="false">Needs a logo</button>
           <button type="button" class="filter-pill" data-status="present" aria-pressed="false">Logo on file</button>
+          <button type="button" class="filter-pill" data-status="missing" aria-pressed="false">Needs a logo</button>
         </div>
         <span id="results-count" class="result-count" aria-live="polite">Loading teams...</span>
       </div>
