@@ -126,3 +126,15 @@
 .footer-links{display:flex;align-items:center;gap:18px}
 @media(max-width:1040px){.hero-inner{gap:20px}.hero-side{width:300px}.hero-copy h1{font-size:clamp(35px,4.8vw,47px)}}
 @media(max-width:750px){.hero{width:calc(100% - 18px);margin:10px auto 0;border-radius:10px}.hero-inner{padding:29px 18px 35px;gap:25px}.hero-copy h1{font-size:clamp(37px,8vw,48px)}.hero-side{width:min(100%,340px);align-self:center}.logo-wall-tile{height:78px}.footer-links{gap:11px}}
+
+
+/* Verified directory listings. The layout gracefully handles records pending review. */
+.card-details{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px;min-width:0}
+.team-kind{font-size:10px;letter-spacing:.065em;text-transform:uppercase;color:#145d78;background:#eaf1f5;border:1px solid #d8e6ec;align-self:flex-start;font-weight:900;border-radius:4px;padding:5px 8px;margin-bottom:5px}
+.card-detail{display:flex;flex-direction:column;gap:2px;line-height:1.45;margin:0;font-size:11px}
+.card-detail span{font-weight:650;color:#82949e}
+.card-detail strong{font-size:11.5px;font-weight:750;color:var(--navy);overflow-wrap:anywhere}
+.card-email{font-size:11px;font-weight:700;color:#1d587b;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:2px;line-height:1.5}
+.card-email:hover{color:#a4762d}
+.card-pending{font-size:11px;color:#7b8e9a;line-height:1.55;margin:0;padding:8px 10px;background:#f5f7f8;border-left:2px solid #d1dbe0}
+@media(max-width:750px){.card-details{margin-bottom:11px}.card-detail strong{font-size:11px}}
