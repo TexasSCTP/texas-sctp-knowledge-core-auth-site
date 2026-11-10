@@ -76,7 +76,7 @@
 
         <!-- Personal invitation letter -->
         <tr><td class="mobile-pad" bgcolor="#ffffff" style="padding:36px 44px 20px;background-color:#ffffff;">
-          <p class="mobile-body" style="margin:0 0 19px;color:#273849;font-size:16px;line-height:27px;">Dear {{FirstName|default("Friend")}},</p>
+          <p class="mobile-body" style="margin:0 0 19px;color:#273849;font-size:16px;line-height:27px;">{% if FirstName is empty %}Dear Friend,{% else %}Dear {{FirstName}},{% endif %}</p>
           <p class="mobile-body" style="margin:0 0 17px;color:#273849;font-size:16px;line-height:27px;">I wanted to reach out personally and invite you to join us for the <strong>2026 Scholastic Shooting Sports Foundation Texas Banquet</strong> this Saturday at Circle R Ranch.</p>
           <p class="mobile-body" style="margin:0 0 17px;color:#273849;font-size:16px;line-height:27px;">You were part of the community surrounding last year's banquet, and your support of youth shooting sports is sincerely appreciated. We would be honored to welcome you back for another evening with friends, coaches, families and supporters who share that commitment.</p>
           <p class="mobile-body" style="margin:0;color:#273849;font-size:16px;line-height:27px;">Beyond the dinner and festivities, this is an opportunity to celebrate the student-athletes and the lasting value of the <strong>SCTP and SASP programs</strong>. Their growth, sportsmanship and opportunities are the reason we gather.</p>
