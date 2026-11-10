@@ -659,3 +659,71 @@ body{background:var(--paper)}
 .staff-hub-link{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#153b59;border:1px solid #dde6eb;border-radius:7px;padding:9px 13px;margin-right:10px;text-decoration:none;font-size:12px;font-weight:850;white-space:nowrap}
 .staff-hub-link:hover{background:#f6f2e9;border-color:#d9a441}
 @media(max-width:760px){.staff-hub-link{padding:8px 10px;font-size:10px;margin-right:3px}}
+
+
+/* Photo concerns: discreet visitor flag below each individual gallery photograph. */
+.photo-card-flag-row{display:flex;justify-content:flex-end;align-items:center;padding:10px 0 2px}
+.photo-card-flag,.photo-view-report{appearance:none;display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#728495;font-size:10.7px;font-weight:750;line-height:1.5;cursor:pointer;padding:5px 6px;border-radius:5px}
+.photo-card-flag .icon,.photo-view-report .icon{width:13px;height:13px;flex-shrink:0}
+.photo-card-flag:hover,.photo-view-report:hover{color:#953d34;background:#fff5f1}
+.photo-card-flag:focus-visible,.photo-view-report:focus-visible{outline:3px solid #ccab68;outline-offset:2px}
+.photo-view-report{margin-top:9px;color:#5b7589;font-size:11px;border:1px solid #dee7ea;padding:10px 12px}
+.photo-flag-dialog{width:min(690px,calc(100vw - 28px))}
+.photo-flag-modal{padding-bottom:14px}
+.photo-flag-context{display:flex;align-items:center;gap:16px;padding:13px 14px;margin:4px 0 22px;border:1px solid #e3e9ec;border-radius:8px;background:#f8fafb}
+.photo-flag-context img,.photo-flag-no-image{width:110px;height:84px;border-radius:5px;object-fit:cover;flex:0 0 110px;background:#e3eaee}
+.photo-flag-no-image{display:grid;place-items:center;text-align:center;padding:10px;color:#738694;font-size:10px}
+.photo-flag-context>div:last-child{display:flex;flex-direction:column;gap:5px;min-width:0}
+.photo-flag-context strong{font-weight:900;font-size:13px;color:#173e59}
+.photo-flag-context span{color:#667d8d;font-size:11px;line-height:1.55}
+.photo-flag-context small{font-size:10px;color:#9b7436;font-weight:800}
+.photo-flag-modal .form-field textarea{min-height:110px;resize:vertical}
+.photo-flag-modal .form-field small{font-size:10.3px;color:#718695}
+.photo-flag-modal .form-field label span{font-size:10px;font-weight:500;color:#8295a1}
+.photo-flag-privacy{display:flex;gap:9px;align-items:flex-start;background:#f3f7f8;border-left:3px solid #d0a152;border-radius:0 6px 6px 0;padding:12px 14px;font-size:10.8px;line-height:1.7;color:#4e697b;margin:10px 0 20px}
+.photo-flag-privacy .icon{margin-top:2px;flex:0 0 15px;width:15px;height:15px}
+.photo-flag-success{padding:22px 0 18px;max-width:510px;margin:auto;text-align:center}
+.photo-flag-success h3{font:700 23px Georgia,serif;color:#143c58;margin:12px 0}
+.photo-flag-success p{color:#587082;line-height:1.7;font-size:12px;margin-bottom:14px}
+.photo-flag-success .flag-success-mark{display:grid;place-items:center;margin:auto;width:51px;height:51px;border-radius:50%;background:#e7f5ed;color:#247e53}
+.photo-flag-success .flag-success-mark .icon{width:26px;height:26px}
+.photo-flag-success .flag-reference{color:#3a566a;font-size:11.5px;background:#f5f8fa;padding:10px;border-radius:5px}
+.photo-flag-success .btn{margin-top:8px}
+
+/* Confidential photo report moderation inbox. */
+.photo-report-admin{margin-top:22px;padding:24px;border:1px solid #e1e8eb;border-radius:10px;background:#fff}
+.photo-report-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:17px;margin-bottom:23px}
+.photo-report-heading .eyebrow{font-size:10px;letter-spacing:.1em;color:#a56f29;font-weight:900}
+.photo-report-heading h3{font-family:Georgia,serif;font-size:25px;font-weight:500;color:#143b56;margin:8px 0}
+.photo-report-heading p{color:#60788a;font-size:11.8px;line-height:1.65;max-width:690px;margin:0}
+.photo-report-tabs{display:flex;gap:6px;flex-shrink:0;border:1px solid #e0e8ec;border-radius:7px;padding:4px;background:#f5f8fa}
+.photo-report-tabs button{border:0;border-radius:5px;background:transparent;padding:9px 12px;font-size:11px;font-weight:850;color:#5c788b;white-space:nowrap;cursor:pointer}
+.photo-report-tabs button.active{background:#123b58;color:white}
+.photo-report-tabs button:focus-visible{outline:3px solid #d8a956;outline-offset:2px}
+.photo-report-list{display:grid;gap:17px}
+.photo-report-card{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);overflow:hidden;border:1px solid #dce6e9;border-radius:9px;background:#fff;box-shadow:0 4px 14px rgba(22,49,66,.045)}
+.photo-report-card.is-sensitive{border-left:4px solid #c68b51}
+.photo-report-media{min-height:200px;position:relative;background:#e7edf0}
+.photo-report-media img{width:100%;height:100%;position:absolute;inset:0;object-fit:contain;background:#293948}
+.photo-report-image-missing{display:grid;place-items:center;height:100%;font-size:12px;color:#78909c}
+.photo-report-media-status{position:absolute;bottom:10px;left:10px;right:10px;display:block;padding:8px 10px;border-radius:5px;background:rgba(16,48,67,.9);color:#fff;font-size:10px;font-weight:900;line-height:1.35;text-align:center}
+.photo-report-media-status.hidden-photo{background:rgba(116,52,43,.95)}
+.photo-report-details{padding:20px 22px}
+.photo-report-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:11px}
+.photo-report-reason{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:900;color:#275877;background:#edf5f7;padding:7px 10px;border-radius:4px}
+.photo-report-reason.urgent{background:#fff2e5;color:#97552c}
+.photo-report-reason .icon{width:13px;height:13px}
+.photo-report-status{font-size:10px;color:#59768a;font-weight:900}
+.photo-report-team{display:block;font-size:13px;color:#153c59;margin-bottom:5px}
+.photo-report-meta{color:#7c8d9c;font-size:10px;line-height:1.6}
+.photo-report-comments{margin:13px 0 11px;color:#263f51;font-size:12.2px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.photo-report-reporter{display:flex;gap:5px 14px;flex-wrap:wrap;font-size:10.8px;color:#667e8d;padding:10px 0;border-top:1px solid #edf1f3}
+.photo-report-reporter a{color:#246283;text-decoration:underline;overflow-wrap:anywhere}
+.photo-report-previous{background:#f6f8fa;color:#566e80;padding:10px 12px;border-radius:5px;font-size:10.8px;line-height:1.55}
+.photo-report-details .form-field{margin:11px 0}
+.photo-report-details textarea{width:100%;min-height:74px;resize:vertical}
+.photo-report-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.photo-report-actions .btn{font-size:10.5px;min-height:36px}
+.photo-report-note{margin:10px 0 0;color:#768b9a;font-size:10.4px;line-height:1.55}
+@media(max-width:940px){.photo-report-heading{flex-direction:column;align-items:flex-start}.photo-report-card{grid-template-columns:190px minmax(0,1fr)}}
+@media(max-width:660px){.photo-report-admin{padding:13px}.photo-report-card{grid-template-columns:1fr}.photo-report-media{height:185px;min-height:185px}.photo-report-details{padding:15px}.photo-report-tabs{flex-wrap:wrap;width:100%}.photo-report-tabs button{flex:1}.photo-flag-context img{width:88px;height:76px;flex-basis:88px}}
