@@ -87,3 +87,15 @@ key have been retired.
 Do not reintroduce a second staff login on the public Team Logo Portal.
 The canonical staff editor source is now in the On the Range repository
 subfolder apps/tournament-memories/moderator-hub/team-logos/.
+
+## Community team listing reports (November 10, 2026)
+
+A small flag on each public team card lets any visitor submit an inactivity, incorrect-information, or other team directory concern. An optional note is limited to 500 characters. No account or CAPTCHA is required. Submitting a report cannot hide a team.
+
+The team-logo-portal Edge Function exposes report_team for visitors and staff_reports, staff_report_review, and staff_report_summary for authenticated statewide moderators. The database table public.logo_portal_reports is RLS-protected and grants no direct access to public roles. Server-hashed IP fingerprints, rather than raw IP addresses, enforce at most 5 submissions per visitor per day and 1 per team every 7 days. No reporting identity is displayed publicly.
+
+The canonical staff queue is in the shared Moderator Hub at /moderator-hub/team-logos/. Staff may dismiss a report without changing the listing or confirm inactivity with a required verification note (at least 8 characters). A confirmed inactivity decision sets memory_teams.portal_visible=false and closes pending flags for that team atomically with private history. The team and logo disappear from the public directory and public logo uploads stop for that team. Files and profile data remain stored, and staff can restore visibility when activity is verified.
+
+The existing active/SHOT state is unchanged. A previously issued signed storage URL can remain valid for its original one-hour lifetime even after hiding the public listing.
+
+Backend source: supabase/functions/team-logo-portal/index.ts. SQL transaction tests exercised the flow and rolled back the test changes. Real staff sign-in and visitor browser testing remain useful final checks.
