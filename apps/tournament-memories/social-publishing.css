@@ -93,3 +93,7 @@
 .social-authorization-proof a{color:#21657b;font-weight:750;overflow-wrap:anywhere}
 .social-authorization-proof small{display:block;font-size:10px;color:#6a827a;margin-top:4px}
 @media(max-width:620px){.social-authorization-proof{padding:13px 15px}}
+
+/* Persisted approval feedback uses the actual publishing queue state. */
+.social-queue-confirmation{margin-top:13px;padding:12px 14px;border:1px solid #bed9c9;border-radius:7px;background:#f0f8f3;color:#1e5842;font-size:11.5px;line-height:1.65}
+.social-queue-confirmation strong{font-weight:900}
