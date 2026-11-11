@@ -19,7 +19,7 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
     return ['TEXAS SCTP | ON THE RANGE',
       teamName(p)+' in action at '+eventName(p)+'.',
       cap(d.caption),
-      'Catch more of the action: https://texas-sctp-tournament-memories-preview.onrender.com/#memory-'+p.id,
+      'Catch more of the action: https://ontherange.texassctp.com/#memory-'+p.id,
       '#TexasSCTP #OnTheRange'
     ].filter(Boolean).join('\n\n');
   }
