@@ -76,8 +76,14 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
     const d=draftFor(p),imgs=photosFor(p.id),auth=authFor(p),eligible=!!(p.social_consent&&auth?.social_granted&&auth?.confirmed_adult&&!p.privacy_hold&&p.gallery_consent);
     const already=local.outbox.filter(x=>x.post_id===p.id);
     const tags=already.map(x=>`<span class="social-pill neutral">${h(platformName(x.platform))} · ${h(x.status)}</span>`).join('');
-    const allPlatforms=(d.facebook?1:0)+(d.instagram?1:0);
-    const duplicate=already.some(x=>x.photo_id===d.photoId&&((x.platform==='facebook'&&d.facebook)||(x.platform==='instagram'&&d.instagram)));
+    const selectedPlatforms=['facebook','instagram'].filter(platform=>d[platform]);
+    const allPlatforms=selectedPlatforms.length;
+    const selectedExisting=already.filter(item=>item.photo_id===d.photoId&&selectedPlatforms.includes(item.platform));
+    const allPreviouslySubmitted=selectedPlatforms.length>0&&selectedPlatforms.every(platform=>selectedExisting.some(item=>item.platform===platform));
+    const statusText={ready:'approved and queued',held:'on hold',dispatching:'sending to Zapier',accepted:'accepted by Zapier (publication unconfirmed)',published:'published',failed:'failed (review publishing history)',cancelled:'cancelled'};
+    const visibleStatus=selectedExisting.map(item=>`${platformName(item.platform)}: ${statusText[item.status]||item.status}`).join(' · ');
+    const singlePausedReady=selectedExisting.length===1&&selectedExisting[0].status==='ready'&&channelStatus(selectedExisting[0].platform)==='Paused';
+    const actionLabel=allPreviouslySubmitted?(selectedExisting.every(item=>['ready','held'].includes(item.status))?'Already queued':'Previously submitted'):'Approve & Queue';
     return `<article class="social-review-card">
       <div class="social-card-heading"><div><div class="social-overline">TEAM MEMORY · ${h(context.dateFmt(p.photo_date))}</div><h4>${h(teamName(p))}</h4><p>${h(eventName(p))}</p></div><div class="social-pill-stack">${consentLabel(p)}${tags}</div></div>
       ${eligible?`<div class="social-authorization-proof"><strong>Permission recorded:</strong> ${h(auth.authorizer_name)} · ${h(roleLabel(auth.authorizer_role))} · <a href="mailto:${h(auth.authorizer_email)}">${h(auth.authorizer_email)}</a> · ${h(context.dateFmt(auth.accepted_at))}<small>Submission authorization ${h(auth.disclosure_version)}. Check any separate releases required for recognizable minors before queueing.</small></div><div class="social-review-body">
@@ -90,7 +96,8 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
           <div class="social-character-counter"><span>Approved caption is saved separately from the gallery caption.</span><span data-social-count="${h(p.id)}">${d.caption.length}/900</span></div>
           <details class="social-preview-details"><summary>Preview full post caption</summary><pre data-social-preview="${h(p.id)}">${h(captionPreview(p,d))}</pre></details>
           <label class="social-review-confirm"><input type="checkbox" data-social-verified="${h(p.id)}" ${d.verified?'checked':''}><span>I reviewed the selected photo and final caption, verified social-sharing permission, and checked any required permissions for minors.</span></label>
-          <div class="social-card-actions"><button class="btn btn-primary" data-action="queue-social" data-id="${h(p.id)}" ${(local.busy||!d.verified||!d.photoId||!allPlatforms||!imgs.length)?'disabled':''}>${local.busy?'Saving...':'Approve & Queue'} →</button><small>${duplicate?'Existing queue entries will not be duplicated. ':' '}Queueing does not immediately publish while channels are paused.</small></div>
+          <div class="social-card-actions"><button class="btn btn-primary" data-action="queue-social" data-id="${h(p.id)}" ${(local.busy||!d.verified||!d.photoId||!allPlatforms||!imgs.length||allPreviouslySubmitted)?'disabled':''}>${local.busy?'Saving...':actionLabel}${allPreviouslySubmitted?'':' →'}</button><small>${allPreviouslySubmitted?'This photo is already recorded for the selected channels.':'Queueing does not immediately publish while channels are paused.'}</small></div>
+          ${selectedExisting.length?`<div class="social-queue-confirmation" role="status" aria-live="polite"><strong>Publishing status saved.</strong> ${h(visibleStatus)}.${singlePausedReady?' Publishing is paused; this photo has not been sent.':''}</div>`:''}
         </div>
       </div>`:`<div class="social-locked-message"><strong>Gallery approved, social publishing unavailable.</strong><p>${p.privacy_hold?'This submission is under a privacy hold.': !p.social_consent?'This submission has gallery permission only. Social-media permission was not granted.':!auth?'This earlier upload has no named adult authorization under the current release. Request a new consented submission before social posting.':'This submission has not granted social-media publication authorization.'}</p></div>`}
     </article>`;
@@ -153,8 +160,10 @@ window.TEXAS_SCTP_SOCIAL_ADMIN=(function texasSctpSocialAdmin(){
       try{
         const {data,error}=await context.state.client.rpc('memory_staff_queue_social',{p_post_id:p.id,p_photo_id:d.photoId,p_platforms:targets,p_caption:d.caption.trim()});
         if(error)throw Error(error.message);
-        context.toast(data?.queued?`${data.queued} publishing item(s) queued. Channels remain paused.`:'This photo and channel are already in the queue.');
-        d.verified=false;await load();
+        const queuedCount=Number(data?.queued)||0;
+        d.verified=false;
+        await load();
+        context.toast(queuedCount?`${queuedCount} publishing item(s) saved to the queue. Status is shown beside the photo.`:'This photo was already submitted. Its publishing status is shown beside the photo.');
       }catch(e){context.toast('Could not queue this photo: '+e.message,true);}
       finally{local.busy=false;context.redraw();}
       return;
