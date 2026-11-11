@@ -9,9 +9,9 @@
   <meta property="og:description" content="Explore the Texas SCTP team logo directory, view official team logos and update your team listing.">
   <title>Texas SCTP | Team Logo Portal</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-upload-value-2">
+  <link rel="stylesheet" href="./styles.css?v=20261111-logo-motion-1">
   <script defer src="./config.js"></script>
-  <script defer src="./app.js?v=20261110-logo-review-2"></script>
+  <script defer src="./app.js?v=20261111-logo-motion-1"></script>
 </head>
 <body>
   <div class="top-stripe"><div class="wrap stripe-content"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>OFFICIAL TEAM RESOURCE</span></div></div>
@@ -29,6 +29,18 @@
     </div>
   </header>
   <main>
+    <section class="logo-motion" id="team-logo-motion" aria-labelledby="logo-motion-heading" hidden>
+      <div class="wrap logo-motion-heading-row">
+        <div>
+          <p class="logo-motion-eyebrow">TEXAS SCTP TEAM ARTWORK</p>
+          <h2 id="logo-motion-heading">Team logos on file</h2>
+        </div>
+        <p class="logo-motion-meta"><strong id="logo-motion-count">0</strong> <span id="logo-motion-plural">approved team logos</span><span class="logo-motion-separator" aria-hidden="true">·</span> Automatically updated after approval</p>
+      </div>
+      <div class="logo-motion-viewport" role="region" aria-label="Approved team logo slideshow" tabindex="0">
+        <div class="logo-motion-track" id="logo-motion-track"></div>
+      </div>
+    </section>
     <section class="directory wrap" id="directory" aria-labelledby="directory-heading">
       <div class="directory-intro">
         <div class="directory-intro-copy">
@@ -51,7 +63,7 @@
       <div class="tools">
         <label class="search-control" for="team-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 5 5"></path></svg><input id="team-search" type="search" placeholder="Search team name or SHOT ID" autocomplete="off"></label>
         <label class="select-control"><span>League</span><select id="league-filter"><option value="all">All leagues</option></select></label>
-        <label class="select-control" for="kind-filter"><span>Type</span><select id="kind-filter"><option value="all">All teams</option><option value="school">School teams</option><option value="club">Club teams</option><option value="pending">Details pending</option></select></label>
+        <label class="select-control" for="kind-filter"><span>Type</span><select id="kind-filter"><option value="all">All teams</option><option value="school">School teams</option><option value="club">Club teams</option></select></label>
       </div>
       <div class="filter-bar">
         <div class="filter-buttons" role="group" aria-label="Logo status">

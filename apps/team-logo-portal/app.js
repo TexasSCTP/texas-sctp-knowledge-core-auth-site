@@ -44,6 +44,67 @@
     $('#total-teams').textContent = String(allTeams.length);
     $('#total-logos').textContent = String(countLogo());
   }
+
+  // The public catalog only contains approved logos. Never expose pending uploads.
+  const showcase = $('#team-logo-motion'), showcaseTrack = $('#logo-motion-track');
+  let showcaseFingerprint = '', lastShowcaseRender = 0;
+  let lastDirectoryFetch = 0, lastDirectoryRender = 0, directoryFingerprint = '', loadingTeams = false;
+  const logoPath = (url) => clean(url).split('?')[0];
+
+  function motionGroup(logos, copies, duplicate) {
+    const group = document.createElement('div');
+    group.className = 'logo-motion-group';
+    if (duplicate) group.setAttribute('aria-hidden', 'true');
+    for (let copy = 0; copy < copies; copy++) {
+      for (const team of logos) {
+        const tile = document.createElement('div');
+        tile.className = 'logo-motion-tile';
+        const decorative = duplicate || copy > 0;
+        if (decorative) tile.setAttribute('aria-hidden', 'true');
+        const art = document.createElement('div');
+        art.className = 'logo-motion-art';
+        const image = document.createElement('img');
+        image.src = team.logoUrl;
+        image.alt = decorative ? '' : clean(team.name) + ' team logo';
+        image.loading = decorative ? 'lazy' : 'eager';
+        image.decoding = 'async';
+        image.onerror = () => tile.classList.add('logo-motion-broken');
+        art.append(image);
+        const name = document.createElement('strong');
+        name.className = 'logo-motion-team';
+        name.textContent = clean(team.name);
+        tile.append(art, name);
+        group.append(tile);
+      }
+    }
+    return group;
+  }
+
+  function renderLogoMotion(force = false) {
+    if (!showcase || !showcaseTrack) return;
+    const logos = allTeams.filter(t => !!t.logoUrl).sort((a, b) =>
+      a.name.localeCompare(b.name, 'en', {sensitivity:'base', numeric:true})
+    );
+    if (!logos.length) {
+      showcase.hidden = true;
+      showcaseTrack.replaceChildren();
+      showcaseFingerprint = '';
+      return;
+    }
+    $('#logo-motion-count').textContent = String(logos.length);
+    $('#logo-motion-plural').textContent = logos.length === 1 ? 'approved team logo' : 'approved team logos';
+    // Fill each half of the seamless loop beyond the viewport width.
+    const copies = Math.max(1, Math.ceil((window.innerWidth + 60) / (logos.length * 216)));
+    const fingerprint = logos.map(t => t.id + ':' + t.name + ':' + logoPath(t.logoUrl)).join('|') + ':' + copies;
+    // Signed image links last one hour; renew them periodically without
+    // restarting the animation on every two-minute catalog refresh.
+    if (!force && fingerprint === showcaseFingerprint && Date.now() - lastShowcaseRender < 20 * 60 * 1000) return;
+    showcaseTrack.replaceChildren(motionGroup(logos, copies, false), motionGroup(logos, copies, true));
+    showcaseTrack.style.setProperty('--logo-motion-duration', Math.max(28, Math.round(logos.length * copies * 216 / 32)) + 's');
+    showcaseFingerprint = fingerprint;
+    lastShowcaseRender = Date.now();
+    showcase.hidden = false;
+  }
   function setStatusFilter(next) {
     statusFilter = next;
     document.querySelectorAll('[data-status]').forEach(btn => {
@@ -122,19 +183,9 @@
           mail.setAttribute('aria-label','Email '+team.name);
           details.append(mail);
         }
-      } else {
-        const awaiting = document.createElement('p');
-        awaiting.className = 'card-pending';
-        awaiting.textContent = 'Contact not yet approved';
-        details.append(awaiting);
       }
-    } else {
-      const pending = document.createElement('p');
-      pending.className = 'card-pending';
-      pending.textContent = 'Team details pending verification';
-      details.append(pending);
     }
-    body.append(details);
+    if (details.childElementCount) body.append(details);
     if (team.shotTeamId) {
       const shot = document.createElement('small');
       shot.className = 'card-shot';
@@ -164,7 +215,7 @@
     const kind = $('#kind-filter').value;
     return allTeams.filter(t =>
       (league === 'all' || t.league === league) &&
-      (kind === 'all' || (kind === 'pending' && !t.profileVerified) || (t.profileVerified && t.teamKind === kind)) &&
+      (kind === 'all' || (t.profileVerified && t.teamKind === kind)) &&
       (statusFilter === 'all' || (statusFilter === 'present') === !!t.logoUrl) &&
       (!q || clean(t.name).toLocaleLowerCase().includes(q) || clean(t.shotTeamId).toLocaleLowerCase().includes(q) ||
        clean(t.city).toLocaleLowerCase().includes(q) || clean(t.schoolName).toLocaleLowerCase().includes(q) ||
@@ -183,13 +234,17 @@
     statusMessage.hidden = matched.length > 0;
     if (!matched.length) statusMessage.textContent = 'No matching teams. Try another search or clear a filter.';
   }
-  async function loadTeams() {
-    statusMessage.hidden = false;
-    statusMessage.textContent = 'Loading the team directory...';
+  async function loadTeams(quiet = false) {
+    if (loadingTeams) return;
+    loadingTeams = true;
+    if (!quiet) {
+      statusMessage.hidden = false;
+      statusMessage.textContent = 'Loading the team directory...';
+    }
     try {
       const payload = await portalRequest();
       if (!Array.isArray(payload.teams)) throw Error('The directory response was incomplete.');
-      allTeams.splice(0, allTeams.length, ...payload.teams.map(t => ({
+      const refreshed = payload.teams.map(t => ({
         id: clean(t.id), name: clean(t.name), league: clean(t.league || 'Assignment Pending'),
         shotTeamId: clean(t.shotTeamId), logoUrl: t.logoUrl || null,
         teamKind: t.teamKind === 'school' || t.teamKind === 'club' ? t.teamKind : null,
@@ -197,21 +252,37 @@
         schoolName: clean(t.schoolName), homeRange: clean(t.homeRange),
         city: clean(t.city), contact: t.contact && typeof t.contact === 'object'
           ? {name:clean(t.contact.name),role:clean(t.contact.role),email:clean(t.contact.email)} : null
-      })));
-      const leagueSelect = $('#league-filter'), previous = leagueSelect.value;
-      leagueSelect.replaceChildren(new Option('All leagues', 'all'));
-      for (const league of [...new Set(allTeams.map(t => t.league))].sort((a,b) => a.localeCompare(b)))
-        leagueSelect.add(new Option(league, league));
-      if ([...leagueSelect.options].some(o => o.value === previous)) leagueSelect.value = previous;
-      updateCounts();
-      render();
+      }));
+      const nextFingerprint = refreshed.map(t => [t.id, t.name, t.league, logoPath(t.logoUrl),
+        t.profileVerified, t.teamKind, t.schoolName, t.homeRange, t.city,
+        t.contact?.name || '', t.contact?.email || ''].join(':')).join('|');
+      const needsDraw = !quiet || nextFingerprint !== directoryFingerprint ||
+        Date.now() - lastDirectoryRender > 20 * 60 * 1000;
+      directoryFingerprint = nextFingerprint;
+      allTeams.splice(0, allTeams.length, ...refreshed);
+      if (needsDraw) {
+        const leagueSelect = $('#league-filter'), previous = leagueSelect.value;
+        leagueSelect.replaceChildren(new Option('All leagues', 'all'));
+        for (const league of [...new Set(allTeams.map(t => t.league))].sort((a,b) => a.localeCompare(b)))
+          leagueSelect.add(new Option(league, league));
+        if ([...leagueSelect.options].some(o => o.value === previous)) leagueSelect.value = previous;
+        updateCounts();
+        render();
+        lastDirectoryRender = Date.now();
+      }
+      renderLogoMotion();
+      lastDirectoryFetch = Date.now();
     } catch (e) {
-      statusMessage.hidden = false;
-      const recover = e?.name === 'TimeoutError' || e?.name === 'AbortError'
-        ? 'The directory request timed out. Refresh the page to try again.'
-        : 'Team directory could not load. ' + errMessage(e);
-      statusMessage.textContent = recover;
-      $('#results-count').textContent = 'Unavailable';
+      if (!quiet || !allTeams.length) {
+        statusMessage.hidden = false;
+        const recover = e?.name === 'TimeoutError' || e?.name === 'AbortError'
+          ? 'The directory request timed out. Refresh the page to try again.'
+          : 'Team directory could not load. ' + errMessage(e);
+        statusMessage.textContent = recover;
+        $('#results-count').textContent = 'Unavailable';
+      }
+    } finally {
+      loadingTeams = false;
     }
   }
   function revokePreview() { if (selectedPreviewUrl) URL.revokeObjectURL(selectedPreviewUrl); selectedPreviewUrl = null; selectedBlob = null; }
@@ -436,6 +507,19 @@
     prepareFile(e.dataTransfer.files[0]);
   });
   form.addEventListener('submit', submit);
+  // Newly approved logos appear on subsequent visits and within two minutes
+  // on an already open page. Never refresh during a pending upload.
+  function refreshIfStale() {
+    if (!document.hidden && !busy && Date.now() - lastDirectoryFetch > 60 * 1000) loadTeams(true);
+  }
+  document.addEventListener('visibilitychange', refreshIfStale);
+  window.addEventListener('focus', refreshIfStale);
+  setInterval(() => { if (!document.hidden && !busy) loadTeams(true); }, 120000);
+  let motionResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(motionResizeTimer);
+    motionResizeTimer = setTimeout(() => renderLogoMotion(true), 200);
+  });
   if (!apiRoot || !publicKey) { statusMessage.textContent = 'The directory is not configured. Please contact Texas SCTP.'; }
   else loadTeams();
 })();

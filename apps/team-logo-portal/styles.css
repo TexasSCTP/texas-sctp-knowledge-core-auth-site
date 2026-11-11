@@ -225,3 +225,28 @@ body{background:#f8f9f8}
 .logo-upload-note-action:hover{background:#eaf1f4;border-color:#92abbc}
 .logo-upload-note-action span{font-size:16px;color:#6a8293}
 @media(max-width:800px){.logo-upload-note{align-items:stretch;flex-direction:column;gap:13px;padding:16px;margin-bottom:14px}.logo-upload-note-action{align-self:flex-start}.logo-upload-note p{font-size:11.75px}}
+
+/* Approved-logo motion strip. The source images are served unaltered from the
+   existing moderated logo catalog; the alphabetical directory remains the
+   only full listing of teams. */
+.logo-motion[hidden]{display:none}
+.logo-motion{position:relative;overflow:hidden;padding:28px 0 32px;background:linear-gradient(180deg,#edf3f5 0%,#f4f7f7 100%);border-top:1px solid #e2e9eb;border-bottom:1px solid #dce5e9}
+.logo-motion-heading-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:17px}
+.logo-motion-eyebrow{margin:0 0 6px;color:#97702e;font-size:10px;font-weight:900;letter-spacing:.16em}
+.logo-motion-heading-row h2{margin:0;color:var(--navy);font-family:var(--serif);font-weight:400;font-size:clamp(27px,3vw,36px);letter-spacing:-.035em;line-height:1.15}
+.logo-motion-meta{margin:0 0 4px;color:#5c7182;font-size:11.5px;line-height:1.5;text-align:right}
+.logo-motion-meta strong{color:var(--navy);font-size:13px}
+.logo-motion-separator{padding:0 7px;color:#b28c4b}
+.logo-motion-viewport{width:100%;overflow:hidden;outline-offset:-4px;-webkit-mask-image:linear-gradient(to right,transparent,black 5%,black 95%,transparent);mask-image:linear-gradient(to right,transparent,black 5%,black 95%,transparent)}
+.logo-motion-viewport:focus-visible{outline:2px solid #a17632}
+.logo-motion-track{display:flex;align-items:stretch;width:max-content;animation:team-logo-motion var(--logo-motion-duration,50s) linear infinite;will-change:transform}
+.logo-motion-viewport:hover .logo-motion-track,.logo-motion-viewport:focus-within .logo-motion-track{animation-play-state:paused}
+.logo-motion-group{display:flex;flex:none;gap:14px;padding-right:14px}
+.logo-motion-tile{width:202px;height:156px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 14px 10px;gap:9px;background:#fff;border:1px solid #dfe7eb;border-radius:10px;box-shadow:0 4px 16px rgba(15,44,76,.045)}
+.logo-motion-art{width:100%;height:91px;display:flex;align-items:center;justify-content:center}
+.logo-motion-art img{display:block;max-width:100%;max-height:88px;width:auto;height:auto;object-fit:contain}
+.logo-motion-team{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;max-height:34px;width:100%;font-size:11px;line-height:1.45;font-weight:800;color:#183b5b;text-align:center;overflow-wrap:anywhere}
+.logo-motion-broken .logo-motion-art img{display:none}
+@keyframes team-logo-motion{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:700px){.logo-motion{padding:22px 0 25px}.logo-motion-heading-row{align-items:flex-start;flex-direction:column;gap:9px;margin-bottom:14px}.logo-motion-meta{text-align:left;font-size:10.5px}.logo-motion-heading-row h2{font-size:29px}.logo-motion-tile{width:164px;height:136px;padding:10px 10px 9px;gap:6px}.logo-motion-art{height:79px}.logo-motion-art img{max-height:76px}.logo-motion-team{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.logo-motion-track{animation:none;will-change:auto}.logo-motion-viewport{overflow-x:auto;-webkit-mask-image:none;mask-image:none}.logo-motion-group[aria-hidden="true"]{display:none}}
