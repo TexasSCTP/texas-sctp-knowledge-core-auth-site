@@ -36,3 +36,17 @@ nav{display:flex;align-items:center;gap:30px}nav a{font-size:12px;font-weight:80
 .email-fallback .email-link-button{background:#fff;border:1px solid #bbccd6;border-radius:6px;padding:10px 13px;color:var(--navy);font-size:12px;font-weight:800;cursor:pointer}
 .email-fallback .email-link-button:hover{background:#f3f7f9}
 .email-fallback .login-status{margin-top:10px}
+
+/* Account recovery uses the same moderator sign-in page and colors. */
+.recovery-link{background:transparent;border:0;padding:0;text-align:left;
+ color:var(--navy);font-size:12px;font-weight:850;text-decoration:underline;
+ text-underline-offset:3px;cursor:pointer}
+.recovery-link:hover{color:#9b6d1b}
+.recovery-link:disabled{opacity:.65;cursor:wait}
+#forgot-password-status:empty{display:none}
+#forgot-password-status{font-size:12px;line-height:1.6}
+#password-reset-panel .login-copy p:last-child{margin-bottom:0}
+#password-reset-panel .login-form input{width:100%;min-width:0}
+#password-reset-panel .login-form button{background:var(--gold);border:0;border-radius:6px;
+ padding:13px 16px;color:var(--deep);font-size:12px;font-weight:900}
+#password-reset-panel .login-form button:hover{background:#e8b75b}
