@@ -8,7 +8,7 @@ const dist=resolve(root,'dist');
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app.js')],{stdio:'inherit'});
-execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app-auth-recovery-20261113-v3.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app-auth-recovery-20261113-v4.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/profiles.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/flags.js')],{stdio:'inherit'});
@@ -17,16 +17,25 @@ execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/
 execFileSync(process.execPath,[resolve(root,'scripts/test-hero-visibility.mjs')],{stdio:'inherit'});
 execFileSync(process.execPath,[resolve(root,'scripts/test-photo-reports.mjs')],{stdio:'inherit'});
 
+// Ensure the main site's verified recovery callback is actually published.
+const rangeHtml=await readFile(resolve(root,'index.html'),'utf8');
+const rangeCode=await readFile(resolve(root,'app.js'),'utf8');
+if(!rangeHtml.includes('app-range-password-recovery-v13-20261113.js') ||
+   !rangeCode.includes('incomingPasswordRecovery') ||
+   !rangeCode.includes("window.location.replace('./moderator-hub/?recover=1')")) {
+ throw new Error('Password recovery callback would be lost at the On the Range root.');
+}
 // Verify the login UI and its immutable auth module are deployed together.
 const hubHtml=await readFile(resolve(root,'moderator-hub/index.html'),'utf8');
-const hubAuth=await readFile(resolve(root,'moderator-hub/app-auth-recovery-20261113-v3.js'),'utf8');
+const hubAuth=await readFile(resolve(root,'moderator-hub/app-auth-recovery-20261113-v4.js'),'utf8');
 if(!hubHtml.includes('id="password-login-form"') ||
-   !hubHtml.includes('app-auth-recovery-20261113-v3.js') ||
+   !hubHtml.includes('app-auth-recovery-20261113-v4.js') ||
    !hubHtml.includes('id="login-button" type="submit" disabled') ||
    hubHtml.includes('<form id="login-form"') ||
    !hubAuth.includes("$('#password-login-form').addEventListener") ||
    !hubAuth.includes('signInWithPassword({email,password})') ||
    !hubAuth.includes('resetPasswordForEmail(email,') ||
+   !hubAuth.includes('redirectTo:RECOVERY_CALLBACK_URL') ||
    !hubAuth.includes('updateUser({password:newPassword})') ||
    !hubAuth.includes("$('#login-button').disabled=false") ||
    !hubHtml.includes('id="forgot-password"') ||
@@ -59,6 +68,7 @@ for(const [source,release] of [
   ['app.js','app-range-approved-only-v10-20261109.js'],
   ['app.js','app-range-explicit-hero-v11-20261110.js'],
   ['app.js','app-range-photo-flags-v12-20261110.js'],
+  ['app.js','app-range-password-recovery-v13-20261113.js'],
   ['styles.css','styles-range-adult-check-v2-20261109.css'],
   ['styles.css','styles-range-gallery-framing-v3-20261109.css'],
   ['styles.css','styles-range-menu-v5-20261109.css'],
