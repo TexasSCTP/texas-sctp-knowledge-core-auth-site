@@ -327,29 +327,82 @@
     setBusy(false);
     dialog.showModal();
   }
+  const LOGO_MAX_BYTES = 5 * 1024 * 1024;
+  const LOGO_EXTENSIONS = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
+  const LOGO_LABELS = {'image/png':'PNG','image/jpeg':'JPG','image/webp':'WebP'};
+
   async function optimizeImage(file) {
-    if (!file || !['image/png','image/jpeg','image/webp'].includes(file.type))
-      throw Error('Choose a PNG, JPG, or WebP image.');
-    if (file.size > 15 * 1024 * 1024) throw Error('The original image is too large. Choose one under 15 MB.');
-    const bitmap = await createImageBitmap(file);
+    if (!file) throw Error('Choose a PNG, JPG, or WebP logo.');
+    const sourceType = file.type === 'image/jpg' ? 'image/jpeg'
+      : file.type || (/\.png$/i.test(file.name) ? 'image/png'
+      : /\.jpe?g$/i.test(file.name) ? 'image/jpeg'
+      : /\.webp$/i.test(file.name) ? 'image/webp' : '');
+    if (!LOGO_EXTENSIONS[sourceType]) throw Error('Choose a PNG, JPG, or WebP image.');
+    if (file.size < 150) throw Error('The image file is empty or damaged. Please choose another copy.');
+    if (file.size > 25 * 1024 * 1024)
+      throw Error('The original file exceeds 25 MB. Please choose a smaller version.');
+
+    // Preserve ordinary PNG/JPG/WebP logos exactly as submitted. Some Safari
+    // browsers silently produce PNG when canvas.toBlob requests WebP.
+    const typedFile = file.type === sourceType ? file :
+      new File([file], file.name || ('team-logo.' + LOGO_EXTENSIONS[sourceType]), {type:sourceType});
+    if (typedFile.size <= LOGO_MAX_BYTES) return typedFile;
+
+    let source, width, height, release = () => {};
     try {
-      if (bitmap.width < 48 || bitmap.height < 48) throw Error('Choose a logo at least 48 pixels wide and tall.');
-      const scale = Math.min(1, 1500 / Math.max(bitmap.width, bitmap.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw Error('Unable to process this image.');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      const encode = quality => new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
-      let image = await encode(.91);
-      if (!image) throw Error('Unable to convert this logo to WebP.');
-      if (image.size > 2097152) image = await encode(.75);
-      if (image.size > 2097152) image = await encode(.52);
-      if (!image || image.size > 2097152) throw Error('Image could not be optimized below 2 MB. Choose a smaller logo.');
-      return image;
-    } finally { bitmap.close(); }
+      if (typeof createImageBitmap === 'function') {
+        try {
+          const bitmap = await createImageBitmap(typedFile);
+          source = bitmap;
+          width = bitmap.width;
+          height = bitmap.height;
+          release = () => bitmap.close();
+        } catch {}
+      }
+      if (!source) {
+        const objectUrl = URL.createObjectURL(typedFile);
+        const img = new Image();
+        try {
+          await new Promise((resolve,reject) => {
+            img.onload = resolve;
+            img.onerror = () => reject(Error('The image could not be opened. Please try another copy.'));
+            img.src = objectUrl;
+          });
+        } catch(e) {
+          URL.revokeObjectURL(objectUrl);
+          throw e;
+        }
+        source = img;
+        width = img.naturalWidth;
+        height = img.naturalHeight;
+        release = () => URL.revokeObjectURL(objectUrl);
+      }
+      if (width < 48 || height < 48)
+        throw Error('Choose a logo at least 48 pixels wide and tall.');
+      for (const maxEdge of [1800,1500,1200,900,700]) {
+        const scale = Math.min(1, maxEdge / Math.max(width,height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1,Math.round(width*scale));
+        canvas.height = Math.max(1,Math.round(height*scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw Error('Unable to process this image on your device.');
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(source,0,0,canvas.width,canvas.height);
+        const encode = (mime, quality) => new Promise(resolve => canvas.toBlob(resolve,mime,quality));
+        // Trust the actual MIME type rather than the requested encoder format.
+        for (const q of [.89,.73,.56]) {
+          const encoded = await encode('image/webp',q);
+          if (encoded && LOGO_EXTENSIONS[encoded.type] && encoded.size <= LOGO_MAX_BYTES)
+            return encoded;
+          if (encoded?.type !== 'image/webp') break;
+        }
+        const fallbackType = sourceType === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+        const fallback = await encode(fallbackType, sourceType === 'image/jpeg' ? .78 : undefined);
+        if (fallback && LOGO_EXTENSIONS[fallback.type] && fallback.size <= LOGO_MAX_BYTES)
+          return fallback;
+      }
+      throw Error('This logo could not be reduced below 5 MB. Please use a smaller image.');
+    } finally { release(); }
   }
   async function prepareFile(file) {
     revokePreview();
@@ -361,7 +414,7 @@
       selectedBlob = blob;
       selectedPreviewUrl = URL.createObjectURL(blob);
       $('#logo-preview').src = selectedPreviewUrl;
-      $('#preview-size').textContent = Math.round(blob.size / 1024).toLocaleString() + ' KB · WebP';
+      $('#preview-size').textContent = Math.round(blob.size / 1024).toLocaleString() + ' KB · ' + (LOGO_LABELS[blob.type] || 'Image');
       $('#preview-box').hidden = false;
       $('#file-description').textContent = clean(file.name);
       setBusy(false, '');
@@ -378,17 +431,17 @@
     setError('');
     setBusy(true, 'Reserving secure upload...');
     try {
-      const reservation = await portalRequest('begin', {teamId});
+      const reservation = await portalRequest('begin', {teamId, mimeType:blob.type});
       if (!reservation.path || !reservation.token || reservation.teamId !== teamId)
         throw Error('Invalid upload reservation. Please retry.');
-      if (blob.size > Number(reservation.maxBytes || 2097152)) throw Error('Image exceeds upload limit.');
+      if (blob.size > Number(reservation.maxBytes || LOGO_MAX_BYTES)) throw Error('Image exceeds the 5 MB upload limit.');
       setBusy(true, 'Uploading optimized logo...');
       const pathSegments = reservation.path.split('/').map(encodeURIComponent).join('/');
       const uploadUrl = apiRoot + '/storage/v1/object/upload/sign/' + bucket + '/' + pathSegments +
         '?token=' + encodeURIComponent(reservation.token);
       const multipart = new FormData();
       multipart.append('cacheControl','3600');
-      multipart.append('', blob, 'logo.webp');
+      multipart.append('', blob, 'logo.' + LOGO_EXTENSIONS[blob.type]);
       const uploaded = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {'apikey': publicKey, 'x-upsert': 'false'},
@@ -397,7 +450,7 @@
       if (!uploaded.ok) {
         let details = {};
         try { details = await uploaded.json(); } catch {}
-        throw Error(details.message || details.error || 'Unable to upload logo. Please retry.');
+        throw Error(details.message || (details.error === 'InvalidMimeType' ? 'The server did not recognize this image type. Refresh the page and try again.' : details.error) || 'Unable to upload logo. Please retry.');
       }
       setBusy(true, 'Submitting logo for moderator review...');
       const complete = await portalRequest('complete', {teamId, path: reservation.path});
