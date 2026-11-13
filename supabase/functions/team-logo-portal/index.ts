@@ -151,8 +151,7 @@ async function verifyStaff(req:Request){
 }
 
 /* Approval queue and email alerts. All staff actions use verifyStaff. */
-const MODERATOR_URL=Deno.env.get('TEAM_LOGO_MODERATOR_URL')||
- 'https://texas-sctp-tournament-memories-preview.onrender.com/moderator-hub/team-logos/#logo-review-queue';
+const MODERATOR_URL='https://ontherange.texassctp.com/moderator-hub/team-logos/#logo-review-queue';
 function escapeEmail(value:unknown){
  return str(value).replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
