@@ -9,9 +9,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' https://raw.githubusercontent.com data:; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
   <title>Texas SCTP | Moderator Hub</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261110-photo-flags-2">
+  <link rel="stylesheet" href="./styles.css?v=20261113-inline-login-1">
   <script defer src="../config.js"></script>
-  <script type="module" src="./app.js?v=20261110-photo-flags-2"></script>
+  <script type="module" src="./app.js?v=20261113-inline-login-1"></script>
 </head>
 <body>
  <div class="topline"><div class="wrap topline-inner"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>AUTHORIZED STAFF RESOURCE</span></div></div>
@@ -41,16 +41,28 @@
    <section id="login-panel" class="login-panel" hidden aria-labelledby="login-heading">
     <div class="login-copy">
      <p class="eyebrow">AUTHORIZED MODERATORS ONLY</p>
-     <h2 id="login-heading">Sign in with your existing account</h2>
-     <p>This is the same Texas SCTP staff email-link sign-in used for On the Range. No new username, password, or moderator account is needed.</p>
+     <h2 id="login-heading">Sign in here with your existing account</h2>
+     <p>Your On the Range moderator account works in this Hub. If you are already signed in on this website, your session is recognized automatically. Otherwise, enter your account email and password here without leaving the page.</p>
     </div>
-    <form id="login-form" class="login-form" novalidate>
-     <label for="staff-email">Staff email address</label>
-     <input id="staff-email" name="email" type="email" autocomplete="email" required placeholder="Your authorized staff email">
-     <button id="login-button" type="submit">Send secure sign-in link</button>
-     <p id="login-status" role="status" aria-live="polite" class="login-status"></p>
-     <p class="helper">Open the link in your email. Your sign-in will return through On the Range, then bring you back to this hub.</p>
-    </form>
+    <div class="signin-stack">
+     <form id="login-form" class="login-form" novalidate>
+      <label for="staff-email">Staff email address</label>
+      <input id="staff-email" name="email" type="email" autocomplete="username" required placeholder="Your authorized staff email">
+      <label for="staff-password">Password</label>
+      <input id="staff-password" name="password" type="password" autocomplete="current-password" required placeholder="Your existing account password">
+      <button id="login-button" type="submit">Sign in to Moderator Hub</button>
+      <p id="login-status" role="status" aria-live="polite" class="login-status"></p>
+     </form>
+     <div class="signin-alternatives">
+      <button type="button" class="session-check" id="retry-session">Already signed in? Check this session</button>
+      <details class="email-fallback">
+       <summary>Need an email sign-in link instead?</summary>
+       <p>For moderators without a password, you can still use the existing email sign-in method.</p>
+       <button type="button" id="email-link-button" class="email-link-button">Send secure email link</button>
+       <p id="email-link-status" role="status" aria-live="polite" class="login-status"></p>
+      </details>
+     </div>
+    </div>
    </section>
    <section id="access-denied" hidden class="message-panel" aria-labelledby="denied-heading">
     <h2 id="denied-heading">Moderator access is not assigned to this account.</h2>
