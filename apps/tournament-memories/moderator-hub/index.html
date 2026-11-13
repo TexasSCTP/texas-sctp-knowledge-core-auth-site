@@ -9,9 +9,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' https://raw.githubusercontent.com data:; connect-src 'self' https://cdn.jsdelivr.net https://mlajcbnuponqyoehxydp.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
   <title>Texas SCTP | Moderator Hub</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261113-inline-login-1">
+  <link rel="stylesheet" href="./styles.css?v=20261113-password-recovery-3">
   <script defer src="../config.js"></script>
-  <script type="module" src="./app-auth-password-20261113-v2.js"></script>
+  <script type="module" src="./app-auth-recovery-20261113-v3.js"></script>
 </head>
 <body>
  <div class="topline"><div class="wrap topline-inner"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>AUTHORIZED STAFF RESOURCE</span></div></div>
@@ -54,6 +54,8 @@
       <p id="login-status" role="status" aria-live="polite" class="login-status"></p>
      </form>
      <div class="signin-alternatives">
+      <button type="button" class="recovery-link" id="forgot-password">Forgot password?</button>
+      <p id="forgot-password-status" class="login-status" role="status" aria-live="polite"></p>
       <button type="button" class="session-check" id="retry-session">Already signed in? Check this session</button>
       <details class="email-fallback">
        <summary>Need an email sign-in link instead?</summary>
@@ -63,6 +65,21 @@
       </details>
      </div>
     </div>
+   </section>
+   <section id="password-reset-panel" class="login-panel" hidden aria-labelledby="reset-heading">
+    <div class="login-copy">
+     <p class="eyebrow">ACCOUNT RECOVERY</p>
+     <h2 id="reset-heading">Set a new password</h2>
+     <p>Your secure email link has opened this page. Choose a new password for your existing Texas SCTP moderator account. Your permissions and team records will remain unchanged.</p>
+    </div>
+    <form id="password-reset-form" class="login-form" novalidate>
+     <label for="reset-password">New password</label>
+     <input id="reset-password" type="password" autocomplete="new-password" minlength="12" required placeholder="At least 12 characters">
+     <label for="reset-confirm-password">Confirm new password</label>
+     <input id="reset-confirm-password" type="password" autocomplete="new-password" minlength="12" required placeholder="Re-enter your new password">
+     <button id="save-new-password" type="submit" disabled>Save new password</button>
+     <p id="reset-password-status" class="login-status" role="status" aria-live="polite"></p>
+    </form>
    </section>
    <section id="access-denied" hidden class="message-panel" aria-labelledby="denied-heading">
     <h2 id="denied-heading">Moderator access is not assigned to this account.</h2>
