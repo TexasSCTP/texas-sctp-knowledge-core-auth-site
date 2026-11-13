@@ -3,6 +3,8 @@ const URL = Deno.env.get('SUPABASE_URL') || '';
 const KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 const RATE_SECRET = Deno.env.get('MEMORIES_RATE_SECRET') || URL;
 const bucket = 'memories-team-logos';
+const MAX_LOGO_BYTES = 5 * 1024 * 1024;
+const logoTypes:Record<string,string> = {'image/webp':'webp','image/png':'png','image/jpeg':'jpg'};
 const admin = createClient(URL,KEY,{auth:{autoRefreshToken:false,persistSession:false}});
 const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'content-type, apikey, authorization','Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
 const json=(x:unknown,status=200)=>new Response(JSON.stringify(x),{status,headers});
@@ -60,6 +62,9 @@ async function catalog(){
 }
 async function begin(req:Request,body:Record<string,unknown>){
  const teamId=str(body.teamId);
+ const mimeType=(str(body.mimeType).toLowerCase()||'image/webp');
+ const extension=logoTypes[mimeType];
+ if(!extension)return fail('Choose a PNG, JPG, or WebP image.',415);
  if(!/^[A-Za-z0-9_-]{1,80}$/.test(teamId))return fail('Select a valid team.');
  const {data:team,error:teamErr}=await admin.from('memory_teams').select('id').eq('id',teamId).eq('active',true).eq('portal_visible',true).maybeSingle();
  if(teamErr||!team)return fail('Team not found.',404);
@@ -71,26 +76,30 @@ async function begin(req:Request,body:Record<string,unknown>){
    admin.from('memory_team_logo_upload_attempts').select('id',{head:true,count:'exact'}).eq('team_id',teamId).gte('created_at',hour)
  ]);
  if(ipErr||teamErr2)throw new Error('Upload service is temporarily unavailable.');
- if((ipHits||0)>=15)return fail('Daily upload limit reached. Please try tomorrow.',429);
- if((teamHits||0)>=8)return fail('This team has received several recent uploads. Please try again later.',429);
+ if((ipHits||0)>=40)return fail('Daily upload limit reached. Please try tomorrow.',429);
+ if((teamHits||0)>=20)return fail('This team has received several recent uploads. Please try again later.',429);
  const {error:attemptErr}=await admin.from('memory_team_logo_upload_attempts').insert({fingerprint:fp,team_id:teamId});
  if(attemptErr)throw new Error('Could not start the upload.');
- const path='team/'+teamId+'/'+crypto.randomUUID()+'.webp';
+ const path='team/'+teamId+'/'+crypto.randomUUID()+'.'+extension;
  const {data,error}=await admin.storage.from(bucket).createSignedUploadUrl(path);
  if(error||!data?.token)throw new Error('Could not reserve upload space.');
- return json({path,token:data.token,teamId,maxBytes:2097152});
+ return json({path,token:data.token,teamId,maxBytes:MAX_LOGO_BYTES,mimeType});
 }
 async function complete(body:Record<string,unknown>){
  const teamId=str(body.teamId),path=str(body.path);
  if(!/^[A-Za-z0-9_-]{1,80}$/.test(teamId)||
-    !/^team\/[A-Za-z0-9_-]{1,80}\/[0-9a-f-]{36}\.webp$/.test(path)||
+    !/^team\/[A-Za-z0-9_-]{1,80}\/[0-9a-f-]{36}\.(webp|png|jpg|jpeg)$/.test(path)||
     !path.startsWith('team/'+teamId+'/'))return fail('Invalid logo submission.');
  const {data:team}=await admin.from('memory_teams').select('id').eq('id',teamId).eq('active',true).eq('portal_visible',true).maybeSingle();
  if(!team)return fail('Team not found.',404);
  const {data:info,error:ie}=await admin.storage.from(bucket).info(path);
  if(ie||!info)return fail('Logo was not uploaded.',404);
- if(Number(info.size)<150||Number(info.size)>2097152||
-   !String(info.contentType||info.mimetype||'').startsWith('image/webp'))return fail('Please upload a WebP logo under 2 MB.');
+ const storedMime=String(info.contentType||info.mimetype||'').toLowerCase().split(';')[0].trim();
+ const ext=logoTypes[storedMime],pathExtension=path.split('.').pop()?.toLowerCase();
+ // Old cached clients used a .webp path even when Safari produced PNG data.
+ // Accept those compatible legacy uploads but create correct extensions for new ones.
+ if(Number(info.size)<150||Number(info.size)>MAX_LOGO_BYTES||!ext ||
+   (pathExtension!==ext&&pathExtension!=='webp'))return fail('Logo must be PNG, JPG, or WebP and under 5 MB.',415);
  // Preserve the existing signed upload check and rate limiter.
  const {count:reservations,error:resErr}=await admin.from('memory_team_logo_upload_attempts')
    .select('id',{head:true,count:'exact'}).eq('team_id',teamId)
