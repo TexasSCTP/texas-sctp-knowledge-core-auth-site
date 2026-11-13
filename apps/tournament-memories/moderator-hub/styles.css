@@ -20,3 +20,19 @@ nav{display:flex;align-items:center;gap:30px}nav a{font-size:12px;font-weight:80
 .photo-flags-link{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #c4d6df;border-radius:7px;background:#f4f8fa;color:#164763;font-size:11.8px;font-weight:850;text-decoration:none;padding:11px 14px;margin:3px 0 12px}
 .photo-flags-link:hover,.photo-flags-link:focus-visible{background:#e7f1f6;border-color:#7395a7;outline-offset:2px}
 .photo-flags-link span{font-size:15px}
+
+/* Direct on-page staff sign-in; optional email fallback is kept secondary. */
+.signin-stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.login-form input{width:100%;min-width:0}
+.login-form input:focus-visible{border-color:#bc8d3d;box-shadow:0 0 0 3px rgba(217,164,65,.2)}
+.login-form button:disabled,.signin-alternatives button:disabled{cursor:wait;opacity:.7}
+.signin-alternatives{border-top:1px solid #e1e7eb;padding-top:12px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.session-check{color:var(--navy);font-size:12px;font-weight:800;background:transparent;border:0;padding:4px 0;text-align:left;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.session-check:hover{color:#9b6d1b}
+.email-fallback{width:100%;font-size:12px;color:#657a89}
+.email-fallback summary{font-size:12px;color:#526e80;font-weight:700;cursor:pointer;list-style:disclosure-closed}
+.email-fallback[open] summary{list-style:disclosure-open}
+.email-fallback p{margin:10px 0;font-size:12px;line-height:1.6;color:#617b8b}
+.email-fallback .email-link-button{background:#fff;border:1px solid #bbccd6;border-radius:6px;padding:10px 13px;color:var(--navy);font-size:12px;font-weight:800;cursor:pointer}
+.email-fallback .email-link-button:hover{background:#f3f7f9}
+.email-fallback .login-status{margin-top:10px}
