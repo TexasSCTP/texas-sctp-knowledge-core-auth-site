@@ -110,31 +110,83 @@ async function signOut(){
 }
 $('#signout-button').addEventListener('click',signOut);
 $('#denied-signout').addEventListener('click',signOut);
+// Password sign-in stays on this page and establishes the same Supabase
+// session used by On the Range and the Team Logo moderation tools.
+let signingIn=false;
 $('#login-form').addEventListener('submit',async event=>{
   event.preventDefault();
-  if(!client)return;
+  if(!client||signingIn)return;
   const email=$('#staff-email').value.trim();
+  const password=$('#staff-password').value;
   const button=$('#login-button'),feedback=$('#login-status');
-  if(!email)return;
-  button.disabled=true;
   feedback.className='login-status';
-  button.textContent='Sending sign-in email…';
-  feedback.textContent='';
+  if(!email||!password){
+    feedback.textContent='Enter your authorized email address and account password.';
+    feedback.classList.add('error');
+    return;
+  }
+  signingIn=true;
+  button.disabled=true;
+  button.textContent='Signing in…';
+  feedback.textContent='Verifying your existing account…';
   try{
-    // The existing On the Range root is already configured as an auth redirect.
-    // A short-lived local marker returns staff to this hub after that callback.
-    const {error}=await client.auth.signInWithOtp({
-      email, options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+'/'}
-    });
-    if(error)throw error;
-    try{localStorage.setItem(loginMarker,String(Date.now()));}catch{}
-    feedback.textContent='Sign-in email requested. Use its secure link, then you will return to the hub after On the Range verifies your session.';
+    const {data,error}=await client.auth.signInWithPassword({email,password});
+    if(error||!data?.session?.access_token)throw error||new Error('Session not established.');
+    $('#staff-password').value='';
+    try{localStorage.removeItem(loginMarker)}catch{}
+    feedback.textContent='Signed in. Checking staff permissions…';
+    await checkStaff();
   }catch(error){
     feedback.className='login-status error';
-    feedback.textContent='Could not request sign-in: '+(error.message||'Please try again.');
+    feedback.textContent='Unable to sign in. Check your email and password. If this account uses email links, open the alternative below.';
   }finally{
+    signingIn=false;
     button.disabled=false;
-    button.textContent='Send secure sign-in link';
+    button.textContent='Sign in to Moderator Hub';
+  }
+});
+// The session may have been established on another tab of this origin.
+$('#retry-session').addEventListener('click',async()=>{
+  if(!client||signingIn)return;
+  const feedback=$('#login-status');
+  feedback.className='login-status';
+  feedback.textContent='Checking your current On the Range session…';
+  await checkStaff();
+  if(!$('#login-panel').hidden){
+    feedback.className='login-status error';
+    feedback.textContent='No active moderator session was found on this website. Sign in above.';
+  }
+});
+// Maintain the original email-link method only as a secondary recovery
+// option for staff members who have never established a password.
+$('#email-link-button').addEventListener('click',async()=>{
+  if(!client||signingIn)return;
+  const email=$('#staff-email').value.trim();
+  const button=$('#email-link-button'),feedback=$('#email-link-status');
+  if(!email){
+    feedback.className='login-status error';
+    feedback.textContent='Enter your staff email above before requesting an email link.';
+    return;
+  }
+  signingIn=true;
+  button.disabled=true;
+  button.textContent='Sending…';
+  feedback.className='login-status';
+  feedback.textContent='';
+  try{
+    const {error}=await client.auth.signInWithOtp({
+      email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+'/'}
+    });
+    if(error)throw error;
+    try{localStorage.setItem(loginMarker,String(Date.now()))}catch{}
+    feedback.textContent='A secure sign-in link has been emailed. Open it in this browser to finish signing in.';
+  }catch(error){
+    feedback.className='login-status error';
+    feedback.textContent='Could not send a sign-in link. '+(error?.message||'Please try again.');
+  }finally{
+    signingIn=false;
+    button.disabled=false;
+    button.textContent='Send secure email link';
   }
 });
 if(!client)setError('Staff sign-in is unavailable because the project configuration is missing.');
