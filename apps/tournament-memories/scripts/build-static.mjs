@@ -8,7 +8,7 @@ const dist=resolve(root,'dist');
 execFileSync(process.execPath,['--check',resolve(root,'app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'social-publishing.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app.js')],{stdio:'inherit'});
-execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app-auth-password-20261113-v2.js')],{stdio:'inherit'});
+execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/app-auth-recovery-20261113-v3.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/app.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/profiles.js')],{stdio:'inherit'});
 execFileSync(process.execPath,['--check',resolve(root,'moderator-hub/team-logos/flags.js')],{stdio:'inherit'});
@@ -19,14 +19,19 @@ execFileSync(process.execPath,[resolve(root,'scripts/test-photo-reports.mjs')],{
 
 // Verify the login UI and its immutable auth module are deployed together.
 const hubHtml=await readFile(resolve(root,'moderator-hub/index.html'),'utf8');
-const hubAuth=await readFile(resolve(root,'moderator-hub/app-auth-password-20261113-v2.js'),'utf8');
+const hubAuth=await readFile(resolve(root,'moderator-hub/app-auth-recovery-20261113-v3.js'),'utf8');
 if(!hubHtml.includes('id="password-login-form"') ||
-   !hubHtml.includes('app-auth-password-20261113-v2.js') ||
+   !hubHtml.includes('app-auth-recovery-20261113-v3.js') ||
    !hubHtml.includes('id="login-button" type="submit" disabled') ||
    hubHtml.includes('<form id="login-form"') ||
    !hubAuth.includes("$('#password-login-form').addEventListener") ||
    !hubAuth.includes('signInWithPassword({email,password})') ||
-   !hubAuth.includes("$('#login-button').disabled=false")) {
+   !hubAuth.includes('resetPasswordForEmail(email,') ||
+   !hubAuth.includes('updateUser({password:newPassword})') ||
+   !hubAuth.includes("$('#login-button').disabled=false") ||
+   !hubHtml.includes('id="forgot-password"') ||
+   !hubHtml.includes('id="password-reset-panel"') ||
+   !hubHtml.includes('id="password-reset-form"')) {
  throw new Error('Moderator Hub password form and login JavaScript are out of sync.');
 }
 await rm(dist,{recursive:true,force:true});
