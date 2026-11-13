@@ -141,7 +141,7 @@
     heroTimer=window.setInterval(()=>{
       if(state.client && state.screen==='gallery' && !heroReloading &&
          !document.hidden && Date.now()-heroLastLoadedAt>30*1000){
-        loadHeroGallery().then(()=>{if(state.screen==='gallery')render();}).catch(()=>{});
+        loadHeroGallery().then(()=>{if(state.screen==='gallery')updateHeroSlideshow();}).catch(()=>{});
       }
       if(!heroPaused && !document.hidden)nextHeroScene();
     },heroIntervalMs);
@@ -492,6 +492,18 @@
     el.innerHTML=`<div class="site-shell">${topBar()}${state.screen==='admin'&&state.moderator?renderAdmin():`<main>${hero()}${renderGallery()}</main>`}${footer()}</div>`;
     renderModal();
     ensureHeroTimer();
+  }
+
+  // Background slideshow updates must not remount the gallery or its active forms.
+  // render() recreates #app and #modal-root, wiping every unsaved input.
+  function updateHeroSlideshow(){
+    if(!state.ready || state.screen!=='gallery')return;
+    const current=document.querySelector('.hero-slideshow');
+    if(!current)return;
+    const template=document.createElement('template');
+    template.innerHTML=hero();
+    const updated=template.content.querySelector('.hero-slideshow');
+    if(updated)current.replaceWith(updated);
   }
 
   function topBar(){return `<header class="topbar"><a class="brand" href="./" aria-label="Return to Texas SCTP On the Range gallery"><span class="brand-seal"><span class="seal-fallback">TX</span>${config.brandLogoUrl?`<img src="${cleanUrl(config.brandLogoUrl)}" alt="Texas SCTP logo">`:''}</span><span class="brand-copy"><strong>TEXAS SCTP</strong><small>ON THE RANGE</small></span></a><div class="head-right"><span class="header-context">THE ACTION ACROSS TEXAS</span>${state.moderator?`<a href="./moderator-hub/" class="staff-hub-link">Moderator Hub</a><button data-action="admin" class="staff-head" aria-label="Open On the Range moderation">${icon('shield','icon-sm')}</button>`:''}</div></header>`;}
@@ -1795,9 +1807,9 @@
             scene=>scene.id!==update.sceneId);
         }
         rebuildHeroScenes();
-        if(state.ready&&state.screen==='gallery')render();
+        if(state.ready&&state.screen==='gallery')updateHeroSlideshow();
         void loadHeroGallery().then(()=>{
-          if(state.ready&&state.screen==='gallery')render();
+          if(state.ready&&state.screen==='gallery')updateHeroSlideshow();
         });
         return;
       }
@@ -1809,9 +1821,9 @@
           scene=>scene.id!=='approved-'+update.photoId);
       }
       rebuildHeroScenes();
-      if(state.ready&&state.screen==='gallery')render();
+      if(state.ready&&state.screen==='gallery')updateHeroSlideshow();
       void loadHeroGallery().then(()=>{
-        if(state.ready&&state.screen==='gallery')render();
+        if(state.ready&&state.screen==='gallery')updateHeroSlideshow();
       });
     }catch(error){console.warn('Could not apply gallery visibility event',error);}
   });
@@ -1819,7 +1831,7 @@
     if(!state.ready||!state.client||state.screen!=='gallery'||document.hidden)return;
     if(Date.now()-heroLastLoadedAt<12*1000)return;
     void loadHeroGallery().then(()=>{
-      if(state.screen==='gallery')render();
+      if(state.screen==='gallery')updateHeroSlideshow();
     });
   }
   document.addEventListener('visibilitychange',refreshHeroAfterReturning);
