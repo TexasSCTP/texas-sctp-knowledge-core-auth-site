@@ -6,6 +6,10 @@
   const config = window.TEXAS_SCTP_CONFIG || {};
   const BUCKET = config.storageBucket || 'memories-private';
   const LOGO_BUCKET = 'memories-team-logos';
+  // Fallback if a reset email returns to On the Range's allowed root URL
+  // instead of directly to the Moderator Hub recovery screen.
+  const incomingPasswordRecovery =
+    new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery';
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
   const PAGE_SIZE = 24;
@@ -284,6 +288,10 @@
         }
       });
       await refreshAccount();
+      if(incomingPasswordRecovery && state.user){
+        window.location.replace('./moderator-hub/?recover=1');
+        return;
+      }
       // Moderator Hub sign-in uses the SAME browser auth session as On the Range.
       // A one-time, short-lived marker brings staff back here after the verified
       // email-link redirect on the existing On the Range origin.
