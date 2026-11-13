@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/TexasSCTP/texas-sctp-knowledge-core-auth-site/main/texas-sctp-logo.png">
   <link rel="stylesheet" href="./styles.css?v=20261113-inline-login-1">
   <script defer src="../config.js"></script>
-  <script type="module" src="./app.js?v=20261113-inline-login-1"></script>
+  <script type="module" src="./app-auth-password-20261113-v2.js"></script>
 </head>
 <body>
  <div class="topline"><div class="wrap topline-inner"><span>TEXAS SCHOLASTIC CLAY TARGET PROGRAM</span><span>AUTHORIZED STAFF RESOURCE</span></div></div>
@@ -45,12 +45,12 @@
      <p>Your On the Range moderator account works in this Hub. If you are already signed in on this website, your session is recognized automatically. Otherwise, enter your account email and password here without leaving the page.</p>
     </div>
     <div class="signin-stack">
-     <form id="login-form" class="login-form" novalidate>
+     <form id="password-login-form" class="login-form" novalidate>
       <label for="staff-email">Staff email address</label>
       <input id="staff-email" name="email" type="email" autocomplete="username" required placeholder="Your authorized staff email">
       <label for="staff-password">Password</label>
       <input id="staff-password" name="password" type="password" autocomplete="current-password" required placeholder="Your existing account password">
-      <button id="login-button" type="submit">Sign in to Moderator Hub</button>
+      <button id="login-button" type="submit" disabled>Sign in to Moderator Hub</button>
       <p id="login-status" role="status" aria-live="polite" class="login-status"></p>
      </form>
      <div class="signin-alternatives">
