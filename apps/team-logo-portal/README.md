@@ -8,7 +8,7 @@ Standalone Texas SCTP Team Logo Portal (not part of Tournament Memories).
 - **Publish directory:** `apps/team-logo-portal/dist`.
 - **Public API:** Supabase Edge Function `team-logo-portal`.
 - **Directory and logo records:** Existing shared Texas SCTP Supabase data, retained to avoid losing or duplicating approved logos.
-- **Uploads:** Public, no account or CAPTCHA; signed WebP uploads limited to 2MB and backend rate limiting.
+- **Uploads:** Public, no account or CAPTCHA; signed PNG, JPG, and WebP uploads, with a 5 MB stored-file limit and backend rate limiting. Files up to 5 MB retain their original format and quality. Larger source files may be optimized in the browser; Safari's PNG fallback is supported.
 - **Administration:** No public deletion endpoint; retain existing logo history.
 
 This site has its own navigation, config, build, deployment, and API endpoint and does not call or link to Tournament Memories.
@@ -140,3 +140,30 @@ been received and verified by a moderator.
 
 Both new tables have RLS enabled and no direct public read/write privileges.
 No public moderator approval action or direct database permissions exist.
+
+
+## PNG/JPG upload compatibility correction (November 13, 2026)
+
+Mercy Preparatory Academy submitted four times on November 13. Storage logged
+`InvalidMimeType: mime type image/png is not supported` for each PUT.
+The prior uploader required WebP, but Safari can return PNG from
+`canvas.toBlob('image/webp')`. The browser labeled that blob WebP
+without checking `blob.type`, and the WebP-only private bucket rejected it.
+
+Fixed by permitting image/png, image/jpeg, and image/webp in the existing private
+bucket, raising the stored-file limit to 5 MB, preserving native PNG/JPG/WebP
+when already within that limit, reading `Blob.type` to determine the signed
+upload extension, and preserving backwards compatibility with previously cached
+WebP-path clients sending actual PNG. Current upload safety remains: signed
+single-object URLs, client consent, team visibility checks, moderator review
+before publication, and rate limiting. The cap now allows 40 attempts per
+IP in 24 hours and 20 attempts per team per hour to avoid punishing users for
+technical retries. No existing approved logo files were changed.
+
+New UI files: `apps/team-logo-portal/app.js`, `index.html`.
+Backend: `supabase/functions/team-logo-portal/index.ts`.
+Migration: `allow_png_jpeg_uploads_team_logo_portal`.
+
+Verification requirements: production deployment should be live; a real
+PNG/JPG browser submission should enter `logo_portal_submissions` pending and
+not replace the approved logo. A future mobile Safari retest should also pass.
